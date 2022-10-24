@@ -1,0 +1,77 @@
+#  docker-compose for DEV!!!
+version: '3.1'
+
+services:
+  mysql:
+    image: mysql:8
+    volumes:
+      - ./docker/dev/mysql/data/:/var/lib/mysql/:rw
+    environment:
+      MYSQL_DATABASE: booking
+      MYSQL_USER: booking
+      MYSQL_PASSWORD: booking
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    ports:
+      - "127.0.0.1:3306:3306"
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www/code
+      - ./docker/dev/nginx/hosts:/etc/nginx/conf.d
+      - ./docker/dev/nginx/logs:/var/log/nginx
+    depends_on:
+      - php
+
+  php:
+    build:
+      context: .
+      dockerfile: docker/dev/php/Dockerfile
+    working_dir: /var/www/code
+    environment:
+      XDEBUG_CONFIG: "remote_host=172.17.0.1 remote_enable=on idekey=PHPSTORM remote_port=9001"
+      PHP_IDE_CONFIG: "serverName=xdebug-docker-telegram" #имя сервера в PhpStorm;
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./:/var/www/code
+      - ~/.ssh:/root/.ssh
+
+  cron:
+    build:
+      context: docker
+      dockerfile: dev/php/Dockerfile
+    working_dir: /var/www/code
+    command: [ "crond", "-f", "-d", "8" ]
+    volumes:
+      - ./docker/dev/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf
+      - ./:/var/www/code
+      - ~/.ssh:/root/.ssh
+
+  rabbitmq:
+    image: bitnami/rabbitmq:latest
+    ports:
+      - 127.0.0.1:15677:15672
+    environment:
+      - RABBITMQ_USERNAME=rabbitmq_user
+      - RABBITMQ_PASSWORD=rabbitmq_user
+      - RABBITMQ_VHOST=esb
+
+  worker:
+    working_dir: /var/www/code
+    build:
+      context: docker
+      dockerfile: dev/php/Dockerfile
+    command: [ "php", "bin/console", "messenger:consume", "async", "-vv" ]
+    restart: unless-stopped
+    volumes:
+      - ./:/var/www/code
+    depends_on:
+      - php
+      - rabbitmq
+
+volumes:
+  database_volume:
+  redis:

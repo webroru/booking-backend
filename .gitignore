@@ -8,5 +8,7 @@
 /vendor/
 ###< symfony/framework-bundle ###
 
+.idea
 /docker/*/*/logs
 /docker/*/*/data
+docker-compose.yml
