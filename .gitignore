@@ -8,5 +8,5 @@
 /vendor/
 ###< symfony/framework-bundle ###
 
-/docker/*/logs
-/docker/*/data
+/docker/*/*/logs
+/docker/*/*/data
