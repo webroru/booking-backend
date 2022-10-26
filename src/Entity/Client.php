@@ -18,6 +18,9 @@ class Client
     #[ORM\Column(length: 255)]
     private ?string $domain = null;
 
+    #[ORM\Column(length: 255)]
+    private ?string $name = null;
+
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?Token $token = null;
 
@@ -34,6 +37,18 @@ class Client
     public function setDomain(string $domain): self
     {
         $this->domain = $domain;
+
+        return $this;
+    }
+
+    public function getName(): ?string
+    {
+        return $this->name;
+    }
+
+    public function setName(string $name): self
+    {
+        $this->name = $name;
 
         return $this;
     }
