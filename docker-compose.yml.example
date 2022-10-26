@@ -31,8 +31,10 @@ services:
       dockerfile: docker/dev/php/Dockerfile
     working_dir: /var/www/code
     environment:
-      XDEBUG_CONFIG: "remote_host=172.17.0.1 remote_enable=on idekey=PHPSTORM remote_port=9001"
-      PHP_IDE_CONFIG: "serverName=xdebug-docker-telegram" #имя сервера в PhpStorm;
+      PHP_IDE_CONFIG: "serverName=xdebug-docker"
+      XDEBUG_CONFIG: "client_host=host.docker.internal xdebug.start_with_request=yes"
+      XDEBUG_MODE: "debug"
+      XDEBUG_SESSION: "PHPSTORM"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
