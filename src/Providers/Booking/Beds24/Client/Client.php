@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Providers\Beds24\Client;
+namespace App\Providers\Booking\Beds24\Client;
 
-use App\Providers\Beds24\Dto\Request\GetBookingsDto;
-use App\Providers\Beds24\Dto\Response\GetAuthenticationSetupDto;
-use App\Providers\Beds24\Exception\EmptyUrlException;
-use App\Providers\Beds24\Exception\IncorrectMethodException;
-use App\Providers\Beds24\Exception\ResponseDtoNotFoundException;
+use App\Providers\Booking\Beds24\Dto\Request\GetBookingsDto;
+use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationSetupDto;
+use App\Providers\Booking\Beds24\Exception\EmptyUrlException;
+use App\Providers\Booking\Beds24\Exception\IncorrectMethodException;
+use App\Providers\Booking\Beds24\Exception\ResponseDtoNotFoundException;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\RequestOptions;
 

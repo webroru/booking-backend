@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Providers\Beds24\Dto\Request;
+namespace App\Providers\Booking\Beds24\Dto\Request;
 
-use App\Providers\Beds24\Exception\ModifyDtoException;
+use App\Providers\Booking\Beds24\Exception\ModifyDtoException;
 
 class GetBookingsDto implements \ArrayAccess
 {

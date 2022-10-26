@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Providers\Beds24\Exception;
+namespace App\Providers\Booking\Beds24\Exception;
 
 class EmptyUrlException extends \Exception
 {
