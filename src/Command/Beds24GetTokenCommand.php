@@ -19,7 +19,6 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 )]
 class Beds24GetTokenCommand extends Command
 {
-
     public function __construct(
         private readonly Booking $booking,
         private readonly ClientRepository $clientRepository,
@@ -45,15 +44,15 @@ class Beds24GetTokenCommand extends Command
 
         $client = $this->clientRepository->findOneBy(['name' => $clientName]);
         $dto = $this->booking->fetchToken($code);
-        $token = (new Token())
+        $token = ($client->getToken() ?? (new Token()))
             ->setToken($dto->token)
             ->setRefreshToken($dto->refreshToken)
-            ->setExpiresIn($dto->expiresIn)
+            ->setExpiresAt(new \DateTime("+ $dto->expiresIn seconds"))
         ;
         $client->setToken($token);
         $this->tokenRepository->save($token);
         $this->clientRepository->save($client, true);
-        $io->success("Token successfully generated: {$token->getToken()}, refreshToken: {$token->getToken()}, expiresIn: {$token->getExpiresIn()}");
+        $io->success("Token successfully generated: {$token->getToken()}, refreshToken: {$token->getToken()}, expiresIn: {$token->getExpiresAt()->format('Y-m-d H:i:s')}");
 
         return Command::SUCCESS;
     }

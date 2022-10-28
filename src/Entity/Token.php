@@ -21,8 +21,8 @@ class Token
     #[ORM\Column(length: 255)]
     private ?string $refreshToken = null;
 
-    #[ORM\Column]
-    private ?int $expiresIn = null;
+    #[ORM\Column(type: 'datetime')]
+    private ?\DateTime $expiresAt = null;
 
     public function getId(): ?int
     {
@@ -53,14 +53,14 @@ class Token
         return $this;
     }
 
-    public function getExpiresIn(): ?int
+    public function getExpiresAt(): ?\DateTime
     {
-        return $this->expiresIn;
+        return $this->expiresAt;
     }
 
-    public function setExpiresIn(int $expiresIn): self
+    public function setExpiresAt(\DateTime $expiresAt): self
     {
-        $this->expiresIn = $expiresIn;
+        $this->expiresAt = $expiresAt;
 
         return $this;
     }
