@@ -4,56 +4,35 @@ declare(strict_types=1);
 
 namespace App\Providers\Booking\Beds24\Dto\Request;
 
-use App\Providers\Booking\Beds24\Exception\ModifyDtoException;
-
-class GetBookingsDto implements \ArrayAccess
+class GetBookingsDto implements RequestDtoInterface
 {
     public function __construct(
-        public readonly string $filter,
-        public readonly array $propertyId,
-        public readonly array $roomId,
-        public readonly array $id,
-        public readonly array $masterId,
-        public readonly string $arrival,
-        public readonly string $arrivalFrom,
-        public readonly string $arrivalTo,
-        public readonly string $departure,
-        public readonly string $departureFrom,
-        public readonly string $departureTo,
-        public readonly string $bookingTimeFrom,
-        public readonly string $bookingTimeTo,
-        public readonly string $modifiedFrom,
-        public readonly string $modifiedTo,
-        public readonly bool $includeInvoiceItems,
-        public readonly bool $includeInfoItems,
-        public readonly bool $includeInfoItemsConverted,
-        public readonly bool $includeStripeCharges,
-        public readonly array $status,
-        public readonly string $searchString,
-        public readonly int $page,
-    ) {}
-
-    public function offsetExists(mixed $offset): bool
-    {
-        return isset($this->toArray()[$offset]);
+        public readonly ?string $filter = null,
+        public readonly ?array $propertyId = null,
+        public readonly ?array $roomId = null,
+        public readonly ?array $id = null,
+        public readonly ?array $masterId = null,
+        public readonly ?string $arrival = null,
+        public readonly ?string $arrivalFrom = null,
+        public readonly ?string $arrivalTo = null,
+        public readonly ?string $departure = null,
+        public readonly ?string $departureFrom = null,
+        public readonly ?string $departureTo = null,
+        public readonly ?string $bookingTimeFrom = null,
+        public readonly ?string $bookingTimeTo = null,
+        public readonly ?string $modifiedFrom = null,
+        public readonly ?string $modifiedTo = null,
+        public readonly ?bool $includeInvoiceItems = null,
+        public readonly ?bool $includeInfoItems = null,
+        public readonly ?bool $includeInfoItemsConverted = null,
+        public readonly ?bool $includeStripeCharges = null,
+        public readonly ?array $status = null,
+        public readonly ?string $searchString = null,
+        public readonly ?int $page = null,
+    ) {
     }
 
-    public function offsetGet(mixed $offset): mixed
-    {
-        return $this->toArray()[$offset] ?? null;
-    }
-
-    public function offsetSet(mixed $offset, mixed $value): void
-    {
-        throw new ModifyDtoException("Can't modify existed Dto");
-    }
-
-    public function offsetUnset(mixed $offset): void
-    {
-        throw new ModifyDtoException("Can't modify existed Dto");
-    }
-
-    private function toArray(): array
+    public function toArray(): array
     {
         return get_object_vars($this);
     }

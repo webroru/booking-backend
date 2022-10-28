@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers\Booking\Beds24\Client;
 
-use App\Providers\Booking\Beds24\Dto\Request\GetBookingsDto;
-use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationSetupDto;
+use App\Providers\Booking\Beds24\Dto\Response;
+use App\Providers\Booking\Beds24\Dto\Request;
 use App\Providers\Booking\Beds24\Exception\EmptyUrlException;
 use App\Providers\Booking\Beds24\Exception\IncorrectMethodException;
 use App\Providers\Booking\Beds24\Exception\ResponseDtoNotFoundException;
@@ -13,9 +13,9 @@ use GuzzleHttp\ClientInterface;
 use GuzzleHttp\RequestOptions;
 
 /**
- * @method string getBookings(GetBookingsDto $bookingsDto)
- * @method GetAuthenticationSetupDto getAuthenticationSetup()
- * @method string getAuthenticationToken()
+ * @method Response\GetBookingsDto getBookings(Request\GetBookingsDto $bookingsDto)
+ * @method Response\GetAuthenticationSetupDto getAuthenticationSetup()
+ * @method Response\GetAuthenticationTokenDto getAuthenticationToken()
  */
 class Client
 {
@@ -27,7 +27,8 @@ class Client
 
     public function __construct(
         private readonly ClientInterface $client,
-    ) {}
+    ) {
+    }
 
     public function setToken(string $token): void
     {
@@ -79,13 +80,14 @@ class Client
     private function makeOptions(string $method, array $data): array
     {
         $options = [];
-        if (isset($arguments[0])) {
+        if (isset($data[0]) && $data[0] instanceof Request\RequestDtoInterface) {
+            $requestData = $data[0]->toArray();
             if ($method === 'get') {
-                $options[RequestOptions::QUERY] = $data[0];
+                $options[RequestOptions::QUERY] = $requestData;
             }
 
             if ($method === 'post') {
-                $options[RequestOptions::JSON] = $data[0];
+                $options[RequestOptions::JSON] = $requestData;
             }
         }
 
@@ -100,7 +102,7 @@ class Client
 
     private function responseDtoFactory(string $name, array $data): object
     {
-        $namespace = 'App\Providers\Beds24\Dto\Response';
+        $namespace = 'App\Providers\Booking\Beds24\Dto\Response';
         $class = "$namespace\\$name";
         if (!class_exists("$namespace\\$name")) {
             throw new ResponseDtoNotFoundException("$class is not found");
