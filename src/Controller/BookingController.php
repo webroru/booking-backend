@@ -6,6 +6,7 @@ namespace App\Controller;
 
 use App\Providers\Booking\Booking;
 use App\Repository\ClientRepository;
+use App\Repository\TokenRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,8 +16,12 @@ use Symfony\Component\Routing\Annotation\Route;
 class BookingController extends AbstractController
 {
     #[Route('/booking', name: 'app_booking', methods: ['GET'])]
-    public function index(Request $request, Booking $booking, ClientRepository $clientRepository): JsonResponse
-    {
+    public function index(
+        Request $request,
+        Booking $booking,
+        ClientRepository $clientRepository,
+        TokenRepository $tokenRepository,
+    ): JsonResponse {
         $filter = $request->query->all();
         $today = (new \DateTime())->format('Y-m-d');
         $lastDay = (new \DateTime(' 10 days'))->format('Y-m-d');
@@ -36,6 +41,7 @@ class BookingController extends AbstractController
                 ->setToken($tokenDto->token)
                 ->setExpiresAt(new \DateTime("+ $tokenDto->expiresIn seconds"))
             ;
+            $tokenRepository->save($token, true);
         }
         $booking->setToken($token->getToken());
         return $this->json([
