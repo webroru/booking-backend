@@ -10,12 +10,14 @@ use App\Providers\Booking\Beds24\Exception\EmptyUrlException;
 use App\Providers\Booking\Beds24\Exception\IncorrectMethodException;
 use App\Providers\Booking\Beds24\Exception\ResponseDtoNotFoundException;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Psr7\Query;
 use GuzzleHttp\RequestOptions;
 
 /**
  * @method Response\GetBookingsDto getBookings(Request\GetBookingsDto $bookingsDto)
  * @method Response\GetAuthenticationSetupDto getAuthenticationSetup()
  * @method Response\GetAuthenticationTokenDto getAuthenticationToken()
+ * @method Response\GetPropertiesDto getProperties(Request\GetPropertiesDto $getPropertiesDto)
  */
 class Client
 {
@@ -82,8 +84,9 @@ class Client
         $options = [];
         if (isset($data[0]) && $data[0] instanceof Request\RequestDtoInterface) {
             $requestData = $data[0]->toArray();
+            $requestData = array_filter($requestData);
             if ($method === 'get') {
-                $options[RequestOptions::QUERY] = $requestData;
+                $options[RequestOptions::QUERY] = Query::build($requestData);
             }
 
             if ($method === 'post') {

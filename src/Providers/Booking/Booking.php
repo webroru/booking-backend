@@ -5,6 +5,7 @@ namespace App\Providers\Booking;
 use App\Providers\Booking\Beds24\Client\Client;
 use App\Providers\Booking\Beds24\CommonDtoConverter;
 use App\Providers\Booking\Beds24\Dto\Request\GetBookingsDto;
+use App\Providers\Booking\Beds24\Dto\Request\GetPropertiesDto;
 use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationSetupDto;
 use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationTokenDto;
 
@@ -43,7 +44,9 @@ class Booking
         $beds24BookingsDto = $this->client->getBookings($dto);
         $result = [];
         foreach ($beds24BookingsDto->bookings as $booking) {
-            $result[] = $this->converter->convert($booking);
+            $getPropertiesDto = new GetPropertiesDto(id: [$booking->propertyId], roomId: [$booking->roomId]);
+            $beds24Property = $this->client->getProperties($getPropertiesDto);
+            $result[] = $this->converter->convert($booking, $beds24Property->properties[0]);
         }
 
         return $result;
