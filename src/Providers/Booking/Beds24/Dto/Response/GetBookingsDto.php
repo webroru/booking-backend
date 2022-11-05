@@ -9,7 +9,7 @@ use App\Providers\Booking\Beds24\Entity\Booking;
 class GetBookingsDto
 {
     /** @var Booking[] */
-    public array $bookings;
+    public array $bookings = [];
 
     public function __construct(
         public readonly bool $success,
