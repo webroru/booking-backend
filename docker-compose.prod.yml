@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: docker/common/php/Dockerfile
     volumes:
-      - ./:/var/www/code:rw
-    working_dir: /var/www/code
+      - ./:/code:rw
+    working_dir: /code
     ports:
       - "127.0.0.1:9001:9000"
