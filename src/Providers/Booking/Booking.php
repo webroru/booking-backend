@@ -46,10 +46,18 @@ class Booking
         $dto = new GetBookingsDto(...$filter);
         $beds24BookingsDto = $this->client->getBookings($dto);
         $result = [];
-        $getPropertiesDto = $this->buildGetPropertiesDto($beds24BookingsDto->bookings);
+        $bookings = $beds24BookingsDto->bookings;
+        if (isset($filter['surname'])) {
+            $bookings = $this->filterBySurname($bookings, $filter['surname']);
+        }
+
+        if (isset($filter['originalReferer'])) {
+            $bookings = $this->filterByReferer($bookings, $filter['originalReferer']);
+        }
+        $getPropertiesDto = $this->buildGetPropertiesDto($bookings);
         $beds24Properties = $this->client->getProperties($getPropertiesDto);
 
-        foreach ($beds24BookingsDto->bookings as $booking) {
+        foreach ($bookings as $booking) {
             $beds24Property = $this->findPropertyById($beds24Properties->properties, $booking->propertyId);
             $result[] = $this->converter->convert($booking, $beds24Property);
         }
@@ -88,5 +96,39 @@ class Booking
         }
 
         throw new \Exception("Can't found property $id in the provided list");
+    }
+
+    /**
+     * @param Beds24\Entity\Booking[] $bookings
+     * @param string $surname
+     * @return Beds24\Entity\Booking[]
+     */
+    private function filterBySurname(array $bookings, string $surname): array
+    {
+        $result = [];
+        foreach ($bookings as $booking) {
+            if ($booking->lastName === $surname) {
+                $result[] = $booking;
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param Beds24\Entity\Booking[] $bookings
+     * @param string $referer
+     * @return Beds24\Entity\Booking[]
+     */
+    private function filterByReferer(array $bookings, string $referer): array
+    {
+        $result = [];
+        foreach ($bookings as $booking) {
+            if ($booking->apiReference === $referer) {
+                $result[] = $booking;
+            }
+        }
+
+        return $result;
     }
 }

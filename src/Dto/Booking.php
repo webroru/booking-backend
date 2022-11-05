@@ -14,7 +14,7 @@ class Booking
         public readonly int $orderId,
         public readonly string $propertyName,
         public readonly string $room,
-        public readonly string $originalReferrer,
+        public readonly string $originalReferer,
         public readonly int $guestsAmount,
         public readonly int $adults,
         public readonly int $children,

@@ -24,7 +24,7 @@ class CommonDtoConverter
             orderId: $booking->id,
             propertyName: $property->name,
             room: $roomName,
-            originalReferrer: "$booking->referer, booking: $booking->apiReference",
+            originalReferer: "$booking->referer, booking: $booking->apiReference",
             guestsAmount: $booking->numAdult + $booking->numChild,
             adults: (int) $this->getInfoItemValue('adults', $booking->infoItems),
             children: (int) $this->getInfoItemValue('children', $booking->infoItems),
