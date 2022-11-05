@@ -1,0 +1,12 @@
+version: '3.1'
+
+services:
+  php:
+    build:
+      context: .
+      dockerfile: docker/common/php/Dockerfile
+    volumes:
+      - ./:/var/www/code:rw
+    working_dir: /var/www/code
+    ports:
+      - "127.0.0.1:9001:9000"
