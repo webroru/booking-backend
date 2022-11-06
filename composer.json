@@ -13,6 +13,7 @@
         "friendsofsymfony/rest-bundle": "^3.4",
         "guzzlehttp/guzzle": "^7.5",
         "jms/serializer-bundle": "^5.0",
+        "nelmio/cors-bundle": "^2.2",
         "symfony/console": "6.1.*",
         "symfony/dotenv": "6.1.*",
         "symfony/flex": "^2",
