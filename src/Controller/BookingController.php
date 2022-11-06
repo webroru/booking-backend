@@ -23,8 +23,8 @@ class BookingController extends AbstractController
         TokenRepository $tokenRepository,
     ): JsonResponse {
         $filter = $request->query->all();
-        $today = (new \DateTime())->format('Y-m-d');
-        $lastDay = (new \DateTime(' 10 days'))->format('Y-m-d');
+        $today = (new \DateTime('- 10 days'))->format('Y-m-d');
+        $lastDay = (new \DateTime('+ 10 days'))->format('Y-m-d');
         $filter['arrivalFrom'] = $today;
         $filter['arrivalTo'] = $lastDay;
         $filter['includeInvoiceItems'] = true;
