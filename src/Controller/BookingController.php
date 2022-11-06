@@ -33,6 +33,9 @@ class BookingController extends AbstractController
         $domain = parse_url($origin, PHP_URL_HOST);
 
         $client = $clientRepository->findOneBy(['domain' => $domain]);
+        if (!$client) {
+            throw new \Exception("Request from $domain is not allowed");
+        }
         $now = new \DateTime();
         $token = $client->getToken();
         if ($token->getExpiresAt() <= $now) {

@@ -43,6 +43,9 @@ class Beds24GetTokenCommand extends Command
         $clientName = $input->getArgument('client');
 
         $client = $this->clientRepository->findOneBy(['name' => $clientName]);
+        if (!$client) {
+            throw new \Exception("Client $clientName is not found");
+        }
         $dto = $this->booking->fetchToken($code);
         $token = ($client->getToken() ?? (new Token()))
             ->setToken($dto->token)
