@@ -26,9 +26,7 @@ services:
       - php
 
   php:
-    build:
-      context: .
-      dockerfile: docker/dev/php/Dockerfile
+    build: docker/dev/php
     volumes:
       - ./:/var/www/code:rw
     working_dir: /var/www/code
@@ -44,9 +42,7 @@ services:
       - ~/.ssh:/root/.ssh
 
   cron:
-    build:
-      context: docker
-      dockerfile: dev/php/Dockerfile
+    build: docker/dev/php
     working_dir: /var/www/code
     command: [ "crond", "-f", "-d", "8" ]
     volumes:
@@ -65,9 +61,7 @@ services:
 
   worker:
     working_dir: /var/www/code
-    build:
-      context: docker
-      dockerfile: dev/php/Dockerfile
+    build: docker/dev/php
     command: [ "php", "bin/console", "messenger:consume", "async", "-vv" ]
     restart: unless-stopped
     volumes:

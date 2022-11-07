@@ -33,12 +33,13 @@ class Property
         public readonly array $cardSettings,
         public readonly array $groupKeywords,
         public readonly array $oneTimeVouchers,
-        public readonly array $discountVoucherCodes,
+        public readonly array $discountVouchers,
         public readonly array $featureCodes,
         public readonly ?array $roomTypes = null,
         public readonly ?array $offers = null,
         public readonly ?array $texts = null,
         public readonly ?int $sellPriority = null,
+        ...$params,
     ) {
     }
 }

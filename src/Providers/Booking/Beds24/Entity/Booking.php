@@ -78,6 +78,7 @@ class Booking
         public readonly array $invoiceItems,
         public readonly ?array $guests = null,
         public readonly ?string $cancelUntil = null,
+        ...$params,
     ) {
     }
 }

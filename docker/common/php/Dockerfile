@@ -22,6 +22,8 @@ RUN docker-php-ext-install \
 RUN apk del .build-deps && \
     rm -rf /var/cache/apk/*
 
+ADD custom.ini /usr/local/etc/php/conf.d/custom.ini
+
 RUN mkdir -p /code/var/cache && \
     mkdir -p /code/var/log && \
     chown -R www-data. /code/var
