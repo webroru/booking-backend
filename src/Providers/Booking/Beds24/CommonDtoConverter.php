@@ -98,10 +98,13 @@ class CommonDtoConverter
 
     public function getDebt(array $invoiceItems): float
     {
-        return array_reduce(
+        $debt = array_reduce(
             $invoiceItems,
             fn (float $carry, array $item) => $carry + $item['lineTotal'],
             0.0,
         );
+
+        $debt = round($debt, 2);
+        return $debt === -0.0 ? 0 : $debt;
     }
 }
