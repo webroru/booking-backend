@@ -18,6 +18,7 @@ use GuzzleHttp\RequestOptions;
  * @method Response\GetAuthenticationSetupDto getAuthenticationSetup()
  * @method Response\GetAuthenticationTokenDto getAuthenticationToken()
  * @method Response\GetPropertiesDto getProperties(Request\GetPropertiesDto $getPropertiesDto)
+ * @method Response\PostBookingsDto postBookings(Request\PostBookingsDto $postBookingsDto)
  */
 class Client
 {

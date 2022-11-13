@@ -8,8 +8,10 @@ use App\Providers\Booking\Beds24\Client\Client;
 use App\Providers\Booking\Beds24\CommonDtoConverter;
 use App\Providers\Booking\Beds24\Dto\Request\GetBookingsDto;
 use App\Providers\Booking\Beds24\Dto\Request\GetPropertiesDto;
+use App\Providers\Booking\Beds24\Dto\Request\PostBookingsDto;
 use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationSetupDto;
 use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationTokenDto;
+use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\Property;
 
 class Booking
@@ -63,6 +65,35 @@ class Booking
         }
 
         return $result;
+    }
+
+    public function acceptRule(int $bookingId, bool $isRuleAccepted): void
+    {
+        $dto = new GetBookingsDto(id: [$bookingId], includeInfoItems: true);
+        $beds24BookingsDto = $this->client->getBookings($dto);
+        if (!isset($beds24BookingsDto->bookings[0])) {
+            throw new \Exception("Booking id $bookingId is not found");
+        }
+        $booking = $beds24BookingsDto->bookings[0];
+        $infoItem = $this->findInfoItemByCode($booking->infoItems, 'isRuleAccepted');
+        if (!$infoItem) {
+            $infoItem = new InfoItem(code: 'isRuleAccepted', text: (string) $isRuleAccepted);
+            $booking->infoItems[] = $infoItem;
+        } else {
+            $infoItem->text = (string) $isRuleAccepted;
+        }
+        $postBookingsDto = new PostBookingsDto([$booking]);
+        $postBookingsResponseDto = $this->client->postBookings($postBookingsDto);
+        foreach ($postBookingsResponseDto->result as $item) {
+            if ($item['success'] !== true) {
+                $message = "Can not update Booking {$booking->id}.";
+                if ($item['errors']) {
+                    $error = implode(', ', $item['errors']);
+                    $message .= " Details: $error";
+                }
+                throw new \Exception($message);
+            }
+        }
     }
 
     /**
@@ -130,5 +161,19 @@ class Booking
         }
 
         return $result;
+    }
+
+    /**
+     * @param InfoItem[] $infoItems
+     */
+    private function findInfoItemByCode(array $infoItems, string $code): ?InfoItem
+    {
+        foreach ($infoItems as $infoItem) {
+            if ($infoItem->code === $code) {
+                return $infoItem;
+            }
+        }
+
+        return null;
     }
 }

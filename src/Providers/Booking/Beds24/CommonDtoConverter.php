@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Booking\Beds24;
 
 use App\Dto\Booking;
+use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\Property;
 
 class CommonDtoConverter
@@ -15,6 +16,8 @@ class CommonDtoConverter
             ? $this->getRoomName($property->roomTypes, $booking->roomId)
             . ' Room Number: ' . $this->getUnitName($property->roomTypes, $booking->unitId)
             : 'Unknown';
+
+        $isRuleAccepted = $this->getInfoItemValue('isRuleAccepted', $booking->infoItems);
 
         return new Booking(
             fullName: "$booking->firstName $booking->lastName",
@@ -36,17 +39,22 @@ class CommonDtoConverter
             capacity: $property->roomTypes ? $this->getMaxPeople($property->roomTypes, $booking->roomId) : 0,
             overmax: $this->getInfoItemValue('overmax', $booking->infoItems),
             extraGuests: $this->getInfoItemValue('extraGuests', $booking->infoItems),
-            isRuleAccepted: $this->getInfoItemValue('isRuleAccepted', $booking->infoItems),
+            isRuleAccepted: $isRuleAccepted === '1',
             checkIn: $this->getInfoItemValue('checkIn', $booking->infoItems),
             status: $this->getInfoItemValue('status', $booking->infoItems),
         );
     }
 
-    private function getInfoItemValue(string $name, array $infoItems): mixed
+    /**
+     * @param string $name
+     * @param InfoItem[] $infoItems
+     * @return ?string
+     */
+    private function getInfoItemValue(string $name, array $infoItems): ?string
     {
         foreach ($infoItems as $infoItem) {
-            if ($infoItem['code'] === $name) {
-                return $infoItem['text'];
+            if ($infoItem->code === $name) {
+                return $infoItem->text;
             }
         }
 

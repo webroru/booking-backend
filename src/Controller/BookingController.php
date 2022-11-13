@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Token;
 use App\Providers\Booking\Booking;
 use App\Repository\ClientRepository;
 use App\Repository\TokenRepository;
@@ -29,6 +30,39 @@ class BookingController extends AbstractController
         $filter['arrivalTo'] = $lastDay;
         $filter['includeInvoiceItems'] = true;
         $filter['includeInfoItems'] = true;
+
+        $token = $this->getToken($request, $booking, $clientRepository, $tokenRepository);
+
+        $booking->setToken($token->getToken());
+        return $this->json([
+            'data' => $booking->findBy($filter),
+        ]);
+    }
+
+    #[Route('/acceptRule', methods: ['POST'])]
+    public function acceptRule(
+        Request $request,
+        Booking $booking,
+        ClientRepository $clientRepository,
+        TokenRepository $tokenRepository,
+    ): JsonResponse {
+        $orderId = $request->get('orderId');
+        $isRuleAccepted = $request->get('isRuleAccepted');
+        $token = $this->getToken($request, $booking, $clientRepository, $tokenRepository);
+        $booking->setToken($token->getToken());
+        $booking->acceptRule($orderId, $isRuleAccepted);
+
+        return $this->json([
+            'data' => 'ok',
+        ]);
+    }
+
+    private function getToken(
+        Request $request,
+        Booking $booking,
+        ClientRepository $clientRepository,
+        TokenRepository $tokenRepository,
+    ): Token {
         $origin = $request->headers->get('origin', 'http://localhost');
         $domain = parse_url($origin, PHP_URL_HOST);
 
@@ -36,9 +70,13 @@ class BookingController extends AbstractController
         if (!$client) {
             throw new \Exception("Request from $domain is not allowed");
         }
-        $now = new \DateTime();
         $token = $client->getToken();
-        if ($token->getExpiresAt() <= $now) {
+
+        if (!$token) {
+            throw new \Exception("Token in not found for $domain");
+        }
+
+        if ($token->getExpiresAt() <= (new \DateTime())) {
             $tokenDto = $booking->refreshToken($token->getRefreshToken());
             $token
                 ->setToken($tokenDto->token)
@@ -46,9 +84,7 @@ class BookingController extends AbstractController
             ;
             $tokenRepository->save($token, true);
         }
-        $booking->setToken($token->getToken());
-        return $this->json([
-            'data' => $booking->findBy($filter),
-        ]);
+
+        return $token;
     }
 }

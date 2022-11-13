@@ -85,6 +85,9 @@
             "phpcs.xml.dist"
         ]
     },
+    "symfony-bundles/json-request-bundle": {
+        "version": "4.1.2"
+    },
     "symfony/console": {
         "version": "6.1",
         "recipe": {
