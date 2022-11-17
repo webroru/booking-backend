@@ -10,7 +10,7 @@ class Property extends AbstractEntity
         public int $id,
         public string $name,
         public string $propertyType,
-        public int $ownerId,
+        public array $account,
         public string $currency,
         public string $address,
         public string $city,
