@@ -138,7 +138,7 @@ class Booking
     {
         $result = [];
         foreach ($bookings as $booking) {
-            if ($booking->lastName === $surname) {
+            if (mb_strtolower($booking->lastName) === mb_strtolower($surname)) {
                 $result[] = $booking;
             }
         }
