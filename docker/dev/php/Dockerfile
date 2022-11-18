@@ -29,7 +29,9 @@ ADD custom.ini /usr/local/etc/php/conf.d/custom.ini
 
 RUN mkdir -p /code/var/cache && \
     mkdir -p /code/var/log && \
-    chown -R www-data. /code/var
+    mkdir -p /code/public/uploads && \
+    chown -R www-data. /code/var && \
+    chown www-data. /code/public/uploads
 
 # Install and enable php extensions
 RUN docker-php-ext-enable xdebug

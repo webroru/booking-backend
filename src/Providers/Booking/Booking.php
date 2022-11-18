@@ -39,6 +39,24 @@ class Booking
         return $this->client->getAuthenticationToken();
     }
 
+    public function findById(int $id): \App\Dto\Booking
+    {
+        $today = (new \DateTime('- 10 days'))->format('Y-m-d');
+        $lastDay = (new \DateTime('+ 10 days'))->format('Y-m-d');
+        $filter['arrivalFrom'] = $today;
+        $filter['arrivalTo'] = $lastDay;
+        $filter['includeInvoiceItems'] = true;
+        $filter['includeInfoItems'] = true;
+        $filter['id'] = [$id];
+        $bookings = $this->findBy($filter);
+
+        if (count($bookings) === 0) {
+            throw new \Exception("Booking id $id i not found");
+        }
+
+        return $bookings[0];
+    }
+
     /**
      * @param array $filter
      * @return \App\Dto\Booking[]
@@ -81,6 +99,35 @@ class Booking
             $booking->infoItems[] = $infoItem;
         } else {
             $infoItem->text = (string) $isRuleAccepted;
+        }
+        $postBookingsDto = new PostBookingsDto([$booking]);
+        $postBookingsResponseDto = $this->client->postBookings($postBookingsDto);
+        foreach ($postBookingsResponseDto->result as $item) {
+            if ($item['success'] !== true) {
+                $message = "Can not update Booking {$booking->id}.";
+                if ($item['errors']) {
+                    $error = implode(', ', $item['errors']);
+                    $message .= " Details: $error";
+                }
+                throw new \Exception($message);
+            }
+        }
+    }
+
+    public function addPhoto(int $bookingId, string $photoUrl): void
+    {
+        $dto = new GetBookingsDto(id: [$bookingId], includeInfoItems: true);
+        $beds24BookingsDto = $this->client->getBookings($dto);
+        if (!isset($beds24BookingsDto->bookings[0])) {
+            throw new \Exception("Booking id $bookingId is not found");
+        }
+        $booking = $beds24BookingsDto->bookings[0];
+        $infoItem = $this->findInfoItemByCode($booking->infoItems, 'photos');
+        if (!$infoItem) {
+            $infoItem = new InfoItem(code: 'photos', text: $photoUrl . PHP_EOL);
+            $booking->infoItems[] = $infoItem;
+        } else {
+            $infoItem->text .= $photoUrl . PHP_EOL;
         }
         $postBookingsDto = new PostBookingsDto([$booking]);
         $postBookingsResponseDto = $this->client->postBookings($postBookingsDto);
