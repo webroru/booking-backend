@@ -6,17 +6,20 @@ namespace App\Controller;
 
 use App\Entity\Token;
 use App\Providers\Booking\Booking;
+use App\Providers\PhotoStorage\Local\Local;
 use App\Repository\ClientRepository;
 use App\Repository\TokenRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/api', name: 'api_')]
+#[Route('/api', name: 'api_bookg')]
 class BookingController extends AbstractController
 {
-    #[Route('/booking', name: 'app_booking', methods: ['GET'])]
+    #[Route('/booking', methods: ['GET'])]
     public function index(
         Request $request,
         Booking $booking,
@@ -57,6 +60,38 @@ class BookingController extends AbstractController
         ]);
     }
 
+    #[Route('/booking/{id<\d+>}/photo', methods: ['POST'])]
+    public function uploadPhoto(
+        Request $request,
+        int $id,
+        Booking $booking,
+        ClientRepository $clientRepository,
+        TokenRepository $tokenRepository,
+        Local $photoStorage,
+    ): JsonResponse {
+        $token = $this->getToken($request, $booking, $clientRepository, $tokenRepository);
+        $booking->setToken($token->getToken());
+        $bookingDto = $booking->findById($id);
+        /** @var UploadedFile $photo */
+        $photo = $request->files->get('photo');
+
+        if (!$photo) {
+            throw new FileException("Field 'photo' is empty");
+        }
+
+        if (!$this->isImage($photo)) {
+            throw new FileException("The file is not an Image");
+        }
+
+        if (!$photo->getExtension()) {
+            $photo = $photo->move($photo->getPath(), $photo->getBasename() . '.' . $photo->guessExtension());
+        }
+
+        return $this->json([
+            'data' => $photoStorage->put($bookingDto, $photo->getRealPath()),
+        ]);
+    }
+
     private function getToken(
         Request $request,
         Booking $booking,
@@ -86,5 +121,10 @@ class BookingController extends AbstractController
         }
 
         return $token;
+    }
+
+    private function isImage(UploadedFile $file): bool
+    {
+        return str_contains($file->getMimeType(), 'image');
     }
 }

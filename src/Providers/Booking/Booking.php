@@ -39,6 +39,24 @@ class Booking
         return $this->client->getAuthenticationToken();
     }
 
+    public function findById(int $id): \App\Dto\Booking
+    {
+        $today = (new \DateTime('- 10 days'))->format('Y-m-d');
+        $lastDay = (new \DateTime('+ 10 days'))->format('Y-m-d');
+        $filter['arrivalFrom'] = $today;
+        $filter['arrivalTo'] = $lastDay;
+        $filter['includeInvoiceItems'] = true;
+        $filter['includeInfoItems'] = true;
+        $filter['id'] = [$id];
+        $bookings = $this->findBy($filter);
+
+        if (count($bookings) === 0) {
+            throw new \Exception("Booking id $id i not found");
+        }
+
+        return $bookings[0];
+    }
+
     /**
      * @param array $filter
      * @return \App\Dto\Booking[]
