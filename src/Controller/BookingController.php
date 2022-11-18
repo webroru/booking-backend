@@ -87,8 +87,11 @@ class BookingController extends AbstractController
             $photo = $photo->move($photo->getPath(), $photo->getBasename() . '.' . $photo->guessExtension());
         }
 
+        $photoUrl = $photoStorage->put($bookingDto, $photo->getRealPath());
+        $booking->addPhoto($id, $photoUrl);
+
         return $this->json([
-            'data' => $photoStorage->put($bookingDto, $photo->getRealPath()),
+            'data' => $photoUrl,
         ]);
     }
 
