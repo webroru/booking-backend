@@ -118,18 +118,40 @@ class Booking
         $this->update($postBookingsDto);
     }
 
+    public function removePhoto(int $id, string $photoUrl): void
+    {
+        $dto = new GetBookingsDto(id: [$id], includeInfoItems: true);
+        $beds24BookingsDto = $this->client->getBookings($dto);
+        if (!isset($beds24BookingsDto->bookings[0])) {
+            throw new \Exception("Booking id $id is not found");
+        }
+        $booking = $beds24BookingsDto->bookings[0];
+        $infoItem = $this->findInfoItemByValue($booking->infoItems, $photoUrl);
+        if (!$infoItem) {
+            return;
+        }
+        $infoItem->text = null;
+        $infoItem->code = null;
+        $infoItem->bookingId = null;
+        $postBookingsDto = new PostBookingsDto([$booking]);
+        $this->update($postBookingsDto);
+    }
+
     public function update(PostBookingsDto $postBookingsDto): void
     {
         $postBookingsResponseDto = $this->client->postBookings($postBookingsDto);
         foreach ($postBookingsResponseDto->result as $item) {
-            if ($item['success'] !== true) {
-                $message = "Can not update Booking";
-                if ($item['errors']) {
-                    $error = implode(', ', $item['errors']);
-                    $message .= " Details: $error";
-                }
-                throw new \Exception($message);
+            if ($item['success'] === true) {
+                continue;
             }
+
+            $message = "Can not update Booking";
+            if ($item['errors']) {
+                foreach ($item['errors'] as $error) {
+                    $message .= " Field {$error['field']}: {$error['message']}";
+                }
+            }
+            throw new \Exception($message);
         }
     }
 
@@ -207,6 +229,20 @@ class Booking
     {
         foreach ($infoItems as $infoItem) {
             if ($infoItem->code === $code) {
+                return $infoItem;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param InfoItem[] $infoItems
+     */
+    private function findInfoItemByValue(array $infoItems, string $value): ?InfoItem
+    {
+        foreach ($infoItems as $infoItem) {
+            if ($infoItem->text === $value) {
                 return $infoItem;
             }
         }

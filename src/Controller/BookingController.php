@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Photo;
 use App\Entity\Token;
 use App\Providers\Booking\Booking;
 use App\Providers\PhotoStorage\Local\Local;
@@ -16,6 +15,7 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/api', name: 'api_bookg')]
@@ -69,7 +69,6 @@ class BookingController extends AbstractController
         Booking $booking,
         ClientRepository $clientRepository,
         TokenRepository $tokenRepository,
-        PhotoRepository $photoRepository,
         Local $photoStorage,
     ): JsonResponse {
         $token = $this->getToken($request, $booking, $clientRepository, $tokenRepository);
@@ -90,15 +89,38 @@ class BookingController extends AbstractController
             $file = $file->move($file->getPath(), $file->getBasename() . '.' . $file->guessExtension());
         }
 
-        $photoUrl = $photoStorage->put($bookingDto, $file->getRealPath());
-        $photo = (new Photo())
-            ->setUrl($photoUrl);
-
-        $photoRepository->save($photo, true);
-        $booking->addPhoto($id, $photoUrl);
+        $photo = $photoStorage->put($bookingDto, $file->getRealPath());
+        $booking->addPhoto($id, $photo->getUrl());
 
         return $this->json([
             'data' => $photo->getId(),
+        ]);
+    }
+
+    #[Route('/booking/{id<\d+>}/photo/{photoId<\d+>}', methods: ['DELETE'])]
+    public function deletePhoto(
+        Request $request,
+        int $id,
+        int $photoId,
+        PhotoRepository $photoRepository,
+        Booking $booking,
+        ClientRepository $clientRepository,
+        TokenRepository $tokenRepository,
+        Local $photoStorage,
+    ): JsonResponse {
+        $photo = $photoRepository->find($photoId);
+        if (!$photo) {
+            throw new NotFoundHttpException("Photo $photoId is not found");
+        }
+
+        $token = $this->getToken($request, $booking, $clientRepository, $tokenRepository);
+        $booking->setToken($token->getToken());
+
+        $photoStorage->remove($photo);
+        $booking->removePhoto($id, $photo->getUrl());
+
+        return $this->json([
+            'data' => 'ok',
         ]);
     }
 

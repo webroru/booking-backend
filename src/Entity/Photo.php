@@ -16,6 +16,9 @@ class Photo
     #[ORM\Column(length: 512)]
     private ?string $url = null;
 
+    #[ORM\Column(length: 512)]
+    private ?string $path = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -29,6 +32,18 @@ class Photo
     public function setUrl(string $url): self
     {
         $this->url = $url;
+
+        return $this;
+    }
+
+    public function getPath(): ?string
+    {
+        return $this->path;
+    }
+
+    public function setPath(?string $path): self
+    {
+        $this->path = $path;
 
         return $this;
     }
