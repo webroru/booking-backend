@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Entity\Photo;
 use App\Entity\Token;
 use App\Providers\Booking\Booking;
 use App\Providers\PhotoStorage\Local\Local;
 use App\Repository\ClientRepository;
+use App\Repository\PhotoRepository;
 use App\Repository\TokenRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -67,31 +69,36 @@ class BookingController extends AbstractController
         Booking $booking,
         ClientRepository $clientRepository,
         TokenRepository $tokenRepository,
+        PhotoRepository $photoRepository,
         Local $photoStorage,
     ): JsonResponse {
         $token = $this->getToken($request, $booking, $clientRepository, $tokenRepository);
         $booking->setToken($token->getToken());
         $bookingDto = $booking->findById($id);
-        /** @var UploadedFile $photo */
-        $photo = $request->files->get('photo');
+        /** @var UploadedFile $file */
+        $file = $request->files->get('photo');
 
-        if (!$photo) {
+        if (!$file) {
             throw new FileException("Field 'photo' is empty");
         }
 
-        if (!$this->isImage($photo)) {
+        if (!$this->isImage($file)) {
             throw new FileException("The file is not an Image");
         }
 
-        if (!$photo->getExtension()) {
-            $photo = $photo->move($photo->getPath(), $photo->getBasename() . '.' . $photo->guessExtension());
+        if (!$file->getExtension()) {
+            $file = $file->move($file->getPath(), $file->getBasename() . '.' . $file->guessExtension());
         }
 
-        $photoUrl = $photoStorage->put($bookingDto, $photo->getRealPath());
+        $photoUrl = $photoStorage->put($bookingDto, $file->getRealPath());
+        $photo = (new Photo())
+            ->setUrl($photoUrl);
+
+        $photoRepository->save($photo, true);
         $booking->addPhoto($id, $photoUrl);
 
         return $this->json([
-            'data' => $photoUrl,
+            'data' => $photo->getId(),
         ]);
     }
 
