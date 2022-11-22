@@ -16,5 +16,4 @@ services:
     working_dir: /code
     command: [ "crond", "-f", "-d", "8" ]
     volumes:
-      - ./docker/dev/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf
       - ./:/code:rw
