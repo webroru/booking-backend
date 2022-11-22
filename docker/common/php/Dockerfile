@@ -24,7 +24,7 @@ RUN apk del .build-deps && \
 
 ADD custom.ini /usr/local/etc/php/conf.d/custom.ini
 
-ADD docker/common/php/schedule-run /etc/crontabs/schedule-run
+ADD schedule-run /etc/crontabs/schedule-run
 RUN chmod 0644 /etc/crontabs/schedule-run && chmod +x /etc/crontabs/schedule-run
 RUN crontab -u www-data /etc/crontabs/schedule-run
 
