@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Command;
 
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -29,7 +31,7 @@ class DeleteOldPhotosCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $io = new SymfonyStyle($input, $output);
-        $currantDay = (new \DateTime('+2 days'))->format('Y-m-d');
+        $startDate = (new \DateTime('+2 days'))->format('Y-m-d');
         $photosDirectory = $this->params->get('photos_directory');
 
         if (!$photosDirectory) {
@@ -37,8 +39,8 @@ class DeleteOldPhotosCommand extends Command
             return Command::FAILURE;
         }
 
-        $io->success("Photos for $currantDay will be removed");
-        $this->filesystem->remove("$photosDirectory/$currantDay");
+        $io->success("Photos for $startDate will be removed");
+        $this->filesystem->remove("$photosDirectory/$startDate");
         $io->success('All photos have been removed.');
 
         return Command::SUCCESS;
