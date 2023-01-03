@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Command;
 
 use App\Entity\Token;
-use App\Providers\Booking\Booking;
+use App\Providers\Booking\BookingInterface;
 use App\Repository\ClientRepository;
 use App\Repository\TokenRepository;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -22,7 +22,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
 class Beds24GetTokenCommand extends Command
 {
     public function __construct(
-        private readonly Booking $booking,
+        private readonly BookingInterface $booking,
         private readonly ClientRepository $clientRepository,
         private readonly TokenRepository $tokenRepository,
         string $name = null,

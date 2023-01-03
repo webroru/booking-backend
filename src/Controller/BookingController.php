@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Token;
-use App\Providers\Booking\Booking;
+use App\Providers\Booking\BookingInterface;
 use App\Providers\PhotoStorage\Local\Local;
 use App\Repository\ClientRepository;
 use App\Repository\PhotoRepository;
@@ -24,7 +24,7 @@ class BookingController extends AbstractController
     #[Route('/booking', methods: ['GET'])]
     public function index(
         Request $request,
-        Booking $booking,
+        BookingInterface $booking,
         ClientRepository $clientRepository,
         TokenRepository $tokenRepository,
     ): JsonResponse {

@@ -2,19 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Providers\Booking;
+namespace App\Providers\Booking\Beds24;
 
-use App\Providers\Booking\Beds24\Client\Client;
-use App\Providers\Booking\Beds24\CommonDtoConverter;
-use App\Providers\Booking\Beds24\Dto\Request\GetBookingsDto;
-use App\Providers\Booking\Beds24\Dto\Request\GetPropertiesDto;
-use App\Providers\Booking\Beds24\Dto\Request\PostBookingsDto;
-use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationSetupDto;
-use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationTokenDto;
-use App\Providers\Booking\Beds24\Entity\InfoItem;
-use App\Providers\Booking\Beds24\Entity\Property;
+use App\Providers\Booking\BookingInterface;
+use Beds24\Client\Client;
+use Beds24\CommonDtoConverter;
+use Beds24\Dto\Request\GetBookingsDto;
+use Beds24\Dto\Request\GetPropertiesDto;
+use Beds24\Dto\Request\PostBookingsDto;
+use Beds24\Dto\Response\GetAuthenticationSetupDto;
+use Beds24\Dto\Response\GetAuthenticationTokenDto;
+use Beds24\Entity\InfoItem;
+use Beds24\Entity\Property;
 
-class Booking
+class Booking implements BookingInterface
 {
     public function __construct(
         private readonly Client $client,

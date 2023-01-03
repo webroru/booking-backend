@@ -23,6 +23,7 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    App\Providers\Booking\BookingInterface: '@App\Providers\Booking\Beds24\Booking'
     App\Providers\PhotoStorage\PhotoStorageInterface: '@App\Providers\PhotoStorage\Local\Local'
     App\Providers\PhotoStorage\Local\Local:
         arguments:
