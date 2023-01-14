@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/api', name: 'api_bookg')]
+#[Route('/api', name: 'api_booking')]
 class BookingController extends AbstractController
 {
     #[Route('/booking', methods: ['GET'])]
@@ -47,7 +47,7 @@ class BookingController extends AbstractController
     #[Route('/acceptRule', methods: ['POST'])]
     public function acceptRule(
         Request $request,
-        Booking $booking,
+        BookingInterface $booking,
         ClientRepository $clientRepository,
         TokenRepository $tokenRepository,
     ): JsonResponse {
@@ -66,7 +66,7 @@ class BookingController extends AbstractController
     public function uploadPhoto(
         Request $request,
         int $id,
-        Booking $booking,
+        BookingInterface $booking,
         ClientRepository $clientRepository,
         TokenRepository $tokenRepository,
         Local $photoStorage,
@@ -103,7 +103,7 @@ class BookingController extends AbstractController
         int $id,
         int $photoId,
         PhotoRepository $photoRepository,
-        Booking $booking,
+        BookingInterface $booking,
         ClientRepository $clientRepository,
         TokenRepository $tokenRepository,
         Local $photoStorage,
@@ -126,7 +126,7 @@ class BookingController extends AbstractController
 
     private function getToken(
         Request $request,
-        Booking $booking,
+        BookingInterface $booking,
         ClientRepository $clientRepository,
         TokenRepository $tokenRepository,
     ): Token {
