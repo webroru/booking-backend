@@ -17,6 +17,7 @@ class GetBookingsDto
         public readonly ?int $count = null,
         public readonly ?array $pages = null,
         ?array $data = null,
+        ...$params,
     ) {
         foreach ($data as $item) {
             $this->bookings[] = new Booking(...$item);
