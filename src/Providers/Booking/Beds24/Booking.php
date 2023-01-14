@@ -4,16 +4,15 @@ declare(strict_types=1);
 
 namespace App\Providers\Booking\Beds24;
 
+use App\Providers\Booking\Beds24\Client\Client;
+use App\Providers\Booking\Beds24\Dto\Request\GetBookingsDto;
+use App\Providers\Booking\Beds24\Dto\Request\GetPropertiesDto;
+use App\Providers\Booking\Beds24\Dto\Request\PostBookingsDto;
+use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationSetupDto;
+use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationTokenDto;
+use App\Providers\Booking\Beds24\Entity\InfoItem;
+use App\Providers\Booking\Beds24\Entity\Property;
 use App\Providers\Booking\BookingInterface;
-use Beds24\Client\Client;
-use Beds24\CommonDtoConverter;
-use Beds24\Dto\Request\GetBookingsDto;
-use Beds24\Dto\Request\GetPropertiesDto;
-use Beds24\Dto\Request\PostBookingsDto;
-use Beds24\Dto\Response\GetAuthenticationSetupDto;
-use Beds24\Dto\Response\GetAuthenticationTokenDto;
-use Beds24\Entity\InfoItem;
-use Beds24\Entity\Property;
 
 class Booking implements BookingInterface
 {
@@ -157,7 +156,7 @@ class Booking implements BookingInterface
     }
 
     /**
-     * @param Beds24\Entity\Booking[] $bookings
+     * @param Entity\Booking[] $bookings
      * @return GetPropertiesDto
      */
     private function buildGetPropertiesDto(array $bookings): GetPropertiesDto
@@ -190,9 +189,9 @@ class Booking implements BookingInterface
     }
 
     /**
-     * @param Beds24\Entity\Booking[] $bookings
+     * @param Entity\Booking[] $bookings
      * @param string $surname
-     * @return Beds24\Entity\Booking[]
+     * @return Entity\Booking[]
      */
     private function filterBySurname(array $bookings, string $surname): array
     {
@@ -207,9 +206,9 @@ class Booking implements BookingInterface
     }
 
     /**
-     * @param Beds24\Entity\Booking[] $bookings
+     * @param Entity\Booking[] $bookings
      * @param string $referer
-     * @return Beds24\Entity\Booking[]
+     * @return Entity\Booking[]
      */
     private function filterByReferer(array $bookings, string $referer): array
     {

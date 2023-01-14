@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Providers\Booking;
 
+use App\Providers\Booking\Beds24\Dto\Request\PostBookingsDto;
+
 interface BookingInterface
 {
     public function setToken(string $token): void;
