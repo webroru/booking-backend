@@ -13,13 +13,14 @@ class Payment implements PaymentInterface
     {
     }
 
-    public function create(float $amount, string $currency = 'eur'): string
+    public function create(float $amount, int $bookingId, string $currency = 'eur'): string
     {
         $intent = $this->client->paymentIntents->create(
             [
                 'amount' => $amount,
                 'currency' => $currency,
                 'automatic_payment_methods' => ['enabled' => true],
+                'metadata' => ['bookingId' => $bookingId],
             ]
         );
 

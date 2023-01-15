@@ -32,7 +32,7 @@ class PaymentController extends AbstractController
         $booking->setToken($token->getToken());
         $bookingDto = $booking->findById($bookingId);
         $debt = $bookingDto->debt;
-        $token = $payment->create($debt * 100);
+        $token = $payment->create($debt * 100, $bookingId);
 
         return $this->json([
             'token' => $token,
