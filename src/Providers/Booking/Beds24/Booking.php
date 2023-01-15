@@ -155,6 +155,19 @@ class Booking implements BookingInterface
         }
     }
 
+    public function addInvoice(int $id, string $type, int $amount): void
+    {
+        $invoiceItems = [
+            [
+                'type' => $type,
+                'amount' => $amount,
+            ]
+        ];
+        $booking = new Entity\Booking(id: $id, invoiceItems: $invoiceItems);
+        $postBookingsDto = new PostBookingsDto([$booking]);
+        $this->update($postBookingsDto);
+    }
+
     /**
      * @param Entity\Booking[] $bookings
      * @return GetPropertiesDto
