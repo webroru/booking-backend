@@ -6,6 +6,8 @@
 parameters:
     photos_directory: '%kernel.project_dir%/public/uploads'
     photos_url: '%env(SITE_URL)%/uploads'
+    stripe_key: '%env(STRIPE_KEY)%'
+    endpoint_secret: '%env(ENDPOINT_SECRET)%'
 
 services:
     # default configuration for services in *this* file
@@ -15,8 +17,6 @@ services:
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name
-    GuzzleHttp\ClientInterface: '@GuzzleHttp\Client'
-    GuzzleHttp\Client: ~
     App\:
         resource: '../src/'
         exclude:
@@ -24,11 +24,17 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
     App\Providers\Booking\BookingInterface: '@App\Providers\Booking\Beds24\Booking'
+    App\Providers\Payment\PaymentInterface: '@App\Providers\Payment\Stripe\Payment' 
     App\Providers\PhotoStorage\PhotoStorageInterface: '@App\Providers\PhotoStorage\Local\Local'
     App\Providers\PhotoStorage\Local\Local:
         arguments:
             $targetDirectory: '%photos_directory%'
             $photosUrl: '%photos_url%'
+    GuzzleHttp\ClientInterface: '@GuzzleHttp\Client'
+    GuzzleHttp\Client: ~
+    Stripe\StripeClient:
+        arguments:
+            $config: '%stripe_key%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
