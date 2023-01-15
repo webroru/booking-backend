@@ -155,7 +155,7 @@ class Booking implements BookingInterface
         }
     }
 
-    public function addInvoice(int $id, string $type, int $amount): void
+    public function addInvoice(int $id, string $type, float $amount): void
     {
         $invoiceItems = [
             [
