@@ -25,8 +25,8 @@ class WebhookController extends AbstractController
         $payload = $request->getContent();
         $signature = $request->server->get('HTTP_STRIPE_SIGNATURE');
         $event = Webhook::constructEvent($payload, $signature, $endpointSecret);
-        $paymentIntent = $event->data->object->metadata;
-        $bookingId = $paymentIntent->metadata?->bookingId;
+        $paymentIntent = $event->data->object;
+        $bookingId = (int) $event->data->object->metadata?->bookingId;
         $amount = $paymentIntent->amount;
         if (!$bookingId) {
             $logger->error('PaymentIntent does not contain bookingId', ['paymentIntent' => print_r($paymentIntent, true)]);
