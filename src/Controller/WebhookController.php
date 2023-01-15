@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Providers\Booking\BookingInterface;
+use App\Repository\ClientRepository;
+use App\Repository\TokenRepository;
 use Psr\Log\LoggerInterface;
 use Stripe\Webhook;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
@@ -19,6 +21,8 @@ class WebhookController extends AbstractController
     public function stripe(
         Request $request,
         BookingInterface $booking,
+        ClientRepository $clientRepository,
+        TokenRepository $tokenRepository,
         LoggerInterface $logger,
     ): JsonResponse {
         $endpointSecret = $this->getParameter('endpoint_secret');
@@ -32,6 +36,8 @@ class WebhookController extends AbstractController
             $logger->error('PaymentIntent does not contain bookingId', ['paymentIntent' => print_r($paymentIntent, true)]);
             throw new BadRequestException('PaymentIntent does not contain bookingId');
         }
+        $token = $this->getToken($request, $booking, $clientRepository, $tokenRepository);
+        $booking->setToken($token->getToken());
         $booking->addInvoice($bookingId, 'payment', $amount / 100);
         return $this->json([]);
     }
