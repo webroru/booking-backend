@@ -23,8 +23,8 @@ abstract class AbstractEntity implements EntityInterface
 
         if (is_array($property)) {
             $result = [];
-            foreach ($property as $item) {
-                $result[] = $this->entityToArray($item);
+            foreach ($property as $key => $item) {
+                $result[$key] = $this->entityToArray($item);
             }
 
             return $result;
