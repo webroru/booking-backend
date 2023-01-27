@@ -24,7 +24,7 @@ class Client
     #[ORM\Column(length: 255, unique: true)]
     private ?string $name = null;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(inversedBy: 'client', cascade: ['persist', 'remove'])]
     private ?Token $token = null;
 
     public function getId(): ?int

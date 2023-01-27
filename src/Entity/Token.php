@@ -24,6 +24,9 @@ class Token
     #[ORM\Column(type: 'datetime')]
     private ?\DateTime $expiresAt = null;
 
+    #[ORM\OneToOne(mappedBy: 'token')]
+    private Client $client;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -62,6 +65,17 @@ class Token
     {
         $this->expiresAt = $expiresAt;
 
+        return $this;
+    }
+
+    public function getClient(): Client
+    {
+        return $this->client;
+    }
+
+    public function setClient(Client $client): Token
+    {
+        $this->client = $client;
         return $this;
     }
 }

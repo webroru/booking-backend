@@ -9,6 +9,7 @@ use App\Repository\ClientRepository;
 use App\Repository\TokenRepository;
 use Psr\Log\LoggerInterface;
 use Stripe\Webhook;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -30,14 +31,19 @@ class WebhookController extends AbstractController
         $signature = $request->server->get('HTTP_STRIPE_SIGNATURE');
         $event = Webhook::constructEvent($payload, $signature, $endpointSecret);
         $paymentIntent = $event->data->object;
-        $bookingId = (int) $event->data->object->metadata?->bookingId;
+        $bookingId = (int) $paymentIntent->metadata?->bookingId;
+        $clientName = $paymentIntent->metadata?->client;
         $amount = $paymentIntent->amount;
         if (!$bookingId) {
             $logger->error('PaymentIntent does not contain bookingId', ['paymentIntent' => print_r($paymentIntent, true)]);
             throw new BadRequestException('PaymentIntent does not contain bookingId');
         }
-        $token = $this->getToken($request, $booking, $clientRepository, $tokenRepository);
-        $booking->setToken($token->getToken());
+        if (!$clientName) {
+            $logger->error('PaymentIntent does not contain client name', ['paymentIntent' => print_r($paymentIntent, true)]);
+            throw new BadRequestException('PaymentIntent does not client name');
+        }
+        $client = $clientRepository->findOneByName($clientName);
+        $booking->setToken($client->getToken()->getToken());
         $booking->addInvoice($bookingId, 'payment', $amount / 100);
         return $this->json([]);
     }
