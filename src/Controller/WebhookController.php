@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\BookingInterface;
 use App\Repository\ClientRepository;
 use App\Repository\TokenRepository;
@@ -44,7 +45,7 @@ class WebhookController extends AbstractController
         }
         $client = $clientRepository->findOneByName($clientName);
         $booking->setToken($client->getToken()->getToken());
-        $booking->addInvoice($bookingId, 'payment', $amount / 100);
+        $booking->addInvoice($bookingId, InvoiceItem::PAYMENT, $amount / 100);
         return $this->json([]);
     }
 }
