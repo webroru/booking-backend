@@ -11,6 +11,7 @@ use App\Providers\Booking\Beds24\Dto\Request\PostBookingsDto;
 use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationSetupDto;
 use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationTokenDto;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
+use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
 use App\Providers\Booking\BookingInterface;
 
@@ -155,14 +156,9 @@ class Booking implements BookingInterface
         }
     }
 
-    public function addInvoice(int $id, string $type, float $amount): void
+    public function addInvoice(int $id, string $type, float $amount, string $description = ''): void
     {
-        $invoiceItems = [
-            [
-                'type' => $type,
-                'amount' => $amount,
-            ]
-        ];
+        $invoiceItems = [new InvoiceItem(amount: $amount, type: $type, description: $description)];
         $booking = new Entity\Booking(id: $id, invoiceItems: $invoiceItems);
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);

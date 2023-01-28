@@ -80,10 +80,5 @@ class Booking extends AbstractEntity
         public ?array $infoItems = [],
         ...$params,
     ) {
-        $infoItems = [];
-        foreach ($this->infoItems as $infoItem) {
-            $infoItems[] = new InfoItem(...$infoItem);
-        }
-        $this->infoItems = $infoItems;
     }
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Providers\Booking\Beds24\Dto\Response;
 
 use App\Providers\Booking\Beds24\Entity\Booking;
+use App\Providers\Booking\Beds24\Entity\InfoItem;
+use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 
 class GetBookingsDto
 {
@@ -20,7 +22,24 @@ class GetBookingsDto
         ...$params,
     ) {
         foreach ($data as $item) {
+            if (isset($item['infoItems'])) {
+                $item['infoItems'] = array_map(
+                    fn(array $props) => $this->createEntity(InfoItem::class, $props),
+                    $item['infoItems']
+                );
+            }
+            if (isset($item['invoiceItems'])) {
+                $item['invoiceItems'] = array_map(
+                    fn(array $props) => $this->createEntity(InvoiceItem::class, $props),
+                    $item['invoiceItems']
+                );
+            }
             $this->bookings[] = new Booking(...$item);
         }
+    }
+
+    private function createEntity(string $className, array $props): object
+    {
+        return new $className(...$props);
     }
 }
