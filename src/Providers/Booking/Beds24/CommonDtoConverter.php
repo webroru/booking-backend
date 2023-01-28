@@ -6,6 +6,7 @@ namespace App\Providers\Booking\Beds24;
 
 use App\Dto\Booking;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
+use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
 
 class CommonDtoConverter
@@ -96,11 +97,15 @@ class CommonDtoConverter
         return null;
     }
 
+    /**
+     * @param InvoiceItem[] $invoiceItems
+     * @return float
+     */
     public function getDebt(array $invoiceItems): float
     {
         $debt = array_reduce(
             $invoiceItems,
-            fn (float $carry, array $item) => $carry + $item['lineTotal'],
+            fn (float $carry, InvoiceItem $item) => $carry + $item->lineTotal,
             0.0,
         );
 

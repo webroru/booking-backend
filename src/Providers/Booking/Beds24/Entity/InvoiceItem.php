@@ -10,7 +10,7 @@ class InvoiceItem extends AbstractEntity
     public const PAYMENT = 'payment';
 
     public function __construct(
-        public int $amount,
+        public float $amount,
         public string $type,
         public ?int $id = null,
         public ?int $bookingId = null,
@@ -18,8 +18,8 @@ class InvoiceItem extends AbstractEntity
         public ?string $description = null,
         public ?string $status = null,
         public ?int $qty = null,
-        public ?int $lineTotal = null,
-        public ?int $vatRate = null,
+        public ?float $lineTotal = null,
+        public ?float $vatRate = null,
         public ?int $createdBy = null,
         public ?string $createTime = null,
         public ?string $invoiceDate = null,
