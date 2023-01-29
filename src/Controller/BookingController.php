@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Dto\Booking;
 use App\Providers\Booking\BookingInterface;
 use App\Providers\PhotoStorage\Local\Local;
 use App\Repository\ClientRepository;
@@ -116,6 +117,24 @@ class BookingController extends AbstractController
 
         $photoStorage->remove($photo);
         $booking->removePhoto($id, $photo->getUrl());
+
+        return $this->json([
+            'data' => 'ok',
+        ]);
+    }
+
+    #[Route('/booking/{id<\d+>}/guests', methods: ['PUT'])]
+    public function updateGuests(
+        Request $request,
+        BookingInterface $booking,
+        ClientRepository $clientRepository,
+        TokenRepository $tokenRepository,
+    ): JsonResponse {
+        $token = $this->getToken($request, $booking, $clientRepository, $tokenRepository);
+        $booking->setToken($token->getToken());
+
+        $bookingDto = new Booking(...$request->toArray());
+        $booking->updateGuests($bookingDto);
 
         return $this->json([
             'data' => 'ok',
