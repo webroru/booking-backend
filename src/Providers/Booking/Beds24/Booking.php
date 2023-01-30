@@ -19,10 +19,10 @@ use App\Providers\Booking\BookingInterface;
 class Booking implements BookingInterface
 {
     public const GUESTS_AGE_CATEGORIES = [
-        self::ADULTS,
-        self::CHILDREN,
-        self::BABIES,
-        self::SUCKLINGS,
+        self::ADULTS => 'Adults (18+)',
+        self::CHILDREN => 'Children (7—18)',
+        self::BABIES => 'Children (4—7)',
+        self::SUCKLINGS => 'Children (0—4)',
     ];
     public const ADULTS = 'adults';
     public const CHILDREN = 'children';
@@ -100,12 +100,7 @@ class Booking implements BookingInterface
 
     public function acceptRule(int $bookingId, bool $isRuleAccepted): void
     {
-        $dto = new GetBookingsDto(id: [$bookingId], includeInfoItems: true);
-        $beds24BookingsDto = $this->client->getBookings($dto);
-        if (!isset($beds24BookingsDto->bookings[0])) {
-            throw new \Exception("Booking id $bookingId is not found");
-        }
-        $booking = $beds24BookingsDto->bookings[0];
+        $booking = $this->getBookingEntityById($bookingId);
         $infoItem = new InfoItem(code: 'isRuleAccepted', text: (string) $isRuleAccepted);
         $this->updateInfoItem($booking, $infoItem);
         $postBookingsDto = new PostBookingsDto([$booking]);
@@ -114,12 +109,7 @@ class Booking implements BookingInterface
 
     public function addPhoto(int $bookingId, string $photoUrl): void
     {
-        $dto = new GetBookingsDto(id: [$bookingId], includeInfoItems: true);
-        $beds24BookingsDto = $this->client->getBookings($dto);
-        if (!isset($beds24BookingsDto->bookings[0])) {
-            throw new \Exception("Booking id $bookingId is not found");
-        }
-        $booking = $beds24BookingsDto->bookings[0];
+        $booking = $this->getBookingEntityById($bookingId);
         $infoItem = new InfoItem(code: 'photos', text: $photoUrl);
         $booking->infoItems[] = $infoItem;
         $postBookingsDto = new PostBookingsDto([$booking]);
@@ -128,12 +118,7 @@ class Booking implements BookingInterface
 
     public function removePhoto(int $id, string $photoUrl): void
     {
-        $dto = new GetBookingsDto(id: [$id], includeInfoItems: true);
-        $beds24BookingsDto = $this->client->getBookings($dto);
-        if (!isset($beds24BookingsDto->bookings[0])) {
-            throw new \Exception("Booking id $id is not found");
-        }
-        $booking = $beds24BookingsDto->bookings[0];
+        $booking = $this->getBookingEntityById($id);
         $infoItem = $this->findInfoItemByValue($booking->infoItems, $photoUrl);
         if (!$infoItem) {
             return;
@@ -173,23 +158,10 @@ class Booking implements BookingInterface
 
     public function updateGuests(BookingDto $bookingDto): void
     {
-        $bookingId = $bookingDto->orderId;
-        $dto = new GetBookingsDto(id: [$bookingId], includeInvoiceItems: true, includeInfoItems: true);
-        $beds24BookingsDto = $this->client->getBookings($dto);
-        if (!isset($beds24BookingsDto->bookings[0])) {
-            throw new \Exception("Booking id $bookingId is not found");
-        }
-        $booking = $beds24BookingsDto->bookings[0];
-
-        foreach (self::GUESTS_AGE_CATEGORIES as $category) {
-            if (!isset($bookingDto->$category)) {
-                throw new \HttpRequestException("Property $category not found");
-            }
-            $infoItem = new InfoItem($category, (string) $bookingDto->$category);
-            $this->updateInfoItem($booking, $infoItem);
-        }
-        $this->removeCityTaxInvoices($booking);
-        $this->addCityTaxInvoices($booking, $bookingDto);
+        $booking = $this->getBookingEntityById($bookingDto->orderId);
+        $this->updateGuestsInfoItems($booking, $bookingDto);
+        $this->updateCityTax($booking, $bookingDto);
+        $this->updateExtraGuestsInfoItems($booking, $bookingDto);
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);
     }
@@ -348,7 +320,7 @@ class Booking implements BookingInterface
 
     private function addCityTaxInvoices(Entity\Booking $booking, BookingDto $bookingDto): void
     {
-        foreach (self::GUESTS_AGE_CATEGORIES as $category) {
+        foreach (self::GUESTS_AGE_CATEGORIES as $category => $description) {
             if (empty($bookingDto->$category)) {
                 continue;
             }
@@ -356,7 +328,6 @@ class Booking implements BookingInterface
             if (!$amount) {
                 continue;
             }
-            $description = $this->getCitiTaxDescription($category);
             $arrival = new \DateTime($booking->arrival);
             $departure = new \DateTime($booking->departure);
             $nights = $arrival->diff($departure)->d;
@@ -364,7 +335,7 @@ class Booking implements BookingInterface
             $invoiceItem = new InvoiceItem(
                 amount: $amount,
                 type: InvoiceItem::CHARGE,
-                description: $description,
+                description: "City tax $description",
                 qty: $qty,
             );
             $this->updateInvoiceItem($booking, $invoiceItem);
@@ -380,11 +351,43 @@ class Booking implements BookingInterface
         };
     }
 
-    private function getCitiTaxDescription(string $category): string
+    private function updateGuestsInfoItems(Entity\Booking $booking, BookingDto $bookingDto): void
     {
-        return match ($category) {
-            self::ADULTS => "City tax (older 18) €{$this->getCitiTaxAmount($category)} per adult daily",
-            self::CHILDREN => "City tax (from 7 years to 18 years) €{$this->getCitiTaxAmount($category)} per children daily",
-        };
+        foreach (self::GUESTS_AGE_CATEGORIES as $category => $description) {
+            if (!isset($bookingDto->$category)) {
+                throw new \HttpRequestException("Property $category not found");
+            }
+            $infoItem = new InfoItem($description, (string) $bookingDto->$category);
+            $this->updateInfoItem($booking, $infoItem);
+        }
+    }
+
+    private function updateExtraGuestsInfoItems(Entity\Booking $booking, BookingDto $bookingDto): void
+    {
+        $infoItems = [];
+        $infoItems[] = new InfoItem('overmax', (string) ($bookingDto->overmax));
+        $infoItems[] = new InfoItem('plusGuest', $bookingDto->plusGuest ? 'true' : 'false');
+        $infoItems[] = new InfoItem('extraGuests', (string) $bookingDto->extraGuests);
+        $infoItems[] = new InfoItem('lessDocs', $bookingDto->lessDocs ? 'true' : 'false');
+
+        foreach ($infoItems as $infoItem) {
+            $this->updateInfoItem($booking, $infoItem);
+        }
+    }
+
+    private function updateCityTax(Entity\Booking $booking, BookingDto $bookingDto): void
+    {
+        $this->removeCityTaxInvoices($booking);
+        $this->addCityTaxInvoices($booking, $bookingDto);
+    }
+
+    private function getBookingEntityById(int $id): Entity\Booking
+    {
+        $dto = new GetBookingsDto(id: [$id], includeInvoiceItems: true, includeInfoItems: true);
+        $beds24BookingsDto = $this->client->getBookings($dto);
+        if (!isset($beds24BookingsDto->bookings[0])) {
+            throw new \Exception("Booking id $id is not found");
+        }
+        return $beds24BookingsDto->bookings[0];
     }
 }

@@ -19,6 +19,8 @@ class CommonDtoConverter
             : 'Unknown';
 
         $isRuleAccepted = $this->getInfoItemValue('isRuleAccepted', $booking->infoItems);
+        $plusGuest = $this->getInfoItemValue('plusGuest', $booking->infoItems);
+        $lessDocs = $this->getInfoItemValue('lessDocs', $booking->infoItems);
 
         return new Booking(
             fullName: "$booking->firstName $booking->lastName",
@@ -36,13 +38,15 @@ class CommonDtoConverter
             sucklings: (int) $this->getInfoItemValue('sucklings', $booking->infoItems),
             passCode: $this->getInfoItemValue('CODELOCK', $booking->infoItems),
             debt: $this->getDebt($booking->invoiceItems),
-            extraPerson: 0,
+            extraPerson: 0, // TODO
             capacity: $property->roomTypes ? $this->getMaxPeople($property->roomTypes, $booking->roomId) : 0,
             overmax: $this->getInfoItemValue('overmax', $booking->infoItems),
             extraGuests: $this->getInfoItemValue('extraGuests', $booking->infoItems),
-            isRuleAccepted: $isRuleAccepted === '1',
+            isRuleAccepted: $isRuleAccepted === 'true',
             checkIn: $this->getInfoItemValue('checkIn', $booking->infoItems),
             status: $this->getInfoItemValue('status', $booking->infoItems),
+            plusGuest: $plusGuest === 'true',
+            lessDocs: $lessDocs === 'true',
         );
     }
 

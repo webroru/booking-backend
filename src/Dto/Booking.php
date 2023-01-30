@@ -29,6 +29,8 @@ class Booking
         public readonly ?bool $isRuleAccepted,
         public readonly ?bool $checkIn,
         public readonly ?string $status,
+        public readonly ?bool $plusGuest,
+        public readonly ?bool $lessDocs,
     ) {
     }
 }
