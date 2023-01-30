@@ -141,6 +141,23 @@ class BookingController extends AbstractController
         ]);
     }
 
+    #[Route('/booking/{id<\d+>}/pay-by-cash', methods: ['PUT'])]
+    public function payByCash(
+        Request $request,
+        int $id,
+        BookingInterface $booking,
+        ClientRepository $clientRepository,
+        TokenRepository $tokenRepository,
+    ): JsonResponse {
+        $token = $this->getToken($request, $booking, $clientRepository, $tokenRepository);
+        $booking->setToken($token->getToken());
+        $booking->setPaidStatus($id, 'paid by cash');
+
+        return $this->json([
+            'data' => 'ok',
+        ]);
+    }
+
     private function isImage(UploadedFile $file): bool
     {
         return str_contains($file->getMimeType(), 'image');

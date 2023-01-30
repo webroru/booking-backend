@@ -101,7 +101,18 @@ class Booking implements BookingInterface
     public function acceptRule(int $bookingId, bool $isRuleAccepted): void
     {
         $booking = $this->getBookingEntityById($bookingId);
-        $infoItem = new InfoItem(code: 'isRuleAccepted', text: (string) $isRuleAccepted);
+        $infoItem = new InfoItem(code: 'isRuleAccepted', text: $isRuleAccepted ? 'true' : 'false');
+        $this->updateInfoItem($booking, $infoItem);
+        $postBookingsDto = new PostBookingsDto([$booking]);
+        $this->update($postBookingsDto);
+    }
+
+    public function setPaidStatus(int $bookingId, string $paymentStatus): void
+    {
+        $booking = $this->getBookingEntityById($bookingId);
+        $infoItem = new InfoItem('paymentStatus', $paymentStatus);
+        $this->updateInfoItem($booking, $infoItem);
+        $infoItem = new InfoItem('checkIn', 'true');
         $this->updateInfoItem($booking, $infoItem);
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);
@@ -130,24 +141,6 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
-    public function update(PostBookingsDto $postBookingsDto): void
-    {
-        $postBookingsResponseDto = $this->client->postBookings($postBookingsDto);
-        foreach ($postBookingsResponseDto->result as $item) {
-            if ($item['success'] === true) {
-                continue;
-            }
-
-            $message = "Can not update Booking";
-            if ($item['errors']) {
-                foreach ($item['errors'] as $error) {
-                    $message .= " Field {$error['field']}: {$error['message']}";
-                }
-            }
-            throw new \Exception($message);
-        }
-    }
-
     public function addInvoice(int $id, string $type, float $amount, string $description = ''): void
     {
         $invoiceItems = [new InvoiceItem(amount: $amount, type: $type, description: $description)];
@@ -164,6 +157,24 @@ class Booking implements BookingInterface
         $this->updateExtraGuestsInfoItems($booking, $bookingDto);
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);
+    }
+
+    private function update(PostBookingsDto $postBookingsDto): void
+    {
+        $postBookingsResponseDto = $this->client->postBookings($postBookingsDto);
+        foreach ($postBookingsResponseDto->result as $item) {
+            if ($item['success'] === true) {
+                continue;
+            }
+
+            $message = "Can not update Booking";
+            if ($item['errors']) {
+                foreach ($item['errors'] as $error) {
+                    $message .= " Field {$error['field']}: {$error['message']}";
+                }
+            }
+            throw new \Exception($message);
+        }
     }
 
     /**

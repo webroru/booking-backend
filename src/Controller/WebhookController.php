@@ -24,7 +24,6 @@ class WebhookController extends AbstractController
         Request $request,
         BookingInterface $booking,
         ClientRepository $clientRepository,
-        TokenRepository $tokenRepository,
         LoggerInterface $logger,
     ): JsonResponse {
         $endpointSecret = $this->getParameter('endpoint_secret');
@@ -46,6 +45,7 @@ class WebhookController extends AbstractController
         $client = $clientRepository->findOneByName($clientName);
         $booking->setToken($client->getToken()->getToken());
         $booking->addInvoice($bookingId, InvoiceItem::PAYMENT, $amount / 100);
+        $booking->setPaidStatus($bookingId, 'paid');
         return $this->json([]);
     }
 }

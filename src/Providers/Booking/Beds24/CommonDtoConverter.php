@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Providers\Booking\Beds24;
 
-use App\Dto\Booking;
+use App\Dto\Booking as BookingDto;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
 
 class CommonDtoConverter
 {
-    public function convert(Entity\Booking $booking, Property $property): Booking
+    public function convert(Entity\Booking $booking, Property $property): BookingDto
     {
         $roomName = $property->roomTypes
             ? $this->getRoomName($property->roomTypes, $booking->roomId)
@@ -21,8 +21,9 @@ class CommonDtoConverter
         $isRuleAccepted = $this->getInfoItemValue('isRuleAccepted', $booking->infoItems);
         $plusGuest = $this->getInfoItemValue('plusGuest', $booking->infoItems);
         $lessDocs = $this->getInfoItemValue('lessDocs', $booking->infoItems);
+        $checkIn = $this->getInfoItemValue('checkIn', $booking->infoItems);
 
-        return new Booking(
+        return new BookingDto(
             fullName: "$booking->firstName $booking->lastName",
             checkInDate: $booking->arrival,
             checkOutDate: $booking->departure,
@@ -32,22 +33,49 @@ class CommonDtoConverter
             room: $roomName,
             originalReferer: "$booking->referer, booking: $booking->apiReference",
             guestsAmount: $booking->numAdult + $booking->numChild,
-            adults: (int) $this->getInfoItemValue('adults', $booking->infoItems),
-            children: (int) $this->getInfoItemValue('children', $booking->infoItems),
-            babies: (int) $this->getInfoItemValue('babies', $booking->infoItems),
-            sucklings: (int) $this->getInfoItemValue('sucklings', $booking->infoItems),
+            adults: (int) $this->getGuestAmount('adults', $booking->infoItems),
+            children: (int) $this->getGuestAmount('children', $booking->infoItems),
+            babies: (int) $this->getGuestAmount('babies', $booking->infoItems),
+            sucklings: (int) $this->getGuestAmount('sucklings', $booking->infoItems),
             passCode: $this->getInfoItemValue('CODELOCK', $booking->infoItems),
             debt: $this->getDebt($booking->invoiceItems),
             extraPerson: 0, // TODO
             capacity: $property->roomTypes ? $this->getMaxPeople($property->roomTypes, $booking->roomId) : 0,
-            overmax: $this->getInfoItemValue('overmax', $booking->infoItems),
-            extraGuests: $this->getInfoItemValue('extraGuests', $booking->infoItems),
+            overmax: (int) $this->getInfoItemValue('overmax', $booking->infoItems),
+            extraGuests: (int) $this->getInfoItemValue('extraGuests', $booking->infoItems),
             isRuleAccepted: $isRuleAccepted === 'true',
-            checkIn: $this->getInfoItemValue('checkIn', $booking->infoItems),
-            status: $this->getInfoItemValue('status', $booking->infoItems),
+            checkIn: $checkIn === 'true',
+            paymentStatus: $this->getInfoItemValue('paymentStatus', $booking->infoItems),
             plusGuest: $plusGuest === 'true',
             lessDocs: $lessDocs === 'true',
         );
+    }
+
+    public function getMaxPeople(array $roomTypes, int $roomId): ?int
+    {
+        foreach ($roomTypes as $roomType) {
+            if ($roomType['id'] === $roomId) {
+                return $roomType['maxPeople'];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param InvoiceItem[] $invoiceItems
+     * @return float
+     */
+    public function getDebt(array $invoiceItems): float
+    {
+        $debt = array_reduce(
+            $invoiceItems,
+            fn (float $carry, InvoiceItem $item) => $carry + $item->lineTotal,
+            0.0,
+        );
+
+        $debt = round($debt, 2);
+        return $debt === -0.0 ? 0 : $debt;
     }
 
     /**
@@ -90,30 +118,11 @@ class CommonDtoConverter
         return null;
     }
 
-    public function getMaxPeople(array $roomTypes, int $roomId): ?int
+    private function getGuestAmount(string $category, array $infoItems): int
     {
-        foreach ($roomTypes as $roomType) {
-            if ($roomType['id'] === $roomId) {
-                return $roomType['maxPeople'];
-            }
+        if (!isset(Booking::GUESTS_AGE_CATEGORIES[$category])) {
+            throw new \LogicException("Undefined guest category: $category");
         }
-
-        return null;
-    }
-
-    /**
-     * @param InvoiceItem[] $invoiceItems
-     * @return float
-     */
-    public function getDebt(array $invoiceItems): float
-    {
-        $debt = array_reduce(
-            $invoiceItems,
-            fn (float $carry, InvoiceItem $item) => $carry + $item->lineTotal,
-            0.0,
-        );
-
-        $debt = round($debt, 2);
-        return $debt === -0.0 ? 0 : $debt;
+        return (int) $this->getInfoItemValue(Booking::GUESTS_AGE_CATEGORIES[$category], $infoItems);
     }
 }
