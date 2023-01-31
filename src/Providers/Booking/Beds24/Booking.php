@@ -54,10 +54,10 @@ class Booking implements BookingInterface
 
     public function findById(int $id): BookingDto
     {
-        $today = (new \DateTime('- 10 days'))->format('Y-m-d');
-        $lastDay = (new \DateTime('+ 10 days'))->format('Y-m-d');
-        $filter['arrivalFrom'] = $today;
-        $filter['arrivalTo'] = $lastDay;
+        $arrivalFrom = (new \DateTime('- 4 days'))->format('Y-m-d');
+        $arrivalTo = (new \DateTime())->format('Y-m-d');
+        $filter['arrivalFrom'] = $arrivalFrom;
+        $filter['arrivalTo'] = $arrivalTo;
         $filter['includeInvoiceItems'] = true;
         $filter['includeInfoItems'] = true;
         $filter['id'] = [$id];
