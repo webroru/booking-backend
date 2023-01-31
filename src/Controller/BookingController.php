@@ -61,6 +61,24 @@ class BookingController extends AbstractController
         ]);
     }
 
+    #[Route('/booking/{id<\d+>}/check-in', methods: ['PUT'])]
+    public function checkIn(
+        Request $request,
+        int $id,
+        BookingInterface $booking,
+        ClientRepository $clientRepository,
+        TokenRepository $tokenRepository,
+    ): JsonResponse {
+        $checkIn = $request->get('checkIn');
+        $token = $this->getToken($request, $booking, $clientRepository, $tokenRepository);
+        $booking->setToken($token->getToken());
+        $booking->setCheckInStatus($id, $checkIn);
+
+        return $this->json([
+            'data' => 'ok',
+        ]);
+    }
+
     #[Route('/booking/{id<\d+>}/photo', methods: ['POST'])]
     public function uploadPhoto(
         Request $request,
