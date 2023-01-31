@@ -154,6 +154,7 @@ class Booking implements BookingInterface
         $booking = $this->getBookingEntityById($bookingDto->orderId);
         $this->updateGuestsInfoItems($booking, $bookingDto);
         $this->updateCityTax($booking, $bookingDto);
+        $this->updateExtraGuestInvoice($booking, $bookingDto);
         $this->updateExtraGuestsInfoItems($booking, $bookingDto);
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);
@@ -191,7 +192,11 @@ class Booking implements BookingInterface
             $propertyId[$booking->propertyId] = $booking->propertyId;
         }
 
-        return new GetPropertiesDto(id: array_values($propertyId), roomId: array_values($roomId));
+        return new GetPropertiesDto(
+            id: array_values($propertyId),
+            includePriceRules: true,
+            roomId: array_values($roomId),
+        );
     }
 
     /**
@@ -315,17 +320,17 @@ class Booking implements BookingInterface
                 continue;
             }
             $item->qty = 0;
-//            $item->bookingId = null;
-//            $item->type = null;
-//            $item->description = null;
-//            $item->status = null;
-//            $item->amount = null;
-//            $item->lineTotal = null;
-//            $item->vatRate = null;
-//            $item->invoiceId = null;
-//            $item->invoiceDate = null;
-//            $item->createdBy = null;
-//            $item->createTime = null;
+        }
+    }
+
+    private function removeExtraGuestInvoice(Entity\Booking $booking): void
+    {
+        /** @var InvoiceItem $item */
+        foreach ($booking->invoiceItems as $item) {
+            if (stripos($item->description, 'extra guest') === false) {
+                continue;
+            }
+            $item->qty = 0;
         }
     }
 
@@ -353,6 +358,26 @@ class Booking implements BookingInterface
         }
     }
 
+    private function addExtraGuestInvoice(Entity\Booking $booking, BookingDto $bookingDto): void
+    {
+        $amount = $bookingDto->extraPerson;
+        if (!$amount) {
+            return;
+        }
+        $confirmedGuests = $bookingDto->adults + $bookingDto->children + $bookingDto->babies + max(0, $bookingDto->sucklings - 1);
+        $arrival = new \DateTime($booking->arrival);
+        $departure = new \DateTime($booking->departure);
+        $nights = $arrival->diff($departure)->d;
+        $qty = $nights * (min($bookingDto->capacity, $confirmedGuests) - $bookingDto->guestsAmount);
+        $invoiceItem = new InvoiceItem(
+            amount: $amount,
+            type: InvoiceItem::CHARGE,
+            description: 'Extra guest(s)',
+            qty: $qty,
+        );
+        $this->updateInvoiceItem($booking, $invoiceItem);
+    }
+
     private function getCitiTaxAmount(string $category): float
     {
         return match ($category) {
@@ -378,7 +403,6 @@ class Booking implements BookingInterface
         $infoItems = [];
         $infoItems[] = new InfoItem('overmax', (string) ($bookingDto->overmax));
         $infoItems[] = new InfoItem('plusGuest', $bookingDto->plusGuest ? 'true' : 'false');
-        $infoItems[] = new InfoItem('extraGuests', (string) $bookingDto->extraGuests);
         $infoItems[] = new InfoItem('lessDocs', $bookingDto->lessDocs ? 'true' : 'false');
 
         foreach ($infoItems as $infoItem) {
@@ -390,6 +414,12 @@ class Booking implements BookingInterface
     {
         $this->removeCityTaxInvoices($booking);
         $this->addCityTaxInvoices($booking, $bookingDto);
+    }
+
+    private function updateExtraGuestInvoice(Entity\Booking $booking, BookingDto $bookingDto): void
+    {
+        $this->removeExtraGuestInvoice($booking);
+        $this->addExtraGuestInvoice($booking, $bookingDto);
     }
 
     private function getBookingEntityById(int $id): Entity\Booking

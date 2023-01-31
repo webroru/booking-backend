@@ -39,10 +39,9 @@ class CommonDtoConverter
             sucklings: (int) $this->getGuestAmount('sucklings', $booking->infoItems),
             passCode: $this->getInfoItemValue('CODELOCK', $booking->infoItems),
             debt: $this->getDebt($booking->invoiceItems),
-            extraPerson: 0, // TODO
+            extraPerson: $this->getExtraPrice($property->roomTypes, $booking->roomId),
             capacity: $property->roomTypes ? $this->getMaxPeople($property->roomTypes, $booking->roomId) : 0,
             overmax: (int) $this->getInfoItemValue('overmax', $booking->infoItems),
-            extraGuests: (int) $this->getInfoItemValue('extraGuests', $booking->infoItems),
             isRuleAccepted: $isRuleAccepted === 'true',
             checkIn: $checkIn === 'true',
             paymentStatus: $this->getInfoItemValue('paymentStatus', $booking->infoItems),
@@ -124,5 +123,26 @@ class CommonDtoConverter
             throw new \LogicException("Undefined guest category: $category");
         }
         return (int) $this->getInfoItemValue(Booking::GUESTS_AGE_CATEGORIES[$category], $infoItems);
+    }
+
+    private function getExtraPrice(array $roomTypes, int $roomId): float
+    {
+        $roomType = null;
+        foreach ($roomTypes as $item) {
+            if ($item['id'] !== $roomId) {
+                continue;
+            }
+            $roomType = $item;
+        }
+
+        if (!$roomType) {
+            throw new \LogicException("RoomType for Room Id $roomId not found");
+        }
+
+        if (!isset($roomType['priceRules'][0]['extraPerson'])) {
+            throw new \LogicException("ExtraPerson price for room id $roomId not found");
+        }
+
+        return $roomType['priceRules'][0]['extraPerson'];
     }
 }
