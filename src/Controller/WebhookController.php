@@ -6,8 +6,7 @@ namespace App\Controller;
 
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\BookingInterface;
-use App\Repository\ClientRepository;
-use App\Repository\TokenRepository;
+use App\Service\ClientService;
 use Psr\Log\LoggerInterface;
 use Stripe\Webhook;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,13 +18,16 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/webhook', name: 'webhook')]
 class WebhookController extends AbstractController
 {
+    public function __construct(
+        private readonly BookingInterface $booking,
+        private readonly LoggerInterface $logger,
+        private readonly ClientService $clientService,
+    ) {
+    }
+
     #[Route('/stripe', methods: ['POST'])]
-    public function stripe(
-        Request $request,
-        BookingInterface $booking,
-        ClientRepository $clientRepository,
-        LoggerInterface $logger,
-    ): JsonResponse {
+    public function stripe(Request $request,): JsonResponse
+    {
         $endpointSecret = $this->getParameter('endpoint_secret');
         $payload = $request->getContent();
         $signature = $request->server->get('HTTP_STRIPE_SIGNATURE');
@@ -35,17 +37,16 @@ class WebhookController extends AbstractController
         $clientName = $paymentIntent->metadata?->client;
         $amount = $paymentIntent->amount;
         if (!$bookingId) {
-            $logger->error('PaymentIntent does not contain bookingId', ['paymentIntent' => print_r($paymentIntent, true)]);
+            $this->logger->error('PaymentIntent does not contain bookingId', ['paymentIntent' => print_r($paymentIntent, true)]);
             throw new BadRequestException('PaymentIntent does not contain bookingId');
         }
         if (!$clientName) {
-            $logger->error('PaymentIntent does not contain client name', ['paymentIntent' => print_r($paymentIntent, true)]);
+            $this->logger->error('PaymentIntent does not contain client name', ['paymentIntent' => print_r($paymentIntent, true)]);
             throw new BadRequestException('PaymentIntent does not client name');
         }
-        $client = $clientRepository->findOneByName($clientName);
-        $booking->setToken($client->getToken()->getToken());
-        $booking->addInvoice($bookingId, InvoiceItem::PAYMENT, $amount / 100);
-        $booking->setPaidStatus($bookingId, 'paid');
+        $this->booking->setToken($this->clientService->getTokenByName($clientName)->getToken());
+        $this->booking->addInvoice($bookingId, InvoiceItem::PAYMENT, $amount / 100);
+        $this->booking->setPaidStatus($bookingId, 'paid');
         return $this->json([]);
     }
 }
