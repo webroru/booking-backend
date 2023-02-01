@@ -52,6 +52,9 @@ class Info
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $instruction = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $cashPaymentInstruction = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -174,6 +177,17 @@ class Info
     {
         $this->instruction = $instruction;
 
+        return $this;
+    }
+
+    public function getCashPaymentInstruction(): ?string
+    {
+        return $this->cashPaymentInstruction;
+    }
+
+    public function setCashPaymentInstruction(?string $cashPaymentInstruction): self
+    {
+        $this->cashPaymentInstruction = $cashPaymentInstruction;
         return $this;
     }
 }
