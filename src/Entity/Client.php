@@ -27,6 +27,9 @@ class Client
     #[ORM\OneToOne(inversedBy: 'client', cascade: ['persist', 'remove'])]
     private ?Token $token = null;
 
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    private ?Info $info = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -65,6 +68,17 @@ class Client
     {
         $this->token = $token;
 
+        return $this;
+    }
+
+    public function getInfo(): ?Info
+    {
+        return $this->info;
+    }
+
+    public function setInfo(?Info $info): self
+    {
+        $this->info = $info;
         return $this;
     }
 }
