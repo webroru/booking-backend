@@ -38,7 +38,7 @@ class Info
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Constraints\Length(max: 255)]
-    private ?string $contactInformation = null;
+    private ?string $phoneNumber = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $howToMakeIt = null;
@@ -120,14 +120,14 @@ class Info
         return $this;
     }
 
-    public function getContactInformation(): ?string
+    public function getPhoneNumber(): ?string
     {
-        return $this->contactInformation;
+        return $this->phoneNumber;
     }
 
-    public function setContactInformation(?string $contactInformation): self
+    public function setPhoneNumber(?string $phoneNumber): self
     {
-        $this->contactInformation = $contactInformation;
+        $this->phoneNumber = $phoneNumber;
 
         return $this;
     }
