@@ -7,7 +7,8 @@ namespace App\Dto;
 class Booking
 {
     public function __construct(
-        public readonly string $fullName,
+        public readonly string $firstName,
+        public readonly string $lastName,
         public readonly string $checkInDate,
         public readonly string $checkOutDate,
         public readonly string $phone,

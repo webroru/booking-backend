@@ -24,7 +24,8 @@ class CommonDtoConverter
         $checkIn = $this->getInfoItemValue('checkIn', $booking->infoItems);
 
         return new BookingDto(
-            fullName: "$booking->firstName $booking->lastName",
+            firstName: $booking->firstName,
+            lastName: $booking->lastName,
             checkInDate: $booking->arrival,
             checkOutDate: $booking->departure,
             phone: $booking->phone,
