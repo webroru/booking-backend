@@ -80,13 +80,11 @@ class Booking implements BookingInterface
         $beds24BookingsDto = $this->client->getBookings($dto);
         $result = [];
         $bookings = $beds24BookingsDto->bookings;
-        if (isset($filter['surname'])) {
-            $bookings = $this->filterBySurname($bookings, $filter['surname']);
+
+        if (isset($filter['search'])) {
+            $bookings = $this->filterByLastNameAndBookingId($bookings, $filter['search']);
         }
 
-        if (isset($filter['originalReferer'])) {
-            $bookings = $this->filterByReferer($bookings, $filter['originalReferer']);
-        }
         $getPropertiesDto = $this->buildGetPropertiesDto($bookings);
         $beds24Properties = $this->client->getProperties($getPropertiesDto);
 
@@ -226,31 +224,17 @@ class Booking implements BookingInterface
 
     /**
      * @param Entity\Booking[] $bookings
-     * @param string $surname
+     * @param string $search
      * @return Entity\Booking[]
      */
-    private function filterBySurname(array $bookings, string $surname): array
+    private function filterByLastNameAndBookingId(array $bookings, string $search): array
     {
         $result = [];
         foreach ($bookings as $booking) {
-            if (mb_strtolower($booking->lastName) === mb_strtolower($surname)) {
-                $result[] = $booking;
-            }
-        }
-
-        return $result;
-    }
-
-    /**
-     * @param Entity\Booking[] $bookings
-     * @param string $referer
-     * @return Entity\Booking[]
-     */
-    private function filterByReferer(array $bookings, string $referer): array
-    {
-        $result = [];
-        foreach ($bookings as $booking) {
-            if ($booking->apiReference === $referer) {
+            $lastNameMatch = mb_strtolower($booking->lastName) === mb_strtolower($search);
+            $apiReferenceContain = str_contains($booking->apiReference, $search);
+            $bookingIdContains = str_contains((string) $booking->id, $search);
+            if ($lastNameMatch || $apiReferenceContain || $bookingIdContains) {
                 $result[] = $booking;
             }
         }
