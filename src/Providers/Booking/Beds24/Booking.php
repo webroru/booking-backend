@@ -54,9 +54,9 @@ class Booking implements BookingInterface
 
     public function findById(int $id): BookingDto
     {
-        $arrivalFrom = (new \DateTime('- 4 days'))->format('Y-m-d');
-        $arrivalTo = (new \DateTime())->format('Y-m-d');
-        $filter['arrivalFrom'] = $arrivalFrom;
+        $departureFrom = (new \DateTime())->format('Y-m-d');
+        $arrivalTo = (new \DateTime('+3 days'))->format('Y-m-d');
+        $filter['departureFrom'] = $departureFrom;
         $filter['arrivalTo'] = $arrivalTo;
         $filter['includeInvoiceItems'] = true;
         $filter['includeInfoItems'] = true;

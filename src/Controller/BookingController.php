@@ -31,10 +31,10 @@ class BookingController extends AbstractController
     public function index(Request $request): JsonResponse
     {
         $filter = $request->query->all();
-        $today = (new \DateTime('- 10 days'))->format('Y-m-d');
-        $lastDay = (new \DateTime('+ 10 days'))->format('Y-m-d');
-        $filter['arrivalFrom'] = $today;
-        $filter['arrivalTo'] = $lastDay;
+        $departureFrom = (new \DateTime())->format('Y-m-d');
+        $arrivalTo = (new \DateTime('+3 days'))->format('Y-m-d');
+        $filter['departureFrom'] = $departureFrom;
+        $filter['arrivalTo'] = $arrivalTo;
         $filter['includeInvoiceItems'] = true;
         $filter['includeInfoItems'] = true;
 
