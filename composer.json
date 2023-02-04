@@ -24,6 +24,7 @@
         "symfony/filesystem": "6.1.*",
         "symfony/flex": "^2",
         "symfony/framework-bundle": "6.1.*",
+        "symfony/mailer": "6.1.*",
         "symfony/maker-bundle": "^1.47",
         "symfony/mime": "6.1.*",
         "symfony/monolog-bundle": "^3.8",
