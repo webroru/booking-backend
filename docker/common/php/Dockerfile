@@ -1,8 +1,9 @@
 FROM php:8-fpm-alpine
 
 # Install dev dependencies
-RUN apk add --no-cache --virtual .build-deps \
+RUN apk add --update --no-cache --virtual .build-deps \
     $PHPIZE_DEPS \
+    linux-headers \
     oniguruma-dev
 
 # Install production dependencies

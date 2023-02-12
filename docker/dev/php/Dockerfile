@@ -1,8 +1,9 @@
 FROM php:8-fpm-alpine
 
 # Install dev dependencies
-RUN apk add --no-cache --virtual .build-deps \
+RUN apk add --update --no-cache --virtual .build-deps \
     $PHPIZE_DEPS \
+    linux-headers \
     oniguruma-dev
 
 # Install production dependencies
@@ -26,12 +27,6 @@ RUN apk del .build-deps && \
     rm -rf /var/cache/apk/*
 
 ADD custom.ini /usr/local/etc/php/conf.d/custom.ini
-
-RUN mkdir -p /code/var/cache && \
-    mkdir -p /code/var/log && \
-    mkdir -p /code/public/uploads && \
-    chown -R www-data. /code/var && \
-    chown www-data. /code/public/uploads
 
 # Install and enable php extensions
 RUN docker-php-ext-enable xdebug
