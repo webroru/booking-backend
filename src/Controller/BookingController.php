@@ -137,9 +137,10 @@ class BookingController extends AbstractController
     #[Route('/booking/{id<\d+>}/pay-by-cash', methods: ['PUT'])]
     public function payByCash(Request $request, int $id): JsonResponse
     {
+        $isPayByCash = $request->get('isPayByCash');
         $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
         $this->booking->setToken($token->getToken());
-        $this->booking->setPaidStatus($id, 'paid by cash');
+        $this->booking->setPaidStatus($id, $isPayByCash ? 'paid by cash' : '');
 
         return $this->json([
             'data' => 'ok',

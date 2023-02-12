@@ -110,7 +110,7 @@ class Booking implements BookingInterface
         $booking = $this->getBookingEntityById($bookingId);
         $infoItem = new InfoItem('paymentStatus', $paymentStatus);
         $this->updateInfoItem($booking, $infoItem);
-        $infoItem = new InfoItem('checkIn', 'true');
+        $infoItem = new InfoItem('checkIn', $paymentStatus !== '' ? 'true' : 'false');
         $this->updateInfoItem($booking, $infoItem);
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);
