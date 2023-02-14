@@ -55,6 +55,9 @@ class Info
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $cashPaymentInstruction = null;
 
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $paymentDisagree = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -188,6 +191,17 @@ class Info
     public function setCashPaymentInstruction(?string $cashPaymentInstruction): self
     {
         $this->cashPaymentInstruction = $cashPaymentInstruction;
+        return $this;
+    }
+
+    public function getPaymentDisagree(): ?string
+    {
+        return $this->paymentDisagree;
+    }
+
+    public function setPaymentDisagree(?string $paymentDisagree): self
+    {
+        $this->paymentDisagree = $paymentDisagree;
         return $this;
     }
 }

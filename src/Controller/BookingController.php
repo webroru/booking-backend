@@ -31,13 +31,6 @@ class BookingController extends AbstractController
     public function index(Request $request): JsonResponse
     {
         $filter = $request->query->all();
-        $departureFrom = (new \DateTime())->format('Y-m-d');
-        $arrivalTo = (new \DateTime('+3 days'))->format('Y-m-d');
-        $filter['departureFrom'] = $departureFrom;
-        $filter['arrivalTo'] = $arrivalTo;
-        $filter['includeInvoiceItems'] = true;
-        $filter['includeInfoItems'] = true;
-
         $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
         $this->booking->setToken($token->getToken());
         return $this->json([
@@ -141,6 +134,18 @@ class BookingController extends AbstractController
         $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
         $this->booking->setToken($token->getToken());
         $this->booking->setPaidStatus($id, $isPayByCash ? 'paid by cash' : '');
+
+        return $this->json([
+            'data' => 'ok',
+        ]);
+    }
+
+    #[Route('/booking/{id<\d+>}/cancel', methods: ['PUT'])]
+    public function cancel(Request $request, int $id): JsonResponse
+    {
+        $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
+        $this->booking->setToken($token->getToken());
+        $this->booking->cancel($id);
 
         return $this->json([
             'data' => 'ok',

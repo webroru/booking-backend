@@ -20,4 +20,5 @@ interface BookingInterface
     public function removePhoto(int $id, string $photoUrl): void;
     public function addInvoice(int $id, string $type, float $amount, string $description): void;
     public function updateGuests(Booking $bookingDto): void;
+    public function cancel(int $bookingId): void;
 }

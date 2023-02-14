@@ -60,7 +60,10 @@ class Booking implements BookingInterface
         $filter['arrivalTo'] = $arrivalTo;
         $filter['includeInvoiceItems'] = true;
         $filter['includeInfoItems'] = true;
-        $filter['id'] = [$id];
+        $filter = [
+            'id' => [$id],
+            ...$this->getDefaultFilter(),
+        ];
         $bookings = $this->findBy($filter);
 
         if (count($bookings) === 0) {
@@ -76,6 +79,10 @@ class Booking implements BookingInterface
      */
     public function findBy(array $filter): array
     {
+        $filter = [
+            ...$this->getDefaultFilter(),
+            ...$filter,
+        ];
         $dto = new GetBookingsDto(...$filter);
         $beds24BookingsDto = $this->client->getBookings($dto);
         $result = [];
@@ -163,6 +170,18 @@ class Booking implements BookingInterface
         $this->updateCityTax($booking, $bookingDto);
         $this->updateExtraGuestInvoice($booking, $bookingDto);
         $this->updateExtraGuestsInfoItems($booking, $bookingDto);
+        $postBookingsDto = new PostBookingsDto([$booking]);
+        $this->update($postBookingsDto);
+    }
+
+    public function cancel(int $bookingId): void
+    {
+        $booking = $this->getBookingEntityById($bookingId);
+        $infoItem = new InfoItem('paymentStatus', 'disagree');
+        $this->updateInfoItem($booking, $infoItem);
+        $infoItem = new InfoItem('checkIn', 'false');
+        $this->updateInfoItem($booking, $infoItem);
+        $booking->status = 'cancelled';
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);
     }
@@ -423,5 +442,18 @@ class Booking implements BookingInterface
             throw new \Exception("Booking id $id is not found");
         }
         return $beds24BookingsDto->bookings[0];
+    }
+
+    private function getDefaultFilter(): array
+    {
+        $departureFrom = (new \DateTime())->format('Y-m-d');
+        $arrivalTo = (new \DateTime('+3 days'))->format('Y-m-d');
+
+        return [
+            'departureFrom' => $departureFrom,
+            'arrivalTo' => $arrivalTo,
+            'includeInvoiceItems' => true,
+            'includeInfoItems' => true,
+        ];
     }
 }
