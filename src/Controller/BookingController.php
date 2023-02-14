@@ -152,6 +152,19 @@ class BookingController extends AbstractController
         ]);
     }
 
+    #[Route('/booking/{id<\d+>}/message', methods: ['POST'])]
+    public function message(Request $request, int $id): JsonResponse
+    {
+        $message = $request->get('message');
+        $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
+        $this->booking->setToken($token->getToken());
+        $this->booking->sendMessage($id, $message);
+
+        return $this->json([
+            'data' => 'ok',
+        ]);
+    }
+
     private function isImage(UploadedFile $file): bool
     {
         return str_contains($file->getMimeType(), 'image');

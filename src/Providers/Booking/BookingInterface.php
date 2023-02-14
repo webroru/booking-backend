@@ -21,4 +21,5 @@ interface BookingInterface
     public function addInvoice(int $id, string $type, float $amount, string $description): void;
     public function updateGuests(Booking $bookingDto): void;
     public function cancel(int $bookingId): void;
+    public function sendMessage(int $bookingId, string $text): void;
 }

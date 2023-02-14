@@ -186,6 +186,14 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
+    public function sendMessage(int $bookingId, string $text): void
+    {
+        $booking = $this->getBookingEntityById($bookingId);
+        $booking->message = $text;
+        $postBookingsDto = new PostBookingsDto([$booking]);
+        $this->update($postBookingsDto);
+    }
+
     private function update(PostBookingsDto $postBookingsDto): void
     {
         $postBookingsResponseDto = $this->client->postBookings($postBookingsDto);
