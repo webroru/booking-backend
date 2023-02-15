@@ -132,6 +132,15 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
+    public function setCheckOutStatus(int $bookingId): void
+    {
+        $booking = $this->getBookingEntityById($bookingId);
+        $infoItem = new InfoItem('checkOut', 'true');
+        $this->updateInfoItem($booking, $infoItem);
+        $postBookingsDto = new PostBookingsDto([$booking]);
+        $this->update($postBookingsDto);
+    }
+
     public function addPhoto(int $bookingId, string $photoUrl): void
     {
         $booking = $this->getBookingEntityById($bookingId);
