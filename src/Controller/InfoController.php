@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Dto\Booking;
+use App\Entity\Info;
 use App\Exception\TokenNotFoundException;
 use App\Serializer\Normalizer;
 use App\Service\ClientService;
@@ -27,9 +28,17 @@ class InfoController extends AbstractController
     #[Route('/info', methods: ['GET'])]
     public function index(Request $request): JsonResponse
     {
+        $locale = $request->getLocale();
+        $defaultLocale = $request->getDefaultLocale();
         $client = $this->clientService->getClientByOrigin($request->headers->get('origin', 'http://localhost'));
-        $info = $client->getInfo() ??
+        $info = $client->getInfo()->filter(fn (Info $info) => $info->getLocale() === $locale)->first();
+        if (!$info) {
+            $info = $client->getInfo()->filter(fn (Info $info) => $info->getLocale() === $defaultLocale)->first();
+        }
+
+        if (!$info) {
             throw new TokenNotFoundException("Information for {$client->getName()} not found");
+        }
 
         return $this->json(['data' => $this->normalizer->normalize($info)]);
     }

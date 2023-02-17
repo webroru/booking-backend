@@ -7,9 +7,11 @@ namespace App\Entity;
 use App\Repository\InfoRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Ignore;
 use Symfony\Component\Validator\Constraints;
 
 #[ORM\Entity(repositoryClass: InfoRepository::class)]
+#[ORM\UniqueConstraint(name: 'client_locale', columns: ['client_id', 'locale'])]
 class Info
 {
     #[ORM\Id]
@@ -57,6 +59,16 @@ class Info
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $paymentDisagree = null;
+
+    #[ORM\Column(length: 2)]
+    #[Constraints\Length(max: 2)]
+    #[Constraints\NotBlank()]
+    private string $locale;
+
+    #[ORM\ManyToOne(inversedBy: 'info')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[Ignore]
+    private Client $client;
 
     public function getId(): ?int
     {
@@ -202,6 +214,28 @@ class Info
     public function setPaymentDisagree(?string $paymentDisagree): self
     {
         $this->paymentDisagree = $paymentDisagree;
+        return $this;
+    }
+
+    public function getLocale(): string
+    {
+        return $this->locale;
+    }
+
+    public function setLocale(string $locale): self
+    {
+        $this->locale = $locale;
+        return $this;
+    }
+
+    public function getClient(): Client
+    {
+        return $this->client;
+    }
+
+    public function setClient(Client $client): self
+    {
+        $this->client = $client;
         return $this;
     }
 }

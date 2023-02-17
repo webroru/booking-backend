@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\ClientRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
@@ -27,8 +29,14 @@ class Client
     #[ORM\OneToOne(inversedBy: 'client', cascade: ['persist', 'remove'])]
     private ?Token $token = null;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
-    private ?Info $info = null;
+    /** @var Collection<int, Info> */
+    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Info::class)]
+    private Collection $info;
+
+    public function __construct()
+    {
+        $this->info = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -71,14 +79,17 @@ class Client
         return $this;
     }
 
-    public function getInfo(): ?Info
+    /**
+     * @return Collection<int, Info>
+     */
+    public function getInfo(): Collection
     {
         return $this->info;
     }
 
-    public function setInfo(?Info $info): self
+    public function addInfo(?Info $info): self
     {
-        $this->info = $info;
+        $this->info[] = $info;
         return $this;
     }
 }

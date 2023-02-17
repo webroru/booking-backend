@@ -16,6 +16,8 @@ framework:
     #fragments: true
     php_errors:
         log: true
+    set_locale_from_accept_language: true
+    set_content_language_from_locale: true
 
 when@test:
     framework:
