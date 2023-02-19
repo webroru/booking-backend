@@ -14,3 +14,5 @@ fos_rest:
         rules:
             - { path: ^/api, prefer_extension: true, fallback_format: json, priorities: [ json, html ] }
             - { path: ^/webhook, prefer_extension: true, fallback_format: json, priorities: [ json, html ] }
+            - { path: ^/, priorities: [ 'html', '*/*' ], fallback_format: ~, prefer_extension: true }
+

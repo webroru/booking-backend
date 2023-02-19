@@ -92,4 +92,9 @@ class Client
         $this->info[] = $info;
         return $this;
     }
+
+    public function __toString(): string
+    {
+        return $this->name;
+    }
 }

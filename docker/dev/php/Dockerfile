@@ -11,6 +11,7 @@ RUN apk add --no-cache \
     bash \
     curl \
     git \
+    icu-dev \
     mysql-client
 
 ## Install PECL and PEAR extensions
@@ -18,6 +19,7 @@ RUN pecl install xdebug
 
 RUN docker-php-ext-install \
     bcmath \
+    intl \
     mbstring \
     opcache \
     pdo \

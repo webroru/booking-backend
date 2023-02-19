@@ -3,6 +3,7 @@ FROM php:8-fpm-alpine
 # Install dev dependencies
 RUN apk add --update --no-cache --virtual .build-deps \
     $PHPIZE_DEPS \
+    icu-dev \
     linux-headers \
     oniguruma-dev
 
@@ -11,10 +12,12 @@ RUN apk add --no-cache \
     bash \
     curl \
     git \
+    icu-dev \
     mysql-client
 
 RUN docker-php-ext-install \
     bcmath \
+    intl \
     mbstring \
     opcache \
     pdo \
