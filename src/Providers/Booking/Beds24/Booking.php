@@ -402,7 +402,7 @@ class Booking implements BookingInterface
             amount: $amount,
             type: InvoiceItem::CHARGE,
             description: 'Extra guest(s)',
-            qty: $qty,
+            qty: max($qty, 0),
         );
         $this->updateInvoiceItem($booking, $invoiceItem);
     }
