@@ -333,7 +333,7 @@ class Booking implements BookingInterface
     private function updateInvoiceItem(Entity\Booking $booking, InvoiceItem $invoiceItem): void
     {
         $existedInvoiceItem = $this->findInvoiceItemByDescription($booking->invoiceItems, $invoiceItem->description);
-        if (!$existedInvoiceItem) {
+        if (!$existedInvoiceItem && $invoiceItem->qty > 0) {
             $booking->invoiceItems[] = $invoiceItem;
         } else {
             $existedInvoiceItem->qty = $invoiceItem->qty;
