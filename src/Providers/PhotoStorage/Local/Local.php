@@ -20,7 +20,7 @@ class Local implements PhotoStorageInterface
 
     public function put(Booking $booking, string $filepath): Photo
     {
-        $newFileName = md5_file($filepath) . '.' . pathinfo($filepath, PATHINFO_EXTENSION);
+        $newFileName = uniqid() . '.' . pathinfo($filepath, PATHINFO_EXTENSION);
         $newFilePath = "{$booking->checkOutDate}/{$booking->orderId}/$newFileName";
         $relativePath = "{$this->targetDirectory}/$newFilePath";
         $this->createDirectory($relativePath);
