@@ -31,6 +31,7 @@ class Booking
         public readonly ?string $paymentStatus,
         public readonly ?bool $plusGuest,
         public readonly ?bool $lessDocs,
+        public readonly ?array $photos,
     ) {
     }
 }

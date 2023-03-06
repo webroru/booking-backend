@@ -19,6 +19,9 @@ class Photo
     #[ORM\Column(length: 512)]
     private ?string $path = null;
 
+    #[ORM\Column(length: 16)]
+    private ?int $bookingId = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -45,6 +48,17 @@ class Photo
     {
         $this->path = $path;
 
+        return $this;
+    }
+
+    public function getBookingId(): ?int
+    {
+        return $this->bookingId;
+    }
+
+    public function setBookingId(int $bookingId): self
+    {
+        $this->bookingId = $bookingId;
         return $this;
     }
 }

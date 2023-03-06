@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace App\Providers\Booking\Beds24;
 
 use App\Dto\Booking as BookingDto;
+use App\Entity\Photo;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
+use App\Repository\PhotoRepository;
 
 class CommonDtoConverter
 {
+    public function __construct(
+        private readonly PhotoRepository $photoRepository,
+    ) {
+    }
+
     public function convert(Entity\Booking $booking, Property $property): BookingDto
     {
         $roomName = $property->roomTypes
@@ -48,6 +55,7 @@ class CommonDtoConverter
             paymentStatus: $this->getInfoItemValue('paymentStatus', $booking->infoItems),
             plusGuest: $plusGuest === 'true',
             lessDocs: $lessDocs === 'true',
+            photos: $this->getPhotos($booking->id),
         );
     }
 
@@ -145,5 +153,13 @@ class CommonDtoConverter
         }
 
         return $roomType['priceRules'][0]['extraPerson'];
+    }
+
+    private function getPhotos(?int $id): array
+    {
+        return array_map(
+            fn(Photo $photo) => ['id' => $photo->getId(), 'url' => $photo->getUrl()],
+            $this->photoRepository->findBy(['bookingId' => $id])
+        );
     }
 }

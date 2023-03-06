@@ -29,6 +29,7 @@ class Local implements PhotoStorageInterface
         $photo = (new Photo())
             ->setUrl("{$this->photosUrl}/$newFilePath")
             ->setPath($relativePath)
+            ->setBookingId($booking->orderId)
         ;
 
         $this->photoRepository->save($photo, true);
