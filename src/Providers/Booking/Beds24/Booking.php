@@ -307,6 +307,20 @@ class Booking implements BookingInterface
     }
 
     /**
+     * @param InvoiceItem[] $invoiceItems
+     */
+    private function findEmptyInvoiceItem(array $invoiceItems): ?InvoiceItem
+    {
+        foreach ($invoiceItems as $invoiceItem) {
+            if ($invoiceItem->qty === 0 && $invoiceItem->description === '') {
+                return $invoiceItem;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * @param InfoItem[] $infoItems
      */
     private function findInfoItemByValue(array $infoItems, string $value): ?InfoItem
@@ -332,12 +346,17 @@ class Booking implements BookingInterface
 
     private function updateInvoiceItem(Entity\Booking $booking, InvoiceItem $invoiceItem): void
     {
-        $existedInvoiceItem = $this->findInvoiceItemByDescription($booking->invoiceItems, $invoiceItem->description);
-        if (!$existedInvoiceItem && $invoiceItem->qty > 0) {
-            $booking->invoiceItems[] = $invoiceItem;
-        } else {
+        $items = $booking->invoiceItems;
+        $existedInvoiceItem = $this->findInvoiceItemByDescription($items, $invoiceItem->description) ??
+            $this->findEmptyInvoiceItem($items);
+
+        if ($existedInvoiceItem) {
             $existedInvoiceItem->qty = $invoiceItem->qty;
             $existedInvoiceItem->amount = $invoiceItem->amount;
+            $existedInvoiceItem->description = $invoiceItem->description;
+            $existedInvoiceItem->type = $invoiceItem->type;
+        } elseif ($invoiceItem->qty > 0) {
+            $booking->invoiceItems[] = $invoiceItem;
         }
     }
 
@@ -349,6 +368,8 @@ class Booking implements BookingInterface
                 continue;
             }
             $item->qty = 0;
+            $item->description = '';
+            $item->amount = 0;
         }
     }
 
@@ -360,6 +381,8 @@ class Booking implements BookingInterface
                 continue;
             }
             $item->qty = 0;
+            $item->description = '';
+            $item->amount = 0;
         }
     }
 
@@ -377,6 +400,9 @@ class Booking implements BookingInterface
             $departure = new \DateTime($booking->departure);
             $nights = $arrival->diff($departure)->d;
             $qty = $nights * $bookingDto->$category;
+            if (!$qty) {
+                return;
+            }
             $invoiceItem = new InvoiceItem(
                 amount: $amount,
                 type: InvoiceItem::CHARGE,
@@ -398,6 +424,9 @@ class Booking implements BookingInterface
         $departure = new \DateTime($booking->departure);
         $nights = $arrival->diff($departure)->d;
         $qty = $nights * (min($bookingDto->capacity, $confirmedGuests) - $bookingDto->guestsAmount);
+        if (!$qty) {
+            return;
+        }
         $invoiceItem = new InvoiceItem(
             amount: $amount,
             type: InvoiceItem::CHARGE,
