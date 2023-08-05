@@ -339,6 +339,11 @@ class Booking implements BookingInterface
     private function updateInfoItem(Entity\Booking $booking, InfoItem $infoItem): void
     {
         $existedInfoItem = $this->findInfoItemByCode($booking->infoItems, $infoItem->code);
+        if ($existedInfoItem && $infoItem->text === null) {
+            unset($existedInfoItem->text);
+            return;
+        }
+
         if (!$existedInfoItem) {
             $booking->infoItems[] = $infoItem;
         } else {
@@ -462,7 +467,7 @@ class Booking implements BookingInterface
     {
         $infoItems = [];
         $infoItems[] = new InfoItem('overmax', (string) ($bookingDto->overmax));
-        $infoItems[] = new InfoItem('plusGuest', $bookingDto->plusGuest ? 'true' : 'false');
+        $infoItems[] = new InfoItem('plusGuest', $bookingDto->plusGuest ? 'true' : null);
         $infoItems[] = new InfoItem('lessDocs', $bookingDto->lessDocs ? 'true' : 'false');
 
         foreach ($infoItems as $infoItem) {
