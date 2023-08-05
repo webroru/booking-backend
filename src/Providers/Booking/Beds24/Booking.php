@@ -267,7 +267,9 @@ class Booking implements BookingInterface
     {
         $result = [];
         foreach ($bookings as $booking) {
-            $lastNameMatch = mb_strtolower($booking->lastName) === mb_strtolower($search);
+            $search = iconv('utf-8', 'us-ascii//TRANSLIT', $search);
+            $name = iconv('utf-8', 'us-ascii//TRANSLIT', $booking->lastName);
+            $lastNameMatch = mb_strtolower($name) === mb_strtolower($search);
             $apiReferenceContain = str_contains($booking->apiReference, $search);
             $bookingIdContains = str_contains((string) $booking->id, $search);
             if ($lastNameMatch || $apiReferenceContain || $bookingIdContains) {
