@@ -6,5 +6,5 @@ namespace App\Providers\Payment;
 
 interface PaymentInterface
 {
-    public function create(float $amount, int $bookingId, string $client, string $currency): string;
+    public function create(float $amount, array $metadata, string $currency): string;
 }

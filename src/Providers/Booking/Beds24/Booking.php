@@ -88,8 +88,8 @@ class Booking implements BookingInterface
         $result = [];
         $bookings = $beds24BookingsDto->bookings;
 
-        if (isset($filter['search'])) {
-            $bookings = $this->filterByLastNameAndBookingId($bookings, $filter['search']);
+        if (isset($filter['searchString'])) {
+            $bookings = $this->filterByLastNameAndBookingId($bookings, $filter['searchString']);
         }
 
         $getPropertiesDto = $this->buildGetPropertiesDto($bookings);
@@ -267,8 +267,8 @@ class Booking implements BookingInterface
     {
         $result = [];
         foreach ($bookings as $booking) {
-            $search = iconv('utf-8', 'us-ascii//TRANSLIT', $search);
-            $name = iconv('utf-8', 'us-ascii//TRANSLIT', $booking->lastName);
+            $search = iconv('utf-8', 'us-ascii//TRANSLIT//IGNORE', $search);
+            $name = iconv('utf-8', 'us-ascii//TRANSLIT//IGNORE', $booking->lastName);
             $lastNameMatch = mb_strtolower($name) === mb_strtolower($search);
             $apiReferenceContain = str_contains($booking->apiReference, $search);
             $bookingIdContains = str_contains((string) $booking->id, $search);

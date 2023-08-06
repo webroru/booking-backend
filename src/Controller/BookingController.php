@@ -135,7 +135,7 @@ class BookingController extends AbstractController
         $this->booking->updateGuests($bookingDto);
 
         return $this->json([
-            'data' => 'ok',
+            'data' => $this->booking->findById($bookingDto->orderId),
         ]);
     }
 

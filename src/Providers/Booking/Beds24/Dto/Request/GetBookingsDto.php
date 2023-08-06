@@ -29,7 +29,6 @@ class GetBookingsDto implements RequestDtoInterface
         public readonly ?array $status = null,
         public readonly ?string $searchString = null,
         public readonly ?int $page = null,
-        public readonly ?string $search = null,
     ) {
     }
 

@@ -25,6 +25,7 @@ class PaymentService
         $paymentIntent = $event->data->object;
         $bookingId = (int) $paymentIntent->metadata?->bookingId;
         $clientName = $paymentIntent->metadata?->client;
+        $referer = $paymentIntent->metadata?->referer;
         $amount = $paymentIntent->amount;
         if (!$bookingId) {
             $this->logger->error('PaymentIntent does not contain bookingId', ['paymentIntent' => print_r($paymentIntent, true)]);
@@ -34,8 +35,9 @@ class PaymentService
             $this->logger->error('PaymentIntent does not contain client name', ['paymentIntent' => print_r($paymentIntent, true)]);
             throw new BadRequestException('PaymentIntent does not client name');
         }
+        $invoiceDescription = "Stripe payment for Booking № $bookingId (referer: $referer)";
         $this->booking->setToken($this->clientService->getTokenByName($clientName)->getToken());
-        $this->booking->addInvoice($bookingId, InvoiceItem::PAYMENT, $amount / 100);
+        $this->booking->addInvoice($bookingId, InvoiceItem::PAYMENT, $amount / 100, $invoiceDescription);
         $this->booking->setPaidStatus($bookingId, 'paid');
     }
 }

@@ -29,7 +29,7 @@ class ClientService
 
     public function getClientByName(string $name): Client
     {
-        return $this->clientRepository->findOneBy(['name' => parse_url($name, PHP_URL_HOST)]) ??
+        return $this->clientRepository->findOneBy(['name' => $name]) ??
             throw new ClientNotFoundException("Request from $name is not allowed");
     }
 

@@ -33,7 +33,12 @@ class PaymentController extends AbstractController
         $this->booking->setToken($token->getToken());
         $bookingDto = $this->booking->findById($bookingId);
         $debt = $bookingDto->debt;
-        $paymentToken = $this->payment->create($debt * 100, $bookingId, $token->getClient()->getName());
+        $metadata = [
+            'bookingId' => $bookingId,
+            'referer' => $bookingDto->originalReferer,
+            'client' => $token->getClient()->getName(),
+        ];
+        $paymentToken = $this->payment->create($debt * 100, $metadata);
 
         return $this->json([
             'token' => $paymentToken,
