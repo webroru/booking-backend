@@ -144,7 +144,8 @@ class Booking implements BookingInterface
     public function addPhoto(int $bookingId, string $photoUrl): void
     {
         $booking = $this->getBookingEntityById($bookingId);
-        $infoItem = new InfoItem(code: 'photos', text: $photoUrl);
+        $link = "<a href='$photoUrl'>Link for photos</a>";
+        $infoItem = new InfoItem(code: 'photos', text: $link);
         $booking->infoItems[] = $infoItem;
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);
