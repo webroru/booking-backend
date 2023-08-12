@@ -27,13 +27,12 @@ class PaymentService
         $clientName = $paymentIntent->metadata?->client;
         $referer = $paymentIntent->metadata?->referer;
         $amount = $paymentIntent->amount;
+        if (!$clientName) {
+            return;
+        }
         if (!$bookingId) {
             $this->logger->error('PaymentIntent does not contain bookingId', ['paymentIntent' => print_r($paymentIntent, true)]);
             throw new BadRequestException('PaymentIntent does not contain bookingId');
-        }
-        if (!$clientName) {
-            $this->logger->error('PaymentIntent does not contain client name', ['paymentIntent' => print_r($paymentIntent, true)]);
-            throw new BadRequestException('PaymentIntent does not client name');
         }
         $invoiceDescription = "Stripe payment for Booking № $bookingId (referer: $referer)";
         $this->booking->setToken($this->clientService->getTokenByName($clientName)->getToken());
