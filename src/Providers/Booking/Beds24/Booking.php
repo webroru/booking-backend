@@ -342,6 +342,8 @@ class Booking implements BookingInterface
         $existedInfoItem = $this->findInfoItemByCode($booking->infoItems, $infoItem->code);
         if ($existedInfoItem && $infoItem->text === null) {
             unset($existedInfoItem->text);
+            unset($existedInfoItem->code);
+            unset($existedInfoItem->bookingId);
             return;
         }
 
