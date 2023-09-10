@@ -79,11 +79,7 @@ class Booking implements BookingInterface
      */
     public function findBy(array $filter): array
     {
-        $filter = [
-            ...$this->getDefaultFilter(),
-            ...$filter,
-        ];
-        $dto = new GetBookingsDto(...$filter);
+        $dto = new GetBookingsDto(...$this->getDefaultFilter());
         $beds24BookingsDto = $this->client->getBookings($dto);
         $result = [];
         $bookings = $beds24BookingsDto->bookings;
@@ -94,10 +90,11 @@ class Booking implements BookingInterface
 
         $getPropertiesDto = $this->buildGetPropertiesDto($bookings);
         $beds24Properties = $this->client->getProperties($getPropertiesDto);
+        $groups = array_filter(array_map(fn(Entity\Booking $booking) => $booking->masterId, $bookings));
 
         foreach ($bookings as $booking) {
             $beds24Property = $this->findPropertyById($beds24Properties->properties, $booking->propertyId);
-            $result[] = $this->converter->convert($booking, $beds24Property);
+            $result[] = $this->converter->convert($booking, $beds24Property, $groups);
         }
 
         return $result;
@@ -267,13 +264,22 @@ class Booking implements BookingInterface
     private function filterByLastNameAndBookingId(array $bookings, string $search): array
     {
         $result = [];
+        $transliterator = \Transliterator::create("Any-Latin; Latin-ASCII; Lower()");
+        $search = $transliterator->transliterate($search);
         foreach ($bookings as $booking) {
-            $search = iconv('utf-8', 'us-ascii//TRANSLIT//IGNORE', $search);
-            $name = iconv('utf-8', 'us-ascii//TRANSLIT//IGNORE', $booking->lastName);
-            $lastNameMatch = mb_strtolower($name) === mb_strtolower($search);
+            $name = $transliterator->transliterate($booking->lastName);
+            $lastNameMatch = $name === $search;
             $apiReferenceContain = str_contains($booking->apiReference, $search);
-            $bookingIdContains = str_contains((string) $booking->id, $search);
-            if ($lastNameMatch || $apiReferenceContain || $bookingIdContains) {
+            $bookingIdContains = $booking->id === (int) $search;
+            $masterId = $booking->masterId === (int) $search;
+            if ($lastNameMatch || $apiReferenceContain || $bookingIdContains || $masterId) {
+                $result[] = $booking;
+            }
+        }
+
+        $groups = array_filter(array_map(fn(Entity\Booking $booking) => $booking->masterId, $result));
+        foreach ($bookings as $booking) {
+            if (in_array($booking->id, $groups) && !in_array($booking, $result)) {
                 $result[] = $booking;
             }
         }
