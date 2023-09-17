@@ -79,13 +79,23 @@ class Booking implements BookingInterface
      */
     public function findBy(array $filter): array
     {
-        $dto = new GetBookingsDto(...$this->getDefaultFilter());
+        $filter = [
+            ...$this->getDefaultFilter(),
+            ...$filter,
+        ];
+        $searchString = null;
+        if (isset($filter['searchString'])) {
+            $searchString = $filter['searchString'];
+            unset($filter['searchString']);
+        }
+        $dto = new GetBookingsDto(...$filter);
+
         $beds24BookingsDto = $this->client->getBookings($dto);
         $result = [];
         $bookings = $beds24BookingsDto->bookings;
 
-        if (isset($filter['searchString'])) {
-            $bookings = $this->filterByLastNameAndBookingId($bookings, $filter['searchString']);
+        if ($searchString) {
+            $bookings = $this->filterByLastNameAndBookingId($bookings, $searchString);
         }
 
         $getPropertiesDto = $this->buildGetPropertiesDto($bookings);
