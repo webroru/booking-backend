@@ -287,7 +287,7 @@ class Booking implements BookingInterface
     private function findInfoItemByCode(array $infoItems, string $code): ?InfoItem
     {
         foreach ($infoItems as $infoItem) {
-            if ($infoItem->code === $code) {
+            if (isset($infoItem->code) && $infoItem->code === $code) {
                 return $infoItem;
             }
         }
