@@ -7,6 +7,7 @@ namespace App\Service;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\BookingInterface;
 use Psr\Log\LoggerInterface;
+use Stripe\Event;
 use Stripe\Webhook;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 
@@ -22,21 +23,26 @@ class PaymentService
     public function handleSuccessfulPayment(string $payload, string $signature, string $endpointSecret): void
     {
         $event = Webhook::constructEvent($payload, $signature, $endpointSecret);
+        if ($event->type !== Event::PAYMENT_INTENT_SUCCEEDED) {
+            return;
+        }
         $paymentIntent = $event->data->object;
-        $bookingId = (int) $paymentIntent->metadata?->bookingId;
         $clientName = $paymentIntent->metadata?->client;
-        $referer = $paymentIntent->metadata?->referer;
-        $amount = $paymentIntent->amount;
+        $bookingData = json_decode($paymentIntent->metadata?->bookingData ?? '[]', true);
         if (!$clientName) {
             return;
         }
-        if (!$bookingId) {
-            $this->logger->error('PaymentIntent does not contain bookingId', ['paymentIntent' => print_r($paymentIntent, true)]);
-            throw new BadRequestException('PaymentIntent does not contain bookingId');
-        }
-        $invoiceDescription = "Stripe payment for Booking № $bookingId (referer: $referer)";
         $this->booking->setToken($this->clientService->getTokenByName($clientName)->getToken());
-        $this->booking->addInvoice($bookingId, InvoiceItem::PAYMENT, $amount / 100, $invoiceDescription);
-        $this->booking->setPaidStatus($bookingId, 'paid');
+
+        foreach ($bookingData as ['amount' => $amount, 'bookingId' => $bookingId, 'referer' => $referer]) {
+            if (!$bookingId) {
+                $message = 'PaymentIntent does not contain bookingId';
+                $this->logger->error($message, ['paymentIntent' => print_r($paymentIntent, true)]);
+                throw new BadRequestException($message);
+            }
+            $invoiceDescription = "Stripe payment for Booking № $bookingId (referer: $referer)";
+            $this->booking->addInvoice($bookingId, InvoiceItem::PAYMENT, $amount, $invoiceDescription);
+            $this->booking->setPaidStatus($bookingId, 'paid');
+        }
     }
 }
