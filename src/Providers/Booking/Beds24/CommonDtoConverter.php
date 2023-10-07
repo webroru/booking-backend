@@ -18,7 +18,7 @@ class CommonDtoConverter
     ) {
     }
 
-    public function convert(Entity\Booking $booking, Property $property): BookingDto
+    public function convert(Entity\Booking $booking, Property $property, array $groups): BookingDto
     {
         $roomName = $property->roomTypes
             ? $this->getRoomName($property->roomTypes, $booking->roomId)
@@ -56,6 +56,7 @@ class CommonDtoConverter
             plusGuest: $plusGuest === 'true',
             lessDocs: $lessDocs === 'true',
             photos: $this->getPhotos($booking->id),
+            groupId: in_array($booking->id, $groups) ? $booking->id : $booking->masterId,
         );
     }
 

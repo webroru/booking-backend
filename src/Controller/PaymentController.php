@@ -25,19 +25,28 @@ class PaymentController extends AbstractController
     #[Route('/payment', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
-        $bookingId = $request->get('bookingId');
-        if (!$bookingId) {
+        $bookings = $request->get('bookings');
+        if (!$bookings) {
             throw new BadRequestException();
         }
         $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
         $this->booking->setToken($token->getToken());
-        $bookingDto = $this->booking->findById($bookingId);
-        $debt = $bookingDto->debt;
+
+        $debt = 0;
         $metadata = [
-            'bookingId' => $bookingId,
-            'referer' => $bookingDto->originalReferer,
             'client' => $token->getClient()->getName(),
         ];
+        $bookingData = [];
+        foreach ($bookings as $bookingId) {
+            $bookingDto = $this->booking->findById($bookingId);
+            $debt += $bookingDto->debt;
+            $bookingData[] = [
+                'bookingId' => $bookingId,
+                'referer' => $bookingDto->originalReferer,
+                'amount' => $bookingDto->debt,
+            ];
+        }
+        $metadata['bookingData'] = json_encode($bookingData);
         $paymentToken = $this->payment->create($debt * 100, $metadata);
 
         return $this->json([

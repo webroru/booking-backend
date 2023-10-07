@@ -32,6 +32,7 @@ class Booking
         public readonly ?bool $plusGuest,
         public readonly ?bool $lessDocs,
         public readonly ?array $photos,
+        public readonly ?int $groupId,
     ) {
     }
 }
