@@ -15,13 +15,26 @@ class NotificationService
     ) {
     }
 
-    public function sendBookingDetails(Booking $bookingDto, string $emailAddress): void
+    /**
+     * @param Booking[] $bookings
+     */
+    public function sendBookingDetails(array $bookings, string $emailAddress): void
     {
+        $body = "<p>Hello {$bookings[0]->firstName},</p>";
+        foreach ($bookings as $booking) {
+            $body .= "<h2>Room: {$booking->room}</h2>" .
+            "<p>Check-In Date: {$booking->checkInDate}</p>" .
+            "<p>Check-Out Date: {$booking->checkOutDate}</p>" .
+            "<p>First Name: {$booking->firstName}</p>" .
+            "<p>Original Referer: {$booking->originalReferer}</p>" .
+            "<p>{$booking->passCode}</p>" .
+            "<p></p>";
+        }
         $email = (new Email())
             ->to($emailAddress)
             ->subject('Time for Symfony Mailer!')
             ->text('Sending emails is fun again!')
-            ->html('<p>See <b>Twig</b> integration for better HTML integration!</p>');
+            ->html($body);
 
         $this->mailer->send($email);
     }

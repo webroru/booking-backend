@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Dto\Booking;
 use App\Entity\Info;
 use App\Exception\TokenNotFoundException;
+use App\Providers\Booking\BookingInterface;
 use App\Serializer\Normalizer;
 use App\Service\ClientService;
 use App\Service\NotificationService;
@@ -22,6 +22,7 @@ class InfoController extends AbstractController
         private readonly Normalizer $normalizer,
         private readonly ClientService $clientService,
         private readonly NotificationService $notificationService,
+        private readonly BookingInterface $booking,
     ) {
     }
 
@@ -46,10 +47,12 @@ class InfoController extends AbstractController
     #[Route('/send-to-email', methods: ['POST'])]
     public function sendToEmail(Request $request): JsonResponse
     {
-        $bookingData = $request->get('booking');
-        $bookingDto = new Booking(...$bookingData);
+        $bookingIds = $request->get('bookingIds');
+        $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
+        $this->booking->setToken($token->getToken());
+        $bookings = $this->booking->findBy(['id' => $bookingIds]);
         $email = $request->get('email');
-        $this->notificationService->sendBookingDetails($bookingDto, $email);
+        $this->notificationService->sendBookingDetails($bookings, $email);
 
         return $this->json(['data' => 'ok']);
     }
