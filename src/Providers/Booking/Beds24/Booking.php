@@ -449,7 +449,7 @@ class Booking implements BookingInterface
         $arrival = new \DateTime($booking->arrival);
         $departure = new \DateTime($booking->departure);
         $nights = $arrival->diff($departure)->d;
-        $qty = $nights * (min($bookingDto->capacity, $confirmedGuests) - $bookingDto->guestsAmount);
+        $qty = $nights * ($confirmedGuests - $bookingDto->guestsAmount);
         if (!$qty) {
             return;
         }
