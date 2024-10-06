@@ -76,6 +76,7 @@ class Booking implements BookingInterface
     /**
      * @param array $filter
      * @return BookingDto[]
+     * @throws \Exception
      */
     public function findBy(array $filter): array
     {
@@ -110,6 +111,9 @@ class Booking implements BookingInterface
         return $result;
     }
 
+    /**
+     * @throws \Exception
+     */
     public function acceptRule(int $bookingId, bool $isRuleAccepted): void
     {
         $booking = $this->getBookingEntityById($bookingId);
@@ -119,6 +123,9 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function setPaidStatus(int $bookingId, string $paymentStatus): void
     {
         $booking = $this->getBookingEntityById($bookingId);
@@ -130,6 +137,9 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function setCheckInStatus(int $bookingId, bool $checkIn): void
     {
         $booking = $this->getBookingEntityById($bookingId);
@@ -139,6 +149,9 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function setCheckOutStatus(int $bookingId): void
     {
         $booking = $this->getBookingEntityById($bookingId);
@@ -148,6 +161,9 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function addPhoto(int $bookingId, string $photoUrl): void
     {
         $booking = $this->getBookingEntityById($bookingId);
@@ -158,6 +174,9 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function removePhoto(int $id, string $photoUrl): void
     {
         $booking = $this->getBookingEntityById($id);
@@ -172,6 +191,9 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function addInvoice(int $id, string $type, float $amount, string $description = ''): void
     {
         $invoiceItems = [new InvoiceItem(amount: $amount, type: $type, description: $description)];
@@ -180,6 +202,9 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function updateGuests(BookingDto $bookingDto): void
     {
         $booking = $this->getBookingEntityById($bookingDto->orderId);
@@ -191,6 +216,9 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function cancel(int $bookingId): void
     {
         $booking = $this->getBookingEntityById($bookingId);
@@ -203,6 +231,9 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function sendMessage(int $bookingId, string $text): void
     {
         $booking = $this->getBookingEntityById($bookingId);
@@ -211,6 +242,9 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
+    /**
+     * @throws \Exception
+     */
     private function update(PostBookingsDto $postBookingsDto): void
     {
         $postBookingsResponseDto = $this->client->postBookings($postBookingsDto);
@@ -254,6 +288,7 @@ class Booking implements BookingInterface
      * @param Property[] $properties
      * @param int $id
      * @return Property
+     * @throws \Exception
      */
     private function findPropertyById(array $properties, int $id): Property
     {
@@ -412,6 +447,9 @@ class Booking implements BookingInterface
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     private function addCityTaxInvoices(Entity\Booking $booking, BookingDto $bookingDto): void
     {
         foreach (self::GUESTS_AGE_CATEGORIES as $category => $description) {
@@ -439,6 +477,9 @@ class Booking implements BookingInterface
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     private function addExtraGuestInvoice(Entity\Booking $booking, BookingDto $bookingDto): void
     {
         $amount = $bookingDto->extraPerson;
@@ -471,6 +512,9 @@ class Booking implements BookingInterface
         };
     }
 
+    /**
+     * @throws \HttpRequestException
+     */
     private function updateGuestsInfoItems(Entity\Booking $booking, BookingDto $bookingDto): void
     {
         foreach (self::GUESTS_AGE_CATEGORIES as $category => $description) {
@@ -494,12 +538,18 @@ class Booking implements BookingInterface
         }
     }
 
+    /**
+     * @throws \Exception
+     */
     private function updateCityTax(Entity\Booking $booking, BookingDto $bookingDto): void
     {
         $this->removeCityTaxInvoices($booking);
         $this->addCityTaxInvoices($booking, $bookingDto);
     }
 
+    /**
+     * @throws \Exception
+     */
     private function updateExtraGuestInvoice(Entity\Booking $booking, BookingDto $bookingDto): void
     {
         $this->removeExtraGuestInvoice($booking);
@@ -518,12 +568,7 @@ class Booking implements BookingInterface
 
     private function getDefaultFilter(): array
     {
-        $departureFrom = (new \DateTime())->format('Y-m-d');
-        $arrivalTo = (new \DateTime('+3 days'))->format('Y-m-d');
-
         return [
-            'departureFrom' => $departureFrom,
-            'arrivalTo' => $arrivalTo,
             'includeInvoiceItems' => true,
             'includeInfoItems' => true,
             'status' => ['confirmed', 'new'],
