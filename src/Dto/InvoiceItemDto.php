@@ -14,8 +14,6 @@ readonly class InvoiceItemDto
         public string $status,
         public ?int $qty,
         public float $amount,
-        public ?float $vatRate,
-        public int $createdBy,
         public float $lineTotal,
     ) {
     }
