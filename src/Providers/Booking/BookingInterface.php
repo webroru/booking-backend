@@ -8,6 +8,8 @@ use App\Dto\BookingDto;
 
 interface BookingInterface
 {
+    public const PAYMENT = 'payment';
+
     public function setToken(string $token): void;
     public function fetchToken(string $code): object;
     public function refreshToken(string $refreshToken): object;

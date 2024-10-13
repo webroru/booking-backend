@@ -33,6 +33,7 @@ class BookingDto
         public readonly ?bool $lessDocs,
         public readonly ?array $photos,
         public readonly ?int $groupId,
+        public readonly array $invoiceItems,
     ) {
     }
 }
