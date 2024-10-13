@@ -35,7 +35,7 @@ class Property extends AbstractEntity
         public array $oneTimeVouchers,
         public array $discountVouchers,
         public array $featureCodes,
-        public ?array $roomTypes = null,
+        public array $roomTypes,
         public ?array $offers = null,
         public ?array $texts = null,
         public ?int $sellPriority = null,

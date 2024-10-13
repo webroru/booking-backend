@@ -20,10 +20,8 @@ class CommonDtoConverter
 
     public function convert(Entity\Booking $booking, Property $property, array $groups): BookingDto
     {
-        $roomName = $property->roomTypes
-            ? $this->getRoomName($property->roomTypes, $booking->roomId)
-            . ' Room Number: ' . $this->getUnitName($property->roomTypes, $booking->unitId)
-            : 'Unknown';
+        $roomName = $this->getRoomName($property->roomTypes, $booking->roomId)
+            . ' Room Number: ' . $this->getUnitName($property->roomTypes, $booking->unitId);
 
         $isRuleAccepted = $this->getInfoItemValue('isRuleAccepted', $booking->infoItems);
         $plusGuest = $this->getInfoItemValue('plusGuest', $booking->infoItems);
