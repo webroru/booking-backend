@@ -181,6 +181,7 @@ class CommonDtoConverter
                 amount: $invoiceItem->amount,
                 vatRate: $invoiceItem->vatRate,
                 createdBy: $invoiceItem->createdBy,
+                lineTotal: $invoiceItem->lineTotal,
             ),
             $invoiceItems
         );
