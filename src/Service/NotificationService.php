@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\Dto\Booking;
+use App\Dto\BookingDto;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
@@ -16,7 +16,7 @@ class NotificationService
     }
 
     /**
-     * @param Booking[] $bookings
+     * @param BookingDto[] $bookings
      */
     public function sendBookingDetails(array $bookings, string $emailAddress): void
     {
