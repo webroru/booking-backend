@@ -41,7 +41,7 @@ class PaymentService
                 throw new BadRequestException($message);
             }
             $invoiceDescription = "Stripe payment for Booking № $bookingId (referer: $referer)";
-            $this->booking->addInvoice($bookingId, InvoiceItem::PAYMENT, $amount, $invoiceDescription);
+            $this->booking->addInvoice($bookingId, BookingInterface::PAYMENT, $amount, $invoiceDescription);
             $this->booking->setPaidStatus($bookingId, 'paid');
         }
     }

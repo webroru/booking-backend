@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Booking\Beds24;
 
 use App\Dto\BookingDto;
+use App\Dto\InvoiceItemDto;
 use App\Entity\Photo;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
@@ -55,10 +56,11 @@ class CommonDtoConverter
             lessDocs: $lessDocs === 'true',
             photos: $this->getPhotos($booking->id),
             groupId: in_array($booking->id, $groups) ? $booking->id : $booking->masterId,
+            invoiceItems: $this->getInvoiceItems($booking->invoiceItems),
         );
     }
 
-    public function getMaxPeople(array $roomTypes, int $roomId): ?int
+    private function getMaxPeople(array $roomTypes, int $roomId): ?int
     {
         foreach ($roomTypes as $roomType) {
             if ($roomType['id'] === $roomId) {
@@ -73,7 +75,7 @@ class CommonDtoConverter
      * @param InvoiceItem[] $invoiceItems
      * @return float
      */
-    public function getDebt(array $invoiceItems): float
+    private function getDebt(array $invoiceItems): float
     {
         $debt = array_reduce(
             $invoiceItems,
@@ -159,6 +161,28 @@ class CommonDtoConverter
         return array_map(
             fn(Photo $photo) => ['id' => $photo->getId(), 'url' => $photo->getUrl()],
             $this->photoRepository->findBy(['bookingId' => $id])
+        );
+    }
+
+    /**
+     * @param InvoiceItem[] $invoiceItems
+     * @return array
+     */
+    private function getInvoiceItems(array $invoiceItems): array
+    {
+        return array_map(
+            fn(InvoiceItem $invoiceItem) => new InvoiceItemDto(
+                id: $invoiceItem->id,
+                type: $invoiceItem->type,
+                bookingId: $invoiceItem->bookingId,
+                description: $invoiceItem->description,
+                status: $invoiceItem->status,
+                qty: $invoiceItem->qty,
+                amount: $invoiceItem->amount,
+                vatRate: $invoiceItem->vatRate,
+                createdBy: $invoiceItem->createdBy,
+            ),
+            $invoiceItems
         );
     }
 }
