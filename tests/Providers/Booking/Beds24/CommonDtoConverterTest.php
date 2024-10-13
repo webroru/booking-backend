@@ -37,7 +37,21 @@ class CommonDtoConverterTest extends TestCase
             ->method('findBy')
             ->willReturn([]);
 
-        $invoiceItems = [new InvoiceItem(10, InvoiceItem::CHARGE, description: 'Test charging')];
+        $invoiceItems = [new InvoiceItem(
+            amount: 1.1,
+            type: InvoiceItem::CHARGE,
+            id: 1,
+            bookingId: 1,
+            invoiceId: 1,
+            description: 'Test',
+            status: 'Test',
+            qty: 1,
+            lineTotal: 1.1,
+            vatRate: 1.1,
+            createdBy: 1,
+            createTime: '2000-01-01',
+            invoiceDate: '2000-01-01',
+        )];
         $infoItems = [new InfoItem('foo', '42')];
         $this->booking = new Booking(
             id: 1,
