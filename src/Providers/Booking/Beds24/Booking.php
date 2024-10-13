@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers\Booking\Beds24;
 
-use App\Dto\Booking as BookingDto;
+use App\Dto\BookingDto;
 use App\Providers\Booking\Beds24\Client\Client;
 use App\Providers\Booking\Beds24\Dto\Request\GetBookingsDto;
 use App\Providers\Booking\Beds24\Dto\Request\GetPropertiesDto;

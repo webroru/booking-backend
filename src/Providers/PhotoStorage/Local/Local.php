@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers\PhotoStorage\Local;
 
-use App\Dto\Booking;
+use App\Dto\BookingDto;
 use App\Entity\Photo;
 use App\Providers\PhotoStorage\PhotoStorageInterface;
 use App\Repository\PhotoRepository;
@@ -18,7 +18,7 @@ class Local implements PhotoStorageInterface
     ) {
     }
 
-    public function put(Booking $booking, string $filepath): Photo
+    public function put(BookingDto $booking, string $filepath): Photo
     {
         $newFileName = uniqid() . '.' . pathinfo($filepath, PATHINFO_EXTENSION);
         $newFilePath = "{$booking->checkOutDate}/{$booking->orderId}/$newFileName";

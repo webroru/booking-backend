@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Tests\Providers\Booking\Beds24;
 
+use App\Dto\BookingDto;
 use App\Providers\Booking\Beds24\CommonDtoConverter;
 use App\Providers\Booking\Beds24\Entity\Booking;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
@@ -39,6 +40,6 @@ class CommonDtoConverterTest extends TestCase
     {
         $converter = new CommonDtoConverter();
         $bookingDTO = $converter->convert($this->booking, $this->property);
-        $this->assertInstanceOf(\App\Dto\Booking::class, $bookingDTO);
+        $this->assertInstanceOf(BookingDto::class, $bookingDTO);
     }
 }

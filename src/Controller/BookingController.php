@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Dto\Booking;
+use App\Dto\BookingDto;
 use App\Providers\Booking\BookingInterface;
 use App\Providers\PhotoStorage\Local\Local;
 use App\Repository\PhotoRepository;
@@ -131,7 +131,7 @@ class BookingController extends AbstractController
         $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
         $this->booking->setToken($token->getToken());
 
-        $bookingDto = new Booking(...$request->toArray());
+        $bookingDto = new BookingDto(...$request->toArray());
         $this->booking->updateGuests($bookingDto);
 
         return $this->json([
