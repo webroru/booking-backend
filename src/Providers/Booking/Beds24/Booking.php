@@ -10,7 +10,6 @@ use App\Providers\Booking\Beds24\Dto\Request\GetBookingsDto;
 use App\Providers\Booking\Beds24\Dto\Request\GetPropertiesDto;
 use App\Providers\Booking\Beds24\Dto\Request\PostBookingsDto;
 use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationSetupDto;
-use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationTokenDto;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
@@ -35,21 +34,10 @@ class Booking implements BookingInterface
     ) {
     }
 
-    public function setToken(string $token): void
-    {
-        $this->client->setToken($token);
-    }
-
     public function fetchToken(string $code): GetAuthenticationSetupDto
     {
         $this->client->setCode($code);
         return $this->client->getAuthenticationSetup();
-    }
-
-    public function refreshToken(string $refreshToken): GetAuthenticationTokenDto
-    {
-        $this->client->setRefreshToken($refreshToken);
-        return $this->client->getAuthenticationToken();
     }
 
     public function findById(int $id): BookingDto

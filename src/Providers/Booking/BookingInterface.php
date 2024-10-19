@@ -10,9 +10,7 @@ interface BookingInterface
 {
     public const PAYMENT = 'payment';
 
-    public function setToken(string $token): void;
     public function fetchToken(string $code): object;
-    public function refreshToken(string $refreshToken): object;
     public function findById(int $id): BookingDto;
     public function findBy(array $filter): array;
     public function acceptRule(int $bookingId, bool $isRuleAccepted): void;

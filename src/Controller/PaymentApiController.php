@@ -10,16 +10,19 @@ use App\Service\ClientService;
 use Symfony\Component\HttpFoundation\Exception\BadRequestException;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/api', name: 'api_payment')]
-class PaymentController extends AbstractController
+class PaymentApiController extends AbstractApiController
 {
     public function __construct(
         private readonly ClientService $clientService,
         private readonly BookingInterface $booking,
         private readonly PaymentInterface $payment,
+        RequestStack $requestStack,
     ) {
+        parent::__construct($clientService, $requestStack);
     }
 
     #[Route('/payment', methods: ['POST'])]
@@ -29,12 +32,10 @@ class PaymentController extends AbstractController
         if (!$bookings) {
             throw new BadRequestException();
         }
-        $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
-        $this->booking->setToken($token->getToken());
 
         $debt = 0;
         $metadata = [
-            'client' => $token->getClient()->getName(),
+            'client' => $this->clientService->getClient()->getName(),
         ];
         $bookingData = [];
         foreach ($bookings as $bookingId) {

@@ -26,9 +26,6 @@ class Client
     #[ORM\Column(length: 255, unique: true)]
     private ?string $name = null;
 
-    #[ORM\OneToOne(inversedBy: 'client', cascade: ['persist', 'remove'])]
-    private ?Token $token = null;
-
     /** @var Collection<int, Info> */
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Info::class)]
     private Collection $info;
@@ -63,18 +60,6 @@ class Client
     public function setName(string $name): self
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getToken(): ?Token
-    {
-        return $this->token;
-    }
-
-    public function setToken(?Token $token): self
-    {
-        $this->token = $token;
 
         return $this;
     }

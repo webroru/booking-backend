@@ -8,7 +8,7 @@ use App\Entity\Admin;
 use App\Entity\Client;
 use App\Entity\Info;
 use App\Entity\Photo;
-use App\Entity\Token;
+use App\Entity\Beds24Token;
 use App\Repository\AdminRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -52,7 +52,7 @@ class DashboardController extends AbstractDashboardController
     {
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
         yield MenuItem::linkToCrud('Clients', 'fas fa-person', Client::class);
-        yield MenuItem::linkToCrud('Tokens', 'fas fa-key', Token::class);
+        yield MenuItem::linkToCrud('Tokens', 'fas fa-key', Beds24Token::class);
         yield MenuItem::linkToCrud('Info', 'fas fa-circle-info', Info::class);
         yield MenuItem::linkToCrud('Photos', 'fas fa-camera', Photo::class);
     }

@@ -13,26 +13,27 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/api', name: 'api_booking')]
-class BookingController extends AbstractController
+class BookingApiController extends AbstractApiController
 {
     public function __construct(
         private readonly BookingInterface $booking,
         private readonly ClientService $clientService,
         private readonly PhotoRepository $photoRepository,
         private readonly Local $photoStorage,
+        RequestStack $requestStack,
     ) {
+        parent::__construct($clientService, $requestStack);
     }
 
     #[Route('/booking', methods: ['GET'])]
     public function index(Request $request): JsonResponse
     {
         $filter = $request->query->all();
-        $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
-        $this->booking->setToken($token->getToken());
         return $this->json([
             'data' => $this->booking->findBy($filter),
         ]);
@@ -43,8 +44,6 @@ class BookingController extends AbstractController
     {
         $orderId = $request->get('orderId');
         $isRuleAccepted = $request->get('isRuleAccepted');
-        $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
-        $this->booking->setToken($token->getToken());
         $this->booking->acceptRule($orderId, $isRuleAccepted);
 
         return $this->json([
@@ -56,8 +55,6 @@ class BookingController extends AbstractController
     public function checkIn(Request $request, int $id): JsonResponse
     {
         $checkIn = $request->get('checkIn');
-        $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
-        $this->booking->setToken($token->getToken());
         $this->booking->setCheckInStatus($id, $checkIn);
 
         return $this->json([
@@ -68,8 +65,6 @@ class BookingController extends AbstractController
     #[Route('/booking/{id<\d+>}/check-out', methods: ['PUT'])]
     public function checkOut(Request $request, int $id): JsonResponse
     {
-        $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
-        $this->booking->setToken($token->getToken());
         $this->booking->setCheckOutStatus($id);
 
         return $this->json([
@@ -80,8 +75,6 @@ class BookingController extends AbstractController
     #[Route('/booking/{id<\d+>}/photo', methods: ['POST'])]
     public function uploadPhoto(Request $request, int $id): JsonResponse
     {
-        $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
-        $this->booking->setToken($token->getToken());
         $bookingDto = $this->booking->findById($id);
         /** @var UploadedFile $file */
         $file = $request->files->get('photo');
@@ -114,9 +107,6 @@ class BookingController extends AbstractController
             throw new NotFoundHttpException("Photo $photoId is not found");
         }
 
-        $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
-        $this->booking->setToken($token->getToken());
-
         $this->photoStorage->remove($photo);
         $this->booking->removePhoto($id, $photo->getUrl());
 
@@ -128,9 +118,6 @@ class BookingController extends AbstractController
     #[Route('/booking/{id<\d+>}/guests', methods: ['PUT'])]
     public function updateGuests(Request $request): JsonResponse
     {
-        $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
-        $this->booking->setToken($token->getToken());
-
         $bookingDto = new BookingDto(...$request->toArray());
         $this->booking->updateGuests($bookingDto);
 
@@ -143,8 +130,6 @@ class BookingController extends AbstractController
     public function payByCash(Request $request, int $id): JsonResponse
     {
         $isPayByCash = $request->get('isPayByCash');
-        $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
-        $this->booking->setToken($token->getToken());
         $this->booking->setPaidStatus($id, $isPayByCash ? 'paid by cash' : '');
 
         return $this->json([
@@ -155,8 +140,6 @@ class BookingController extends AbstractController
     #[Route('/booking/{id<\d+>}/cancel', methods: ['PUT'])]
     public function cancel(Request $request, int $id): JsonResponse
     {
-        $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
-        $this->booking->setToken($token->getToken());
         $this->booking->cancel($id);
 
         return $this->json([
@@ -168,8 +151,6 @@ class BookingController extends AbstractController
     public function message(Request $request, int $id): JsonResponse
     {
         $message = $request->get('message');
-        $token = $this->clientService->getTokenByOrigin($request->headers->get('origin', 'http://localhost'));
-        $this->booking->setToken($token->getToken());
         $this->booking->sendMessage($id, $message);
 
         return $this->json([

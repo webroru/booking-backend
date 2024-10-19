@@ -8,7 +8,7 @@ use App\Repository\TokenRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TokenRepository::class)]
-class Token
+class Beds24Token
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -24,7 +24,8 @@ class Token
     #[ORM\Column(type: 'datetime')]
     private ?\DateTime $expiresAt = null;
 
-    #[ORM\OneToOne(mappedBy: 'token')]
+    #[ORM\OneToOne]
+    #[ORM\JoinColumn(nullable: false)]
     private Client $client;
 
     public function getId(): ?int
@@ -73,7 +74,7 @@ class Token
         return $this->client;
     }
 
-    public function setClient(Client $client): Token
+    public function setClient(Client $client): Beds24Token
     {
         $this->client = $client;
         return $this;

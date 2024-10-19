@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Entity\Token;
+use App\Entity\Beds24Token;
 use App\Providers\Booking\BookingInterface;
 use App\Repository\ClientRepository;
 use App\Repository\TokenRepository;
@@ -49,14 +49,13 @@ class Beds24GetTokenCommand extends Command
             throw new \Exception("Client $clientName is not found");
         }
         $dto = $this->booking->fetchToken($code);
-        $token = ($client->getToken() ?? (new Token()))
+        $token = ($this->tokenRepository->findOneByClient($client) ?? new Beds24Token())
             ->setToken($dto->token)
             ->setRefreshToken($dto->refreshToken)
             ->setExpiresAt(new \DateTime("+ $dto->expiresIn seconds"))
         ;
-        $client->setToken($token);
-        $this->tokenRepository->save($token);
-        $this->clientRepository->save($client, true);
+
+        $this->tokenRepository->save($token, true);
         $io->success("Token successfully generated: {$token->getToken()}, refreshToken: {$token->getToken()}, expiresIn: {$token->getExpiresAt()->format('Y-m-d H:i:s')}");
 
         return Command::SUCCESS;

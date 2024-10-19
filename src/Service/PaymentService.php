@@ -32,7 +32,8 @@ class PaymentService
         if (!$clientName) {
             return;
         }
-        $this->booking->setToken($this->clientService->getTokenByName($clientName)->getToken());
+        $this->clientService->setClientByName($clientName);
+        //$this->booking->setToken($this->clientService->getTokenByName($clientName)->getToken());
 
         foreach ($bookingData as ['amount' => $amount, 'bookingId' => $bookingId, 'referer' => $referer]) {
             if (!$bookingId) {
