@@ -19,13 +19,18 @@ class WebhookController extends AbstractController
     }
 
     #[Route('/stripe', methods: ['POST'])]
-    public function stripe(Request $request,): JsonResponse
+    public function stripe(Request $request): JsonResponse
     {
         $endpointSecret = $this->getParameter('endpoint_secret');
         $payload = $request->getContent();
         $signature = $request->server->get('HTTP_STRIPE_SIGNATURE');
         $this->paymentService->handleSuccessfulPayment($payload, $signature, $endpointSecret);
 
+        return $this->json([]);
+    }
+    #[Route('/beds24/booking')]
+    public function beds24Booking(Request $request): JsonResponse
+    {
         return $this->json([]);
     }
 }

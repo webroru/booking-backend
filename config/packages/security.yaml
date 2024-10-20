@@ -13,14 +13,17 @@ security:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-        main:
-            lazy: true
+        admin:
+            pattern: ^/(admin|login|logout)
             provider: app_user_provider
             custom_authenticator: App\Security\AppAuthenticator
             logout:
                 path: app_logout
-                # where to redirect after logout
-                # target: app_any_route
+            access_denied_url: app_access_denied
+        webhook:
+            pattern: ^/webhook
+            access_token:
+                token_handler: App\Security\AccessTokenHandler
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -32,7 +35,8 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/webhook/stripe, roles: PUBLIC_ACCESS }
+        - { path: ^/webhook, roles: ROLE_ADMIN }
 
 when@test:
     security:
