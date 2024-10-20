@@ -52,7 +52,7 @@ class DashboardController extends AbstractDashboardController
     {
         yield MenuItem::linkToDashboard('Dashboard', 'fa fa-home');
         yield MenuItem::linkToCrud('Clients', 'fas fa-person', Client::class);
-        yield MenuItem::linkToCrud('Tokens', 'fas fa-key', Beds24Token::class);
+        yield MenuItem::linkToCrud('Beds24 Tokens', 'fas fa-key', Beds24Token::class);
         yield MenuItem::linkToCrud('Info', 'fas fa-circle-info', Info::class);
         yield MenuItem::linkToCrud('Photos', 'fas fa-camera', Photo::class);
     }
