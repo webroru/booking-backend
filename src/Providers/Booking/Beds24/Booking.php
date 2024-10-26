@@ -556,7 +556,12 @@ class Booking implements BookingInterface
 
     private function getDefaultFilter(): array
     {
+        $departureFrom = (new \DateTime())->format('Y-m-d');
+        $arrivalTo = (new \DateTime('+1 month'))->format('Y-m-d');
+
         return [
+            'departureFrom' => $departureFrom,
+            'arrivalTo' => $arrivalTo,
             'includeInvoiceItems' => true,
             'includeInfoItems' => true,
             'status' => ['confirmed', 'new'],
