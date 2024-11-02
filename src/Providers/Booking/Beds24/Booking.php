@@ -77,11 +77,8 @@ class Booking implements BookingInterface
             $searchString = $filter['searchString'];
             unset($filter['searchString']);
         }
-        $dto = new GetBookingsDto(...$filter);
 
-        $beds24BookingsDto = $this->client->getBookings($dto);
-        $result = [];
-        $bookings = $beds24BookingsDto->bookings;
+        $bookings = $this->getBookings($filter);
 
         if ($searchString) {
             $bookings = $this->filterByLastNameAndBookingId($bookings, $searchString);
@@ -91,6 +88,7 @@ class Booking implements BookingInterface
         $beds24Properties = $this->client->getProperties($getPropertiesDto);
         $groups = array_filter(array_map(fn(Entity\Booking $booking) => $booking->masterId, $bookings));
 
+        $result = [];
         foreach ($bookings as $booking) {
             $beds24Property = $this->findPropertyById($beds24Properties->properties, $booking->propertyId);
             $result[] = $this->converter->convert($booking, $beds24Property, $groups);
@@ -566,5 +564,22 @@ class Booking implements BookingInterface
             'includeInfoItems' => true,
             'status' => ['confirmed', 'new'],
         ];
+    }
+
+    /**
+     * @return Entity\Booking[]
+     */
+    private function getBookings(array $filter, int $page = 1): array
+    {
+        $filter['page'] = $page;
+        $dto = new GetBookingsDto(...$filter);
+        $beds24BookingsDto = $this->client->getBookings($dto);
+        $bookings = $beds24BookingsDto->bookings;
+
+        if ($beds24BookingsDto->pages['nextPageExists']) {
+            $bookings = [...$bookings, ...$this->getBookings($filter, $page + 1)];
+        }
+
+        return $bookings;
     }
 }
