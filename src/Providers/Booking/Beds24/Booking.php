@@ -556,8 +556,8 @@ class Booking implements BookingInterface
 
     private function getDefaultFilter(): array
     {
-        $departureFrom = (new \DateTime())->format('Y-m-d');
-        $arrivalTo = (new \DateTime('+3 month'))->format('Y-m-d');
+        $departureFrom = (new \DateTime('-3 days'))->format('Y-m-d');
+        $arrivalTo = (new \DateTime('+14 days'))->format('Y-m-d');
 
         return [
             'departureFrom' => $departureFrom,
