@@ -21,8 +21,8 @@ class CommonDtoConverter
 
     public function convert(Entity\Booking $booking, Property $property, array $groups): BookingDto
     {
-        $roomName = $this->getRoomName($property->roomTypes, $booking->roomId)
-            . ' Room Number: ' . $this->getUnitName($property->roomTypes, $booking->unitId);
+        $roomType = $this->getRoomType($property->roomTypes, $booking->roomId);
+        $roomName = ($roomType['name'] ?? '') . ' Room Number: ' . $this->getUnitName($roomType, $booking->unitId);
 
         $isRuleAccepted = $this->getInfoItemValue('isRuleAccepted', $booking->infoItems);
         $plusGuest = $this->getInfoItemValue('plusGuest', $booking->infoItems);
@@ -103,24 +103,22 @@ class CommonDtoConverter
         return null;
     }
 
-    private function getUnitName(array $roomTypes, int $unitId): ?string
+    private function getRoomType(array $roomTypes, int $roomId): ?array
     {
         foreach ($roomTypes as $roomType) {
-            foreach ($roomType['units'] as $unit) {
-                if ($unit['id'] === $unitId) {
-                    return $unit['name'];
-                }
+            if ($roomType['id'] === $roomId) {
+                return $roomType;
             }
         }
 
         return null;
     }
 
-    private function getRoomName(array $roomTypes, int $roomId): ?string
+    private function getUnitName(array $roomType, int $unitId): ?string
     {
-        foreach ($roomTypes as $roomType) {
-            if ($roomType['id'] === $roomId) {
-                return $roomType['name'];
+        foreach ($roomType['units'] as $unit) {
+            if ($unit['id'] === $unitId) {
+                return $unit['name'];
             }
         }
 
