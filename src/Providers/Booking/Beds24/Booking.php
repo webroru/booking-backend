@@ -153,8 +153,7 @@ class Booking implements BookingInterface
     public function addPhoto(int $bookingId, string $photoUrl): void
     {
         $booking = $this->getBookingEntityById($bookingId);
-        $link = "<a href='$photoUrl'>Link for photos</a>";
-        $infoItem = new InfoItem(code: 'photos', text: $link);
+        $infoItem = new InfoItem(code: 'photos', text: $this->getPhotoLink($photoUrl));
         $booking->infoItems[] = $infoItem;
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);
@@ -166,7 +165,7 @@ class Booking implements BookingInterface
     public function removePhoto(int $id, string $photoUrl): void
     {
         $booking = $this->getBookingEntityById($id);
-        $infoItem = $this->findInfoItemByValue($booking->infoItems, $photoUrl);
+        $infoItem = $this->findInfoItemByValue($booking->infoItems, $this->getPhotoLink($photoUrl));
         if (!$infoItem) {
             return;
         }
@@ -581,5 +580,10 @@ class Booking implements BookingInterface
         }
 
         return $bookings;
+    }
+
+    private function getPhotoLink($photoUrl): string
+    {
+        return "<a href='$photoUrl'>Link for photos</a>";
     }
 }
