@@ -13,6 +13,7 @@
 ## Configuration ##
 1. `cp .env .env.local`
 2. Overwrite options in the .env.local
+3. Create `public/uploads` directory, set owner to www-data
 
 ## Tests ##
 Run all tests `docker-compose run composer.phar test`
