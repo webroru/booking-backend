@@ -410,7 +410,10 @@ class Booking implements BookingInterface
     {
         /** @var InvoiceItem $item */
         foreach ($booking->invoiceItems as $item) {
-            if (stripos($item->description, 'city tax') === false) {
+            if (
+                stripos($item->description, 'city tax') === false
+                && stripos($item->description, 'Городской налог') === false
+            ) {
                 continue;
             }
             $item->qty = 0;
