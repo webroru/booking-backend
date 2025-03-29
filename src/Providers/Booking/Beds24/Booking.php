@@ -299,7 +299,8 @@ class Booking implements BookingInterface
         foreach ($bookings as $booking) {
             $name = $transliterator->transliterate($booking->lastName);
             $searchItems = explode(' ', $search);
-            $lastNameMatch = in_array($name, $searchItems);
+            $nameItems = explode(' ', $name);
+            $lastNameMatch = count(array_intersect($searchItems, $nameItems)) > 0;
             $apiReferenceContain = str_contains($booking->apiReference, $search);
             $bookingIdContains = $booking->id === (int) $search;
             $masterId = $booking->masterId === (int) $search;
