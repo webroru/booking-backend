@@ -1,5 +1,4 @@
 #  docker-compose for DEV!!!
-version: '3.1'
 
 services:
   mysql:
@@ -43,9 +42,7 @@ services:
     working_dir: /code
     command: [ "crond", "-f", "-d", "8" ]
     volumes:
-      - ./docker/dev/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d
       - ./:/code
-      - ~/.ssh:/root/.ssh
 
   rabbitmq:
     image: bitnami/rabbitmq:latest
