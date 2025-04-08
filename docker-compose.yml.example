@@ -21,14 +21,11 @@ services:
     volumes:
       - ./:/code
       - ./docker/dev/nginx/hosts:/etc/nginx/conf.d
-      - ./docker/dev/nginx/logs:/var/log/nginx
     depends_on:
       - php
 
   php:
     build: docker/dev/php
-    volumes:
-      - ./:/code:rw
     working_dir: /code
     environment:
       PHP_IDE_CONFIG: "serverName=xdebug-docker"
@@ -46,7 +43,7 @@ services:
     working_dir: /code
     command: [ "crond", "-f", "-d", "8" ]
     volumes:
-      - ./docker/dev/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d/www.conf
+      - ./docker/dev/php/php-fpm.d/www.conf:/usr/local/etc/php-fpm.d
       - ./:/code
       - ~/.ssh:/root/.ssh
 
