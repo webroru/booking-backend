@@ -57,6 +57,7 @@ class CommonDtoConverter
             photos: $this->getPhotos($booking->id),
             groupId: in_array($booking->id, $groups) ? $booking->id : $booking->masterId,
             invoiceItems: $this->getInvoiceItems($booking->invoiceItems),
+            guests: $booking->guests,
         );
     }
 

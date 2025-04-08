@@ -22,7 +22,7 @@ class BookingApiController extends AbstractApiController
 {
     public function __construct(
         private readonly BookingInterface $booking,
-        private readonly ClientService $clientService,
+        ClientService $clientService,
         private readonly PhotoRepository $photoRepository,
         private readonly Local $photoStorage,
         RequestStack $requestStack,

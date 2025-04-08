@@ -34,6 +34,7 @@ class BookingDto
         public readonly ?array $photos,
         public readonly ?int $groupId,
         public readonly array $invoiceItems,
+        public readonly array $guests,
     ) {
     }
 }
