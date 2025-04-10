@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Tests\Providers\Booking\Beds24;
 
 use App\Dto\BookingDto;
-use App\Providers\Booking\Beds24\CommonDtoConverter;
 use App\Providers\Booking\Beds24\Entity\Booking;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
+use App\Providers\Booking\Beds24\Transformer\BookingTransformer;
 use App\Repository\PhotoRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -22,8 +22,8 @@ class CommonDtoConverterTest extends TestCase
 
     public function testConvert(): void
     {
-        $converter = new CommonDtoConverter($this->photoRepositoryMock);
-        $bookingDTO = $converter->convert($this->booking, $this->property, []);
+        $converter = new BookingTransformer($this->photoRepositoryMock);
+        $bookingDTO = $converter->toDto($this->booking, $this->property, []);
         $this->assertInstanceOf(BookingDto::class, $bookingDTO);
     }
 

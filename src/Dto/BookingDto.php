@@ -28,6 +28,7 @@ class BookingDto
         public readonly ?int $overmax,
         public readonly ?bool $isRuleAccepted,
         public readonly ?bool $checkIn,
+        public readonly bool $checkOut,
         public readonly ?string $paymentStatus,
         public readonly ?bool $plusGuest,
         public readonly ?bool $lessDocs,

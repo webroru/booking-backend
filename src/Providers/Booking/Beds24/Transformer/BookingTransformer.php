@@ -2,24 +2,26 @@
 
 declare(strict_types=1);
 
-namespace App\Providers\Booking\Beds24;
+namespace App\Providers\Booking\Beds24\Transformer;
 
 use App\Dto\BookingDto;
 use App\Dto\InvoiceItemDto;
 use App\Entity\Photo;
+use App\Providers\Booking\Beds24\Booking;
+use App\Providers\Booking\Beds24\Entity;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
 use App\Repository\PhotoRepository;
 
-class CommonDtoConverter
+class BookingTransformer
 {
     public function __construct(
         private readonly PhotoRepository $photoRepository,
     ) {
     }
 
-    public function convert(Entity\Booking $booking, Property $property, array $groups): BookingDto
+    public function toDto(Entity\Booking $booking, Property $property, array $groups): BookingDto
     {
         $roomType = $this->getRoomType($property->roomTypes, $booking->roomId);
         $roomName = ($roomType['name'] ?? '') . ' Room Number: ' . $this->getUnitName($roomType, $booking->unitId);
@@ -28,6 +30,7 @@ class CommonDtoConverter
         $plusGuest = $this->getInfoItemValue('plusGuest', $booking->infoItems);
         $lessDocs = $this->getInfoItemValue('lessDocs', $booking->infoItems);
         $checkIn = $this->getInfoItemValue('checkIn', $booking->infoItems);
+        $checkOut = $this->getInfoItemValue('checkOut', $booking->infoItems);
 
         return new BookingDto(
             firstName: $booking->firstName,
@@ -51,6 +54,7 @@ class CommonDtoConverter
             overmax: (int) $this->getInfoItemValue('overmax', $booking->infoItems),
             isRuleAccepted: $isRuleAccepted === 'true',
             checkIn: $checkIn === 'true',
+            checkOut: $checkOut === 'true',
             paymentStatus: $this->getInfoItemValue('paymentStatus', $booking->infoItems),
             plusGuest: $plusGuest === 'true',
             lessDocs: $lessDocs === 'true',

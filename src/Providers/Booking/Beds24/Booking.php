@@ -13,6 +13,8 @@ use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationSetupDto;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
+use App\Providers\Booking\Beds24\Service\InfoItemService;
+use App\Providers\Booking\Beds24\Transformer\BookingTransformer;
 use App\Providers\Booking\BookingInterface;
 
 class Booking implements BookingInterface
@@ -30,7 +32,8 @@ class Booking implements BookingInterface
 
     public function __construct(
         private readonly Client $client,
-        private readonly CommonDtoConverter $converter,
+        private readonly BookingTransformer $converter,
+        private readonly InfoItemService $infoItemService,
     ) {
     }
 
@@ -91,7 +94,7 @@ class Booking implements BookingInterface
         $result = [];
         foreach ($bookings as $booking) {
             $beds24Property = $this->findPropertyById($beds24Properties->properties, $booking->propertyId);
-            $result[] = $this->converter->convert($booking, $beds24Property, $groups);
+            $result[] = $this->converter->toDto($booking, $beds24Property, $groups);
         }
 
         return $result;
@@ -227,6 +230,32 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
+    public function updateBooking(BookingDto $bookingDto): void
+    {
+        $booking = $this->getBookingEntityById($bookingDto->orderId);
+        $infoItems = [];
+        $infoItems[] = new InfoItem('checkIn', $bookingDto->checkIn ? 'true' : 'false');
+        $infoItems[] = new InfoItem('paymentStatus', $bookingDto->paymentStatus);
+        $infoItems[] = new InfoItem('isRuleAccepted', $bookingDto->isRuleAccepted ? 'true' : 'false');
+        $infoItems[] = new InfoItem('checkOut', $bookingDto->checkOut ? 'true' : 'false');
+        $infoItems[] = new InfoItem('overmax', (string) ($bookingDto->overmax));
+        $infoItems[] = new InfoItem('plusGuest', $bookingDto->plusGuest ? 'true' : null);
+        $infoItems[] = new InfoItem('lessDocs', $bookingDto->lessDocs ? 'true' : 'false');
+        foreach ($infoItems as $infoItem) {
+            $this->infoItemService->updateInfoItem($booking, $infoItem);
+        }
+
+        foreach (self::GUESTS_AGE_CATEGORIES as $category => $description) {
+            if (!isset($bookingDto->$category)) {
+                throw new \Exception("Property $category not found");
+            }
+            $infoItem = new InfoItem($description, (string) $bookingDto->$category);
+            $this->infoItemService->updateInfoItem($booking, $infoItem);
+        }
+
+        $postBookingsDto = new PostBookingsDto([$booking]);
+        $this->update($postBookingsDto);
+    }
     /**
      * @throws \Exception
      */
@@ -503,13 +532,13 @@ class Booking implements BookingInterface
     }
 
     /**
-     * @throws \HttpRequestException
+     * @throws \Exception
      */
     private function updateGuestsInfoItems(Entity\Booking $booking, BookingDto $bookingDto): void
     {
         foreach (self::GUESTS_AGE_CATEGORIES as $category => $description) {
             if (!isset($bookingDto->$category)) {
-                throw new \HttpRequestException("Property $category not found");
+                throw new \Exception("Property $category not found");
             }
             $infoItem = new InfoItem($description, (string) $bookingDto->$category);
             $this->updateInfoItem($booking, $infoItem);

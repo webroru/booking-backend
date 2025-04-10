@@ -158,6 +158,17 @@ class BookingApiController extends AbstractApiController
         ]);
     }
 
+    #[Route('/booking/{id<\d+>}', methods: ['POST'])]
+    public function update(Request $request): JsonResponse
+    {
+        $bookingDto = new BookingDto(...$request->toArray());
+        $this->booking->updateBooking($bookingDto);
+
+        return $this->json([
+            'data' => 'ok',
+        ]);
+    }
+
     private function isImage(UploadedFile $file): bool
     {
         return str_contains($file->getMimeType(), 'image');
