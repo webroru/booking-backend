@@ -114,7 +114,6 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
-
     /**
      * @throws \Exception
      */

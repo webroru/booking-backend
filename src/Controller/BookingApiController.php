@@ -76,15 +76,6 @@ class BookingApiController extends AbstractApiController
         return $this->json([]);
     }
 
-    #[Route('/booking/{id<\d+>}/pay-by-cash', methods: ['PUT'])]
-    public function payByCash(Request $request, int $id): JsonResponse
-    {
-        $isPayByCash = $request->get('isPayByCash');
-        $this->booking->setPaidStatus($id, $isPayByCash ? 'paid by cash' : '');
-
-        return $this->json([]);
-    }
-
     #[Route('/booking/{id<\d+>}/cancel', methods: ['PUT'])]
     public function cancel(Request $request, int $id): JsonResponse
     {
