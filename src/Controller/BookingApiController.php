@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Dto\BookingDto;
+use App\Dto\GuestDto;
 use App\Providers\Booking\BookingInterface;
 use App\Providers\PhotoStorage\Local\Local;
 use App\Repository\PhotoRepository;
@@ -88,7 +89,7 @@ class BookingApiController extends AbstractApiController
     #[Route('/booking/{id<\d+>}', methods: ['PUT'])]
     public function update(Request $request): JsonResponse
     {
-        $bookingDto = new BookingDto(...$request->toArray());
+        $bookingDto = $this->bookingDtoFromArray($request->toArray());
         $this->booking->updateBooking($bookingDto);
 
         return $this->json([]);
@@ -97,5 +98,21 @@ class BookingApiController extends AbstractApiController
     private function isImage(UploadedFile $file): bool
     {
         return str_contains($file->getMimeType(), 'image');
+    }
+
+    private function bookingDtoFromArray(array $data): BookingDto
+    {
+        $guests = array_map(fn(array $guest) => new GuestDto(
+            id: $guest['id'] ?? null,
+            firstName: $guest['firstName'],
+            lastName: $guest['lastName'],
+            documentNumber: $guest['documentNumber'],
+            documentType: $guest['documentType'],
+            gender: $guest['gender'] ?? null,
+            dateOfBirth: $guest['dateOfBirth'],
+            nationality: $guest['nationality'],
+        ), $data['guests']);
+
+        return new BookingDto(...[...$data, 'guests' => $guests]);
     }
 }
