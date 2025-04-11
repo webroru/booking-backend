@@ -16,14 +16,14 @@ use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
 use App\Repository\PhotoRepository;
 
-readonly class BookingTransformer
+readonly class BookingEntityToDtoTransformer
 {
     public function __construct(
         private PhotoRepository $photoRepository,
     ) {
     }
 
-    public function toDto(Entity\Booking $booking, Property $property, array $groups): BookingDto
+    public function transform(Entity\Booking $booking, Property $property, array $groups): BookingDto
     {
         $roomType = $this->getRoomType($property->roomTypes, $booking->roomId);
         $roomName = ($roomType['name'] ?? '') . ' Room Number: ' . $this->getUnitName($roomType, $booking->unitId);
@@ -197,6 +197,7 @@ readonly class BookingTransformer
     {
         return array_map(
             fn(Guest $guest) => new GuestDto(
+                id: $guest->id,
                 firstName: $guest->firstName,
                 lastName: $guest->lastName,
                 documentNumber: $guest->custom1,

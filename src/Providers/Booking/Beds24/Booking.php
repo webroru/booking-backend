@@ -14,7 +14,7 @@ use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
 use App\Providers\Booking\Beds24\Service\InfoItemService;
-use App\Providers\Booking\Beds24\Transformer\BookingTransformer;
+use App\Providers\Booking\Beds24\Transformer\BookingEntityToDtoTransformer;
 use App\Providers\Booking\BookingInterface;
 
 class Booking implements BookingInterface
@@ -31,9 +31,9 @@ class Booking implements BookingInterface
     public const SUCKLINGS = 'sucklings';
 
     public function __construct(
-        private readonly Client $client,
-        private readonly BookingTransformer $converter,
-        private readonly InfoItemService $infoItemService,
+        private readonly Client                        $client,
+        private readonly BookingEntityToDtoTransformer $converter,
+        private readonly InfoItemService               $infoItemService,
     ) {
     }
 
@@ -94,7 +94,7 @@ class Booking implements BookingInterface
         $result = [];
         foreach ($bookings as $booking) {
             $beds24Property = $this->findPropertyById($beds24Properties->properties, $booking->propertyId);
-            $result[] = $this->converter->toDto($booking, $beds24Property, $groups);
+            $result[] = $this->converter->transform($booking, $beds24Property, $groups);
         }
 
         return $result;
