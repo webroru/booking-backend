@@ -5,19 +5,21 @@ declare(strict_types=1);
 namespace App\Providers\Booking\Beds24\Transformer;
 
 use App\Dto\BookingDto;
+use App\Dto\GuestDto;
 use App\Dto\InvoiceItemDto;
 use App\Entity\Photo;
 use App\Providers\Booking\Beds24\Booking;
 use App\Providers\Booking\Beds24\Entity;
+use App\Providers\Booking\Beds24\Entity\Guest;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
 use App\Repository\PhotoRepository;
 
-class BookingTransformer
+readonly class BookingTransformer
 {
     public function __construct(
-        private readonly PhotoRepository $photoRepository,
+        private PhotoRepository $photoRepository,
     ) {
     }
 
@@ -61,7 +63,7 @@ class BookingTransformer
             photos: $this->getPhotos($booking->id),
             groupId: in_array($booking->id, $groups) ? $booking->id : $booking->masterId,
             invoiceItems: $this->getInvoiceItems($booking->invoiceItems),
-            guests: $booking->guests,
+            guests: $this->getGuests($booking->guests),
         );
     }
 
@@ -185,6 +187,25 @@ class BookingTransformer
                 lineTotal: $invoiceItem->lineTotal,
             ),
             $invoiceItems
+        );
+    }
+    /**
+     * @param Guest[] $guests
+     * @return array
+     */
+    private function getGuests(array $guests): array
+    {
+        return array_map(
+            fn(Guest $guest) => new GuestDto(
+                firstName: $guest->firstName,
+                lastName: $guest->lastName,
+                documentNumber: $guest->custom1,
+                documentType: $guest->custom2,
+                gender: $guest->custom3,
+                dateOfBirth: $guest->custom4,
+                nationality: $guest->country,
+            ),
+            $guests
         );
     }
 }
