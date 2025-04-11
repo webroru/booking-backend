@@ -37,16 +37,6 @@ class BookingApiController extends AbstractApiController
         return $this->json($this->booking->findBy($filter));
     }
 
-    #[Route('/acceptRule', methods: ['POST'])]
-    public function acceptRule(Request $request): JsonResponse
-    {
-        $orderId = $request->get('orderId');
-        $isRuleAccepted = $request->get('isRuleAccepted');
-        $this->booking->acceptRule($orderId, $isRuleAccepted);
-
-        return $this->json([]);
-    }
-
     #[Route('/booking/{id<\d+>}/check-in', methods: ['PUT'])]
     public function checkIn(Request $request, int $id): JsonResponse
     {
