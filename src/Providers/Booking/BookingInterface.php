@@ -14,7 +14,6 @@ interface BookingInterface
     public function findById(int $id): BookingDto;
     public function findBy(array $filter): array;
     public function setPaidStatus(int $bookingId, string $paymentStatus): void;
-    public function setCheckOutStatus(int $bookingId): void;
     public function addPhoto(int $bookingId, string $photoUrl): void;
     public function removePhoto(int $id, string $photoUrl): void;
     public function addInvoice(int $id, string $type, float $amount, string $description): void;

@@ -37,14 +37,6 @@ class BookingApiController extends AbstractApiController
         return $this->json($this->booking->findBy($filter));
     }
 
-    #[Route('/booking/{id<\d+>}/check-out', methods: ['PUT'])]
-    public function checkOut(Request $request, int $id): JsonResponse
-    {
-        $this->booking->setCheckOutStatus($id);
-
-        return $this->json([]);
-    }
-
     #[Route('/booking/{id<\d+>}/photo', methods: ['POST'])]
     public function uploadPhoto(Request $request, int $id): JsonResponse
     {
