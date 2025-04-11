@@ -34,9 +34,7 @@ class BookingApiController extends AbstractApiController
     public function index(Request $request): JsonResponse
     {
         $filter = $request->query->all();
-        return $this->json([
-            'data' => $this->booking->findBy($filter),
-        ]);
+        return $this->json($this->booking->findBy($filter));
     }
 
     #[Route('/acceptRule', methods: ['POST'])]
@@ -46,9 +44,7 @@ class BookingApiController extends AbstractApiController
         $isRuleAccepted = $request->get('isRuleAccepted');
         $this->booking->acceptRule($orderId, $isRuleAccepted);
 
-        return $this->json([
-            'data' => 'ok',
-        ]);
+        return $this->json([]);
     }
 
     #[Route('/booking/{id<\d+>}/check-in', methods: ['PUT'])]
@@ -57,9 +53,7 @@ class BookingApiController extends AbstractApiController
         $checkIn = $request->get('checkIn');
         $this->booking->setCheckInStatus($id, $checkIn);
 
-        return $this->json([
-            'data' => 'ok',
-        ]);
+        return $this->json([]);
     }
 
     #[Route('/booking/{id<\d+>}/check-out', methods: ['PUT'])]
@@ -67,9 +61,7 @@ class BookingApiController extends AbstractApiController
     {
         $this->booking->setCheckOutStatus($id);
 
-        return $this->json([
-            'data' => 'ok',
-        ]);
+        return $this->json([]);
     }
 
     #[Route('/booking/{id<\d+>}/photo', methods: ['POST'])]
@@ -94,9 +86,7 @@ class BookingApiController extends AbstractApiController
         $photo = $this->photoStorage->put($bookingDto, $file->getRealPath());
         $this->booking->addPhoto($id, $photo->getUrl());
 
-        return $this->json([
-            'data' => $photo->getId(),
-        ]);
+        return $this->json($photo->getId());
     }
 
     #[Route('/booking/{id<\d+>}/photo/{photoId<\d+>}', methods: ['DELETE'])]
@@ -110,9 +100,7 @@ class BookingApiController extends AbstractApiController
         $this->photoStorage->remove($photo);
         $this->booking->removePhoto($id, $photo->getUrl());
 
-        return $this->json([
-            'data' => 'ok',
-        ]);
+        return $this->json([]);
     }
 
     #[Route('/booking/{id<\d+>}/guests', methods: ['PUT'])]
@@ -121,9 +109,7 @@ class BookingApiController extends AbstractApiController
         $bookingDto = new BookingDto(...$request->toArray());
         $this->booking->updateGuests($bookingDto);
 
-        return $this->json([
-            'data' => $this->booking->findById($bookingDto->orderId),
-        ]);
+        return $this->json($this->booking->findById($bookingDto->orderId));
     }
 
     #[Route('/booking/{id<\d+>}/pay-by-cash', methods: ['PUT'])]
@@ -132,9 +118,7 @@ class BookingApiController extends AbstractApiController
         $isPayByCash = $request->get('isPayByCash');
         $this->booking->setPaidStatus($id, $isPayByCash ? 'paid by cash' : '');
 
-        return $this->json([
-            'data' => 'ok',
-        ]);
+        return $this->json([]);
     }
 
     #[Route('/booking/{id<\d+>}/cancel', methods: ['PUT'])]
@@ -142,9 +126,7 @@ class BookingApiController extends AbstractApiController
     {
         $this->booking->cancel($id);
 
-        return $this->json([
-            'data' => 'ok',
-        ]);
+        return $this->json([]);
     }
 
     #[Route('/booking/{id<\d+>}/message', methods: ['POST'])]
@@ -153,20 +135,16 @@ class BookingApiController extends AbstractApiController
         $message = $request->get('message');
         $this->booking->sendMessage($id, $message);
 
-        return $this->json([
-            'data' => 'ok',
-        ]);
+        return $this->json([]);
     }
 
-    #[Route('/booking/{id<\d+>}', methods: ['POST'])]
+    #[Route('/booking/{id<\d+>}', methods: ['PUT'])]
     public function update(Request $request): JsonResponse
     {
         $bookingDto = new BookingDto(...$request->toArray());
         $this->booking->updateBooking($bookingDto);
 
-        return $this->json([
-            'data' => 'ok',
-        ]);
+        return $this->json([]);
     }
 
     private function isImage(UploadedFile $file): bool
