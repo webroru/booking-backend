@@ -103,18 +103,6 @@ class Booking implements BookingInterface
     /**
      * @throws \Exception
      */
-    public function acceptRule(int $bookingId, bool $isRuleAccepted): void
-    {
-        $booking = $this->getBookingEntityById($bookingId);
-        $infoItem = new InfoItem(code: 'isRuleAccepted', text: $isRuleAccepted ? 'true' : 'false');
-        $this->updateInfoItem($booking, $infoItem);
-        $postBookingsDto = new PostBookingsDto([$booking]);
-        $this->update($postBookingsDto);
-    }
-
-    /**
-     * @throws \Exception
-     */
     public function setPaidStatus(int $bookingId, string $paymentStatus): void
     {
         $booking = $this->getBookingEntityById($bookingId);
@@ -256,6 +244,7 @@ class Booking implements BookingInterface
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);
     }
+
     /**
      * @throws \Exception
      */

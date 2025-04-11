@@ -13,7 +13,6 @@ interface BookingInterface
     public function fetchToken(string $code): object;
     public function findById(int $id): BookingDto;
     public function findBy(array $filter): array;
-    public function acceptRule(int $bookingId, bool $isRuleAccepted): void;
     public function setPaidStatus(int $bookingId, string $paymentStatus): void;
     public function setCheckInStatus(int $bookingId, bool $checkIn): void;
     public function setCheckOutStatus(int $bookingId): void;
