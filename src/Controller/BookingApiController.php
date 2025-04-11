@@ -76,14 +76,6 @@ class BookingApiController extends AbstractApiController
         return $this->json([]);
     }
 
-    #[Route('/booking/{id<\d+>}/cancel', methods: ['PUT'])]
-    public function cancel(Request $request, int $id): JsonResponse
-    {
-        $this->booking->cancel($id);
-
-        return $this->json([]);
-    }
-
     #[Route('/booking/{id<\d+>}/message', methods: ['POST'])]
     public function message(Request $request, int $id): JsonResponse
     {

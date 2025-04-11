@@ -157,21 +157,6 @@ class Booking implements BookingInterface
     /**
      * @throws \Exception
      */
-    public function cancel(int $bookingId): void
-    {
-        $booking = $this->getBookingEntityById($bookingId);
-        $infoItem = new InfoItem('paymentStatus', 'disagree');
-        $this->updateInfoItem($booking, $infoItem);
-        $infoItem = new InfoItem('checkIn', 'false');
-        $this->updateInfoItem($booking, $infoItem);
-        $booking->status = 'cancelled';
-        $postBookingsDto = new PostBookingsDto([$booking]);
-        $this->update($postBookingsDto);
-    }
-
-    /**
-     * @throws \Exception
-     */
     public function sendMessage(int $bookingId, string $text): void
     {
         $booking = $this->getBookingEntityById($bookingId);
@@ -205,6 +190,10 @@ class Booking implements BookingInterface
 
         $this->updateCityTax($booking, $bookingDto);
         $this->updateExtraGuestInvoice($booking, $bookingDto);
+
+        if ($bookingDto->paymentStatus === 'disagree') {
+            $booking->status = 'cancelled';
+        }
 
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);
