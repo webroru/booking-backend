@@ -76,15 +76,6 @@ class BookingApiController extends AbstractApiController
         return $this->json([]);
     }
 
-    #[Route('/booking/{id<\d+>}/guests', methods: ['PUT'])]
-    public function updateGuests(Request $request): JsonResponse
-    {
-        $bookingDto = new BookingDto(...$request->toArray());
-        $this->booking->updateGuests($bookingDto);
-
-        return $this->json($this->booking->findById($bookingDto->orderId));
-    }
-
     #[Route('/booking/{id<\d+>}/pay-by-cash', methods: ['PUT'])]
     public function payByCash(Request $request, int $id): JsonResponse
     {

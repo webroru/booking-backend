@@ -158,20 +158,6 @@ class Booking implements BookingInterface
     /**
      * @throws \Exception
      */
-    public function updateGuests(BookingDto $bookingDto): void
-    {
-        $booking = $this->getBookingEntityById($bookingDto->orderId);
-        $this->updateGuestsInfoItems($booking, $bookingDto);
-        $this->updateCityTax($booking, $bookingDto);
-        $this->updateExtraGuestInvoice($booking, $bookingDto);
-        $this->updateExtraGuestsInfoItems($booking, $bookingDto);
-        $postBookingsDto = new PostBookingsDto([$booking]);
-        $this->update($postBookingsDto);
-    }
-
-    /**
-     * @throws \Exception
-     */
     public function cancel(int $bookingId): void
     {
         $booking = $this->getBookingEntityById($bookingId);
@@ -217,6 +203,9 @@ class Booking implements BookingInterface
             $infoItem = new InfoItem($description, (string) $bookingDto->$category);
             $this->infoItemService->updateInfoItem($booking, $infoItem);
         }
+
+        $this->updateCityTax($booking, $bookingDto);
+        $this->updateExtraGuestInvoice($booking, $bookingDto);
 
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);
