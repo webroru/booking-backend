@@ -102,16 +102,7 @@ class BookingApiController extends AbstractApiController
 
     private function bookingDtoFromArray(array $data): BookingDto
     {
-        $guests = array_map(fn(array $guest) => new GuestDto(
-            id: $guest['id'] ?? null,
-            firstName: $guest['firstName'],
-            lastName: $guest['lastName'],
-            documentNumber: $guest['documentNumber'],
-            documentType: $guest['documentType'],
-            gender: $guest['gender'] ?? null,
-            dateOfBirth: $guest['dateOfBirth'],
-            nationality: $guest['nationality'],
-        ), $data['guests']);
+        $guests = array_map(fn(array $guest) => new GuestDto(...$guest), $data['guests']);
 
         return new BookingDto(...[...$data, 'guests' => $guests]);
     }

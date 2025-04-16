@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Providers\Booking\Beds24;
 
 use App\Dto\BookingDto;
-use App\Dto\GuestDto;
 use App\Providers\Booking\Beds24\Client\Client;
 use App\Providers\Booking\Beds24\Dto\Request\GetBookingsDto;
 use App\Providers\Booking\Beds24\Dto\Request\GetPropertiesDto;
@@ -14,7 +13,7 @@ use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationSetupDto;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
-use App\Providers\Booking\Beds24\Entity\Guest;
+use App\Providers\Booking\Beds24\Service\GuestService;
 use App\Providers\Booking\Beds24\Service\InfoItemService;
 use App\Providers\Booking\Beds24\Transformer\BookingEntityToDtoTransformer;
 use App\Providers\Booking\BookingInterface;
@@ -33,9 +32,10 @@ class Booking implements BookingInterface
     public const SUCKLINGS = 'sucklings';
 
     public function __construct(
-        private readonly Client                        $client,
+        private readonly Client $client,
         private readonly BookingEntityToDtoTransformer $converter,
-        private readonly InfoItemService               $infoItemService,
+        private readonly InfoItemService $infoItemService,
+        private readonly GuestService $guestService,
     ) {
     }
 
@@ -188,27 +188,14 @@ class Booking implements BookingInterface
             $this->infoItemService->updateInfoItem($booking, $infoItem);
         }
 
+        $this->guestService->addGuests($booking, $bookingDto);
+
         $this->updateCityTax($booking, $bookingDto);
         $this->updateExtraGuestInvoice($booking, $bookingDto);
 
         if ($bookingDto->paymentStatus === 'disagree') {
             $booking->status = 'cancelled';
         }
-
-        $guests = array_map(
-            fn (GuestDto $guestDto) => new Guest(
-                id: $guestDto->id,
-                firstName: $guestDto->firstName,
-                lastName: $guestDto->lastName,
-                country: $guestDto->nationality,
-                custom1: $guestDto->documentNumber,
-                custom2: $guestDto->documentType,
-                custom3: $guestDto->gender,
-                custom4: $guestDto->dateOfBirth,
-            ),
-            $bookingDto->guests,
-        );
-        $booking->guests = $guests;
 
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);

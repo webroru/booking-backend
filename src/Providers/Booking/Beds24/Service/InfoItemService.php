@@ -9,20 +9,6 @@ use App\Providers\Booking\Beds24\Entity\InfoItem;
 
 class InfoItemService
 {
-    /**
-     * @param InfoItem[] $infoItems
-     */
-    public function findInfoItemByValue(array $infoItems, string $value): ?InfoItem
-    {
-        foreach ($infoItems as $infoItem) {
-            if ($infoItem->text === $value) {
-                return $infoItem;
-            }
-        }
-
-        return null;
-    }
-
     public function updateInfoItem(Booking $booking, InfoItem $infoItem): void
     {
         $existedInfoItem = $this->findInfoItemByCode($booking->infoItems, $infoItem->code);
@@ -38,6 +24,22 @@ class InfoItemService
         } else {
             $existedInfoItem->text = $infoItem->text;
         }
+    }
+
+    /**
+     * @param string $name
+     * @param InfoItem[] $infoItems
+     * @return ?string
+     */
+    public function getInfoItemValue(string $name, array $infoItems): ?string
+    {
+        foreach ($infoItems as $infoItem) {
+            if ($infoItem->code === $name) {
+                return $infoItem->text;
+            }
+        }
+
+        return null;
     }
 
     /**

@@ -5,21 +5,22 @@ declare(strict_types=1);
 namespace App\Providers\Booking\Beds24\Transformer;
 
 use App\Dto\BookingDto;
-use App\Dto\GuestDto;
 use App\Dto\InvoiceItemDto;
 use App\Entity\Photo;
 use App\Providers\Booking\Beds24\Booking;
 use App\Providers\Booking\Beds24\Entity;
-use App\Providers\Booking\Beds24\Entity\Guest;
-use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
+use App\Providers\Booking\Beds24\Service\GuestService;
+use App\Providers\Booking\Beds24\Service\InfoItemService;
 use App\Repository\PhotoRepository;
 
 readonly class BookingEntityToDtoTransformer
 {
     public function __construct(
         private PhotoRepository $photoRepository,
+        private GuestService $guestService,
+        private InfoItemService $infoItemService,
     ) {
     }
 
@@ -28,11 +29,11 @@ readonly class BookingEntityToDtoTransformer
         $roomType = $this->getRoomType($property->roomTypes, $booking->roomId);
         $roomName = ($roomType['name'] ?? '') . ' Room Number: ' . $this->getUnitName($roomType, $booking->unitId);
 
-        $isRuleAccepted = $this->getInfoItemValue('isRuleAccepted', $booking->infoItems);
-        $plusGuest = $this->getInfoItemValue('plusGuest', $booking->infoItems);
-        $lessDocs = $this->getInfoItemValue('lessDocs', $booking->infoItems);
-        $checkIn = $this->getInfoItemValue('checkIn', $booking->infoItems);
-        $checkOut = $this->getInfoItemValue('checkOut', $booking->infoItems);
+        $isRuleAccepted = $this->infoItemService->getInfoItemValue('isRuleAccepted', $booking->infoItems);
+        $plusGuest = $this->infoItemService->getInfoItemValue('plusGuest', $booking->infoItems);
+        $lessDocs = $this->infoItemService->getInfoItemValue('lessDocs', $booking->infoItems);
+        $checkIn = $this->infoItemService->getInfoItemValue('checkIn', $booking->infoItems);
+        $checkOut = $this->infoItemService->getInfoItemValue('checkOut', $booking->infoItems);
 
         return new BookingDto(
             firstName: $booking->firstName,
@@ -49,21 +50,21 @@ readonly class BookingEntityToDtoTransformer
             children: (int) $this->getGuestAmount('children', $booking->infoItems),
             babies: (int) $this->getGuestAmount('babies', $booking->infoItems),
             sucklings: (int) $this->getGuestAmount('sucklings', $booking->infoItems),
-            passCode: $this->getInfoItemValue('CODELOCK', $booking->infoItems),
+            passCode: $this->infoItemService->getInfoItemValue('CODELOCK', $booking->infoItems),
             debt: $this->getDebt($booking->invoiceItems),
             extraPerson: $this->getExtraPrice($property->roomTypes, $booking->roomId),
             capacity: $property->roomTypes ? $this->getMaxPeople($property->roomTypes, $booking->roomId) : 0,
-            overmax: (int) $this->getInfoItemValue('overmax', $booking->infoItems),
+            overmax: (int) $this->infoItemService->getInfoItemValue('overmax', $booking->infoItems),
             isRuleAccepted: $isRuleAccepted === 'true',
             checkIn: $checkIn === 'true',
             checkOut: $checkOut === 'true',
-            paymentStatus: $this->getInfoItemValue('paymentStatus', $booking->infoItems),
+            paymentStatus: $this->infoItemService->getInfoItemValue('paymentStatus', $booking->infoItems),
             plusGuest: $plusGuest === 'true',
             lessDocs: $lessDocs === 'true',
             photos: $this->getPhotos($booking->id),
             groupId: in_array($booking->id, $groups) ? $booking->id : $booking->masterId,
             invoiceItems: $this->getInvoiceItems($booking->invoiceItems),
-            guests: $this->getGuests($booking->guests),
+            guests: $this->guestService->getGuests($booking),
         );
     }
 
@@ -94,22 +95,6 @@ readonly class BookingEntityToDtoTransformer
         return $debt === -0.0 ? 0 : $debt;
     }
 
-    /**
-     * @param string $name
-     * @param InfoItem[] $infoItems
-     * @return ?string
-     */
-    private function getInfoItemValue(string $name, array $infoItems): ?string
-    {
-        foreach ($infoItems as $infoItem) {
-            if ($infoItem->code === $name) {
-                return $infoItem->text;
-            }
-        }
-
-        return null;
-    }
-
     private function getRoomType(array $roomTypes, int $roomId): ?array
     {
         foreach ($roomTypes as $roomType) {
@@ -137,7 +122,7 @@ readonly class BookingEntityToDtoTransformer
         if (!isset(Booking::GUESTS_AGE_CATEGORIES[$category])) {
             throw new \LogicException("Undefined guest category: $category");
         }
-        return (int) $this->getInfoItemValue(Booking::GUESTS_AGE_CATEGORIES[$category], $infoItems);
+        return (int) $this->infoItemService->getInfoItemValue(Booking::GUESTS_AGE_CATEGORIES[$category], $infoItems);
     }
 
     private function getExtraPrice(array $roomTypes, int $roomId): float
@@ -187,26 +172,6 @@ readonly class BookingEntityToDtoTransformer
                 lineTotal: $invoiceItem->lineTotal,
             ),
             $invoiceItems
-        );
-    }
-    /**
-     * @param Guest[] $guests
-     * @return array
-     */
-    private function getGuests(array $guests): array
-    {
-        return array_map(
-            fn(Guest $guest) => new GuestDto(
-                id: $guest->id,
-                firstName: $guest->firstName,
-                lastName: $guest->lastName,
-                documentNumber: $guest->custom1,
-                documentType: $guest->custom2,
-                gender: $guest->custom3,
-                dateOfBirth: $guest->custom4,
-                nationality: $guest->country,
-            ),
-            $guests
         );
     }
 }

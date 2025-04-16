@@ -2,27 +2,36 @@
 
 declare(strict_types=1);
 
-namespace App\Tests\Providers\Booking\Beds24;
+namespace App\Tests\Providers\Booking\Beds24\Transformer;
 
 use App\Dto\BookingDto;
 use App\Providers\Booking\Beds24\Entity\Booking;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
+use App\Providers\Booking\Beds24\Service\GuestService;
+use App\Providers\Booking\Beds24\Service\InfoItemService;
 use App\Providers\Booking\Beds24\Transformer\BookingEntityToDtoTransformer;
 use App\Repository\PhotoRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
-class CommonDtoConverterTest extends TestCase
+class BookingEntityToDtoTransformerTest extends TestCase
 {
     private Booking $booking;
     private Property $property;
     private PhotoRepository|MockObject $photoRepositoryMock;
+    private InfoItemService|MockObject $infoItemServiceMock;
+    private GuestService|MockObject $guestServiceMock;
 
     public function testConvert(): void
     {
-        $converter = new BookingEntityToDtoTransformer($this->photoRepositoryMock);
+        $converter = new BookingEntityToDtoTransformer(
+            $this->photoRepositoryMock,
+            $this->guestServiceMock,
+            $this->infoItemServiceMock,
+        );
+
         $bookingDTO = $converter->transform($this->booking, $this->property, []);
         $this->assertInstanceOf(BookingDto::class, $bookingDTO);
     }
@@ -33,9 +42,25 @@ class CommonDtoConverterTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $this->guestServiceMock = $this->getMockBuilder(GuestService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $this->infoItemServiceMock = $this->getMockBuilder(InfoItemService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $this->photoRepositoryMock->expects($this->once())
             ->method('findBy')
             ->willReturn([]);
+
+        $this->guestServiceMock->expects($this->once())
+            ->method('getGuests')
+            ->willReturn([]);
+
+        $this->infoItemServiceMock->expects($this->any())
+            ->method('getInfoItemValue')
+            ->willReturn('Test InfoItem Value');
 
         $invoiceItems = [new InvoiceItem(
             amount: 1.1,
@@ -67,7 +92,13 @@ class CommonDtoConverterTest extends TestCase
             infoItems: $infoItems,
         );
 
-        $roomType = ['id' => 1, 'name' => 'Test', 'units' => [], 'maxPeople' => 1, 'priceRules' => [['extraPerson' => 10]]];
+        $roomType = [
+            'id' => 1,
+            'name' => 'Test',
+            'units' => [],
+            'maxPeople' => 1,
+            'priceRules' => [['extraPerson' => 10]]
+        ];
         $this->property = new Property(1, 'Test', 'Test', [], 'Test', 'Test', 'Test', 'Test', 'Test', 'Test', 1.1, 1.1, 'Test', 'Test', 'Test', 'Test', 'Test', 'Test', 'Test', [], [], [], [], [], [], [], [], [], [$roomType]);
         parent::setUp();
     }
