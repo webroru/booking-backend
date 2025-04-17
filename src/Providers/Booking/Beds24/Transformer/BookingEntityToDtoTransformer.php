@@ -7,7 +7,6 @@ namespace App\Providers\Booking\Beds24\Transformer;
 use App\Dto\BookingDto;
 use App\Dto\InvoiceItemDto;
 use App\Entity\Photo;
-use App\Providers\Booking\Beds24\Booking;
 use App\Providers\Booking\Beds24\Entity;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
@@ -46,10 +45,6 @@ readonly class BookingEntityToDtoTransformer
             room: $roomName,
             originalReferer: "$booking->referer, booking: $booking->apiReference",
             guestsAmount: $booking->numAdult + $booking->numChild,
-            adults: (int) $this->getGuestAmount('adults', $booking->infoItems),
-            children: (int) $this->getGuestAmount('children', $booking->infoItems),
-            babies: (int) $this->getGuestAmount('babies', $booking->infoItems),
-            sucklings: (int) $this->getGuestAmount('sucklings', $booking->infoItems),
             passCode: $this->infoItemService->getInfoItemValue('CODELOCK', $booking->infoItems),
             debt: $this->getDebt($booking->invoiceItems),
             extraPerson: $this->getExtraPrice($property->roomTypes, $booking->roomId),
@@ -115,14 +110,6 @@ readonly class BookingEntityToDtoTransformer
         }
 
         return null;
-    }
-
-    private function getGuestAmount(string $category, array $infoItems): int
-    {
-        if (!isset(Booking::GUESTS_AGE_CATEGORIES[$category])) {
-            throw new \LogicException("Undefined guest category: $category");
-        }
-        return (int) $this->infoItemService->getInfoItemValue(Booking::GUESTS_AGE_CATEGORIES[$category], $infoItems);
     }
 
     private function getExtraPrice(array $roomTypes, int $roomId): float
