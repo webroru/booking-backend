@@ -483,7 +483,6 @@ class Booking implements BookingInterface
             'arrivalTo' => $arrivalTo,
             'includeInvoiceItems' => true,
             'includeInfoItems' => true,
-            'includeGuests' => true,
             'status' => ['confirmed', 'new'],
         ];
     }
