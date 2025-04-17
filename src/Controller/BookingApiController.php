@@ -23,9 +23,9 @@ class BookingApiController extends AbstractApiController
 {
     public function __construct(
         private readonly BookingInterface $booking,
-        ClientService $clientService,
         private readonly PhotoRepository $photoRepository,
         private readonly Local $photoStorage,
+        ClientService $clientService,
         RequestStack $requestStack,
     ) {
         parent::__construct($clientService, $requestStack);
