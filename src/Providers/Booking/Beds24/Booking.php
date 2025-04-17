@@ -33,7 +33,7 @@ class Booking implements BookingInterface
 
     public function __construct(
         private readonly Client $client,
-        private readonly BookingEntityToDtoTransformer $converter,
+        private readonly BookingEntityToDtoTransformer $transformer,
         private readonly InfoItemService $infoItemService,
         private readonly GuestService $guestService,
     ) {
@@ -96,7 +96,7 @@ class Booking implements BookingInterface
         $result = [];
         foreach ($bookings as $booking) {
             $beds24Property = $this->findPropertyById($beds24Properties->properties, $booking->propertyId);
-            $result[] = $this->converter->transform($booking, $beds24Property, $groups);
+            $result[] = $this->transformer->transform($booking, $beds24Property, $groups);
         }
 
         return $result;
