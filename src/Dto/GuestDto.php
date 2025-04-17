@@ -13,7 +13,7 @@ readonly class GuestDto
         public string $documentType,
         public string $dateOfBirth,
         public string $nationality,
-        public ?string $gender,
+        public ?string $gender = null,
     ) {
     }
 }
