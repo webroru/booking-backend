@@ -13,7 +13,7 @@ class GuestService
 {
     private const CODE = 'guest';
 
-    public function addGuests(Booking $booking, BookingDto $bookingDto): void
+    public function overwriteGuests(Booking $booking, BookingDto $bookingDto): void
     {
         $this->removeGuests($booking);
 

@@ -188,7 +188,7 @@ class Booking implements BookingInterface
             $this->infoItemService->updateInfoItem($booking, $infoItem);
         }
 
-        $this->guestService->addGuests($booking, $bookingDto);
+        $this->guestService->overwriteGuests($booking, $bookingDto);
 
         $this->updateCityTax($booking, $bookingDto);
         $this->updateExtraGuestInvoice($booking, $bookingDto);
