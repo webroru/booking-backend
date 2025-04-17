@@ -13,6 +13,9 @@ use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationSetupDto;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
+use App\Providers\Booking\Beds24\Service\GuestService;
+use App\Providers\Booking\Beds24\Service\InfoItemService;
+use App\Providers\Booking\Beds24\Transformer\BookingEntityToDtoTransformer;
 use App\Providers\Booking\BookingInterface;
 
 class Booking implements BookingInterface
@@ -30,7 +33,9 @@ class Booking implements BookingInterface
 
     public function __construct(
         private readonly Client $client,
-        private readonly CommonDtoConverter $converter,
+        private readonly BookingEntityToDtoTransformer $transformer,
+        private readonly InfoItemService $infoItemService,
+        private readonly GuestService $guestService,
     ) {
     }
 
@@ -91,7 +96,7 @@ class Booking implements BookingInterface
         $result = [];
         foreach ($bookings as $booking) {
             $beds24Property = $this->findPropertyById($beds24Properties->properties, $booking->propertyId);
-            $result[] = $this->converter->convert($booking, $beds24Property, $groups);
+            $result[] = $this->transformer->transform($booking, $beds24Property, $groups);
         }
 
         return $result;
@@ -100,49 +105,11 @@ class Booking implements BookingInterface
     /**
      * @throws \Exception
      */
-    public function acceptRule(int $bookingId, bool $isRuleAccepted): void
-    {
-        $booking = $this->getBookingEntityById($bookingId);
-        $infoItem = new InfoItem(code: 'isRuleAccepted', text: $isRuleAccepted ? 'true' : 'false');
-        $this->updateInfoItem($booking, $infoItem);
-        $postBookingsDto = new PostBookingsDto([$booking]);
-        $this->update($postBookingsDto);
-    }
-
-    /**
-     * @throws \Exception
-     */
     public function setPaidStatus(int $bookingId, string $paymentStatus): void
     {
         $booking = $this->getBookingEntityById($bookingId);
-        $infoItem = new InfoItem('paymentStatus', $paymentStatus);
-        $this->updateInfoItem($booking, $infoItem);
-        $infoItem = new InfoItem('checkIn', $paymentStatus !== '' ? 'true' : 'false');
-        $this->updateInfoItem($booking, $infoItem);
-        $postBookingsDto = new PostBookingsDto([$booking]);
-        $this->update($postBookingsDto);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    public function setCheckInStatus(int $bookingId, bool $checkIn): void
-    {
-        $booking = $this->getBookingEntityById($bookingId);
-        $infoItem = new InfoItem('checkIn', $checkIn ? 'true' : 'false');
-        $this->updateInfoItem($booking, $infoItem);
-        $postBookingsDto = new PostBookingsDto([$booking]);
-        $this->update($postBookingsDto);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    public function setCheckOutStatus(int $bookingId): void
-    {
-        $booking = $this->getBookingEntityById($bookingId);
-        $infoItem = new InfoItem('checkOut', 'true');
-        $this->updateInfoItem($booking, $infoItem);
+        $this->infoItemService->updateInfoItem($booking, (new InfoItem('paymentStatus', $paymentStatus)));
+        $this->infoItemService->updateInfoItem($booking, (new InfoItem('checkIn', $paymentStatus !== '' ? 'true' : 'false')));
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);
     }
@@ -190,39 +157,46 @@ class Booking implements BookingInterface
     /**
      * @throws \Exception
      */
-    public function updateGuests(BookingDto $bookingDto): void
-    {
-        $booking = $this->getBookingEntityById($bookingDto->orderId);
-        $this->updateGuestsInfoItems($booking, $bookingDto);
-        $this->updateCityTax($booking, $bookingDto);
-        $this->updateExtraGuestInvoice($booking, $bookingDto);
-        $this->updateExtraGuestsInfoItems($booking, $bookingDto);
-        $postBookingsDto = new PostBookingsDto([$booking]);
-        $this->update($postBookingsDto);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    public function cancel(int $bookingId): void
-    {
-        $booking = $this->getBookingEntityById($bookingId);
-        $infoItem = new InfoItem('paymentStatus', 'disagree');
-        $this->updateInfoItem($booking, $infoItem);
-        $infoItem = new InfoItem('checkIn', 'false');
-        $this->updateInfoItem($booking, $infoItem);
-        $booking->status = 'cancelled';
-        $postBookingsDto = new PostBookingsDto([$booking]);
-        $this->update($postBookingsDto);
-    }
-
-    /**
-     * @throws \Exception
-     */
     public function sendMessage(int $bookingId, string $text): void
     {
         $booking = $this->getBookingEntityById($bookingId);
         $booking->message = $text;
+        $postBookingsDto = new PostBookingsDto([$booking]);
+        $this->update($postBookingsDto);
+    }
+
+    public function updateBooking(BookingDto $bookingDto): void
+    {
+        $booking = $this->getBookingEntityById($bookingDto->orderId);
+        $infoItems = [];
+        $infoItems[] = new InfoItem('checkIn', $bookingDto->checkIn ? 'true' : 'false');
+        $infoItems[] = new InfoItem('paymentStatus', $bookingDto->paymentStatus);
+        $infoItems[] = new InfoItem('isRuleAccepted', $bookingDto->isRuleAccepted ? 'true' : 'false');
+        $infoItems[] = new InfoItem('checkOut', $bookingDto->checkOut ? 'true' : 'false');
+        $infoItems[] = new InfoItem('overmax', (string) ($bookingDto->overmax));
+        $infoItems[] = new InfoItem('plusGuest', $bookingDto->plusGuest ? 'true' : null);
+        $infoItems[] = new InfoItem('lessDocs', $bookingDto->lessDocs ? 'true' : 'false');
+        foreach ($infoItems as $infoItem) {
+            $this->infoItemService->updateInfoItem($booking, $infoItem);
+        }
+
+        foreach (self::GUESTS_AGE_CATEGORIES as $category => $description) {
+            if (!isset($bookingDto->$category)) {
+                throw new \Exception("Property $category not found");
+            }
+            $infoItem = new InfoItem($description, (string) $bookingDto->$category);
+            $this->infoItemService->updateInfoItem($booking, $infoItem);
+        }
+
+        $this->guestService->overwriteGuests($booking, $bookingDto);
+
+        $this->updateCityTax($booking, $bookingDto);
+        $this->updateExtraGuestInvoice($booking, $bookingDto);
+
+        if ($bookingDto->paymentStatus === 'disagree') {
+            $booking->status = 'cancelled';
+        }
+
         $postBookingsDto = new PostBookingsDto([$booking]);
         $this->update($postBookingsDto);
     }
@@ -320,20 +294,6 @@ class Booking implements BookingInterface
     }
 
     /**
-     * @param InfoItem[] $infoItems
-     */
-    private function findInfoItemByCode(array $infoItems, string $code): ?InfoItem
-    {
-        foreach ($infoItems as $infoItem) {
-            if (isset($infoItem->code) && $infoItem->code === $code) {
-                return $infoItem;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * @param InvoiceItem[] $invoiceItems
      */
     private function findInvoiceItemByDescription(array $invoiceItems, string $description): ?InvoiceItem
@@ -373,23 +333,6 @@ class Booking implements BookingInterface
         }
 
         return null;
-    }
-
-    private function updateInfoItem(Entity\Booking $booking, InfoItem $infoItem): void
-    {
-        $existedInfoItem = $this->findInfoItemByCode($booking->infoItems, $infoItem->code);
-        if ($existedInfoItem && $infoItem->text === null) {
-            unset($existedInfoItem->text);
-            unset($existedInfoItem->code);
-            unset($existedInfoItem->bookingId);
-            return;
-        }
-
-        if (!$existedInfoItem) {
-            $booking->infoItems[] = $infoItem;
-        } else {
-            $existedInfoItem->text = $infoItem->text;
-        }
     }
 
     private function updateInvoiceItem(Entity\Booking $booking, InvoiceItem $invoiceItem): void
@@ -500,32 +443,6 @@ class Booking implements BookingInterface
             self::CHILDREN => 1.57,
             default => 0,
         };
-    }
-
-    /**
-     * @throws \HttpRequestException
-     */
-    private function updateGuestsInfoItems(Entity\Booking $booking, BookingDto $bookingDto): void
-    {
-        foreach (self::GUESTS_AGE_CATEGORIES as $category => $description) {
-            if (!isset($bookingDto->$category)) {
-                throw new \HttpRequestException("Property $category not found");
-            }
-            $infoItem = new InfoItem($description, (string) $bookingDto->$category);
-            $this->updateInfoItem($booking, $infoItem);
-        }
-    }
-
-    private function updateExtraGuestsInfoItems(Entity\Booking $booking, BookingDto $bookingDto): void
-    {
-        $infoItems = [];
-        $infoItems[] = new InfoItem('overmax', (string) ($bookingDto->overmax));
-        $infoItems[] = new InfoItem('plusGuest', $bookingDto->plusGuest ? 'true' : null);
-        $infoItems[] = new InfoItem('lessDocs', $bookingDto->lessDocs ? 'true' : 'false');
-
-        foreach ($infoItems as $infoItem) {
-            $this->updateInfoItem($booking, $infoItem);
-        }
     }
 
     /**
