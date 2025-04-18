@@ -164,13 +164,16 @@ readonly class Booking implements BookingInterface
     public function updateBooking(BookingDto $bookingDto): void
     {
         $booking = $this->getBookingEntityById($bookingDto->orderId);
+        $overmax = $this->confirmedGuests($bookingDto) > $bookingDto->capacity + 2 ? $this->confirmedGuests($bookingDto) : 0;
+        $plusGuest =  $this->confirmedGuests($bookingDto) > $booking->numAdult + $booking->numChild;
+
         $infoItems = [];
         $infoItems[] = new InfoItem('checkIn', $bookingDto->checkIn ? 'true' : 'false');
         $infoItems[] = new InfoItem('paymentStatus', $bookingDto->paymentStatus);
         $infoItems[] = new InfoItem('isRuleAccepted', $bookingDto->isRuleAccepted ? 'true' : 'false');
         $infoItems[] = new InfoItem('checkOut', $bookingDto->checkOut ? 'true' : 'false');
-        $infoItems[] = new InfoItem('overmax', (string) ($bookingDto->overmax));
-        $infoItems[] = new InfoItem('plusGuest', $bookingDto->plusGuest ? 'true' : null);
+        $infoItems[] = new InfoItem('overmax', (string) $overmax);
+        $infoItems[] = new InfoItem('plusGuest', $plusGuest ? 'true' : null);
         $infoItems[] = new InfoItem('lessDocs', $bookingDto->lessDocs ? 'true' : 'false');
         foreach ($infoItems as $infoItem) {
             $this->infoItemService->updateInfoItem($booking, $infoItem);
@@ -404,9 +407,7 @@ readonly class Booking implements BookingInterface
             return;
         }
 
-        $guestsQuantityByAges = $this->getGuestsQuantityByAges($bookingDto);
-
-        $confirmedGuests = $guestsQuantityByAges['adults'] + $guestsQuantityByAges['children'] + $guestsQuantityByAges['preschoolers'] + max(0, $guestsQuantityByAges['toddlers'] - 1);
+        $confirmedGuests = $this->confirmedGuests($bookingDto);
         $arrival = new \DateTime($booking->arrival);
         $departure = new \DateTime($booking->departure);
         $nights = $arrival->diff($departure)->d;
@@ -535,5 +536,15 @@ readonly class Booking implements BookingInterface
                 0,
             ),
         ];
+    }
+
+    private function confirmedGuests(BookingDto $bookingDto): int
+    {
+        $guestsQuantityByAges = $this->getGuestsQuantityByAges($bookingDto);
+
+        return $guestsQuantityByAges['adults']
+            + $guestsQuantityByAges['children']
+            + $guestsQuantityByAges['preschoolers']
+            + max(0, $guestsQuantityByAges['toddlers'] - 1);
     }
 }

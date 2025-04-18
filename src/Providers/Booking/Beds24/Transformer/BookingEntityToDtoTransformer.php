@@ -29,7 +29,6 @@ readonly class BookingEntityToDtoTransformer
         $roomName = ($roomType['name'] ?? '') . ' Room Number: ' . $this->getUnitName($roomType, $booking->unitId);
 
         $isRuleAccepted = $this->infoItemService->getInfoItemValue('isRuleAccepted', $booking->infoItems);
-        $plusGuest = $this->infoItemService->getInfoItemValue('plusGuest', $booking->infoItems);
         $lessDocs = $this->infoItemService->getInfoItemValue('lessDocs', $booking->infoItems);
         $checkIn = $this->infoItemService->getInfoItemValue('checkIn', $booking->infoItems);
         $checkOut = $this->infoItemService->getInfoItemValue('checkOut', $booking->infoItems);
@@ -49,12 +48,10 @@ readonly class BookingEntityToDtoTransformer
             debt: $this->getDebt($booking->invoiceItems),
             extraPerson: $this->getExtraPrice($property->roomTypes, $booking->roomId),
             capacity: $property->roomTypes ? $this->getMaxPeople($property->roomTypes, $booking->roomId) : 0,
-            overmax: (int) $this->infoItemService->getInfoItemValue('overmax', $booking->infoItems),
             isRuleAccepted: $isRuleAccepted === 'true',
             checkIn: $checkIn === 'true',
             checkOut: $checkOut === 'true',
             paymentStatus: $this->infoItemService->getInfoItemValue('paymentStatus', $booking->infoItems),
-            plusGuest: $plusGuest === 'true',
             lessDocs: $lessDocs === 'true',
             photos: $this->getPhotos($booking->id),
             groupId: in_array($booking->id, $groups) ? $booking->id : $booking->masterId,
