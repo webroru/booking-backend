@@ -180,14 +180,6 @@ class Booking implements BookingInterface
             $this->infoItemService->updateInfoItem($booking, $infoItem);
         }
 
-        foreach (self::GUESTS_AGE_CATEGORIES as $category => $description) {
-            if (!isset($bookingDto->$category)) {
-                throw new \Exception("Property $category not found");
-            }
-            $infoItem = new InfoItem($description, (string) $bookingDto->$category);
-            $this->infoItemService->updateInfoItem($booking, $infoItem);
-        }
-
         $this->guestService->overwriteGuests($booking, $bookingDto);
 
         $this->updateCityTax($booking, $bookingDto);
