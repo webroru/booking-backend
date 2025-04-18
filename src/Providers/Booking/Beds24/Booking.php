@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers\Booking\Beds24;
 
 use App\Dto\BookingDto;
+use App\Dto\GuestDto;
 use App\Providers\Booking\Beds24\Client\Client;
 use App\Providers\Booking\Beds24\Dto\Request\GetBookingsDto;
 use App\Providers\Booking\Beds24\Dto\Request\GetPropertiesDto;
@@ -18,24 +19,13 @@ use App\Providers\Booking\Beds24\Service\InfoItemService;
 use App\Providers\Booking\Beds24\Transformer\BookingEntityToDtoTransformer;
 use App\Providers\Booking\BookingInterface;
 
-class Booking implements BookingInterface
+readonly class Booking implements BookingInterface
 {
-    public const GUESTS_AGE_CATEGORIES = [
-        self::ADULTS => 'Adults (18+)',
-        self::CHILDREN => 'Children (7—18)',
-        self::BABIES => 'Children (4—7)',
-        self::SUCKLINGS => 'Children (0—4)',
-    ];
-    public const ADULTS = 'adults';
-    public const CHILDREN = 'children';
-    public const BABIES = 'babies';
-    public const SUCKLINGS = 'sucklings';
-
     public function __construct(
-        private readonly Client $client,
-        private readonly BookingEntityToDtoTransformer $transformer,
-        private readonly InfoItemService $infoItemService,
-        private readonly GuestService $guestService,
+        private Client $client,
+        private BookingEntityToDtoTransformer $transformer,
+        private InfoItemService $infoItemService,
+        private GuestService $guestService,
     ) {
     }
 
@@ -45,6 +35,9 @@ class Booking implements BookingInterface
         return $this->client->getAuthenticationSetup();
     }
 
+    /**
+     * @throws \Exception
+     */
     public function findById(int $id): BookingDto
     {
         $departureFrom = (new \DateTime())->format('Y-m-d');
@@ -165,6 +158,9 @@ class Booking implements BookingInterface
         $this->update($postBookingsDto);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function updateBooking(BookingDto $bookingDto): void
     {
         $booking = $this->getBookingEntityById($bookingDto->orderId);
@@ -377,25 +373,21 @@ class Booking implements BookingInterface
      */
     private function addCityTaxInvoices(Entity\Booking $booking, BookingDto $bookingDto): void
     {
-        foreach (self::GUESTS_AGE_CATEGORIES as $category => $description) {
-            if (empty($bookingDto->$category)) {
-                continue;
-            }
-            $amount = $this->getCitiTaxAmount($category);
-            if (!$amount) {
+        $guestsAgeCategories = $this->getGuestsAgeCategories($bookingDto);
+
+        foreach ($guestsAgeCategories as $category) {
+            if (!$category['quantity']) {
                 continue;
             }
             $arrival = new \DateTime($booking->arrival);
             $departure = new \DateTime($booking->departure);
             $nights = $arrival->diff($departure)->d;
-            $qty = $nights * $bookingDto->$category;
-            if (!$qty) {
-                return;
-            }
+            $qty = $nights * $category['quantity'];
+
             $invoiceItem = new InvoiceItem(
-                amount: $amount,
+                amount: $category['price'],
                 type: InvoiceItem::CHARGE,
-                description: "City tax $description",
+                description: "City tax {$category['name']}",
                 qty: $qty,
             );
             $this->updateInvoiceItem($booking, $invoiceItem);
@@ -411,7 +403,10 @@ class Booking implements BookingInterface
         if (!$amount) {
             return;
         }
-        $confirmedGuests = $bookingDto->adults + $bookingDto->children + $bookingDto->babies + max(0, $bookingDto->sucklings - 1);
+
+        $guestsQuantityByAges = $this->getGuestsQuantityByAges($bookingDto);
+
+        $confirmedGuests = $guestsQuantityByAges['adults'] + $guestsQuantityByAges['children'] + $guestsQuantityByAges['preschoolers'] + max(0, $guestsQuantityByAges['toddlers'] - 1);
         $arrival = new \DateTime($booking->arrival);
         $departure = new \DateTime($booking->departure);
         $nights = $arrival->diff($departure)->d;
@@ -426,15 +421,6 @@ class Booking implements BookingInterface
             qty: max($qty, 0),
         );
         $this->updateInvoiceItem($booking, $invoiceItem);
-    }
-
-    private function getCitiTaxAmount(string $category): float
-    {
-        return match ($category) {
-            self::ADULTS => 3.13,
-            self::CHILDREN => 1.57,
-            default => 0,
-        };
     }
 
     /**
@@ -455,6 +441,9 @@ class Booking implements BookingInterface
         $this->addExtraGuestInvoice($booking, $bookingDto);
     }
 
+    /**
+     * @throws \Exception
+     */
     private function getBookingEntityById(int $id): Entity\Booking
     {
         $dto = new GetBookingsDto(id: [$id], includeInvoiceItems: true, includeInfoItems: true);
@@ -499,5 +488,52 @@ class Booking implements BookingInterface
     private function getPhotoLink($photoUrl): string
     {
         return "<a href='$photoUrl'>Link for photos</a>";
+    }
+
+    private function getAges(GuestDto $guest): int
+    {
+        return (int) date('Y') - (int) date('Y', strtotime($guest->dateOfBirth));
+    }
+
+    private function getGuestsAgeCategories(BookingDto $bookingDto): array
+    {
+        return [
+            [
+                'name' => 'Adults (18+)',
+                'price' => 3.13,
+                'quantity' => $this->getGuestsQuantityByAges($bookingDto)['adults'],
+            ],
+            [
+                'name' => 'Children (7—18)',
+                'price' => 1.57,
+                'quantity' => $this->getGuestsQuantityByAges($bookingDto)['children'],
+            ],
+        ];
+    }
+
+    private function getGuestsQuantityByAges(BookingDto $bookingDto): array
+    {
+        return [
+            'adults' => array_reduce(
+                $bookingDto->guests,
+                fn ($acc, $guest) => $acc + ($this->getAges($guest) >= 18 ? 1 : 0),
+                0,
+            ),
+            'children' => array_reduce(
+                $bookingDto->guests,
+                fn ($acc, $guest) => $acc + ($this->getAges($guest) >= 7 && $this->getAges($guest) < 18 ? 1 : 0),
+                0,
+            ),
+            'preschoolers' => array_reduce(
+                $bookingDto->guests,
+                fn ($acc, $guest) => $acc + ($this->getAges($guest) >= 4 && $this->getAges($guest) < 7 ? 1 : 0),
+                0,
+            ),
+            'toddlers' => array_reduce(
+                $bookingDto->guests,
+                fn ($acc, $guest) => $acc + ($this->getAges($guest) < 4 ? 1 : 0),
+                0,
+            ),
+        ];
     }
 }
