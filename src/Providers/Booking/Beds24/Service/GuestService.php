@@ -42,7 +42,7 @@ class GuestService
     private function removeGuests(Booking $booking): void
     {
         foreach ($booking->infoItems as $infoItem) {
-            if ($infoItem->code === self::CODE) {
+            if (isset($infoItem->code) && $infoItem->code === self::CODE) {
                 unset($infoItem->text);
                 unset($infoItem->code);
                 unset($infoItem->bookingId);
