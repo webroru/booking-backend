@@ -13,7 +13,10 @@ readonly class GuestDto
         public string $documentType,
         public string $dateOfBirth,
         public string $nationality,
-        public ?string $gender = null,
+        public string $gender,
+        public string $checkOutDate,
+        public string $checkOutTime,
+        public int $cityTaxExemption,
     ) {
     }
 }
