@@ -12,7 +12,6 @@ use App\Providers\Booking\Beds24\Entity\Property;
 use App\Providers\Booking\Beds24\Service\GuestService;
 use App\Providers\Booking\Beds24\Service\InfoItemService;
 use App\Providers\Booking\Beds24\Transformer\BookingEntityToDtoTransformer;
-use App\Repository\PhotoRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 
@@ -20,14 +19,12 @@ class BookingEntityToDtoTransformerTest extends TestCase
 {
     private Booking $booking;
     private Property $property;
-    private PhotoRepository|MockObject $photoRepositoryMock;
     private InfoItemService|MockObject $infoItemServiceMock;
     private GuestService|MockObject $guestServiceMock;
 
     public function testConvert(): void
     {
         $converter = new BookingEntityToDtoTransformer(
-            $this->photoRepositoryMock,
             $this->guestServiceMock,
             $this->infoItemServiceMock,
         );
@@ -38,10 +35,6 @@ class BookingEntityToDtoTransformerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->photoRepositoryMock = $this->getMockBuilder(PhotoRepository::class)
-            ->disableOriginalConstructor()
-            ->getMock();
-
         $this->guestServiceMock = $this->getMockBuilder(GuestService::class)
             ->disableOriginalConstructor()
             ->getMock();
@@ -49,10 +42,6 @@ class BookingEntityToDtoTransformerTest extends TestCase
         $this->infoItemServiceMock = $this->getMockBuilder(InfoItemService::class)
             ->disableOriginalConstructor()
             ->getMock();
-
-        $this->photoRepositoryMock->expects($this->once())
-            ->method('findBy')
-            ->willReturn([]);
 
         $this->guestServiceMock->expects($this->once())
             ->method('getGuests')

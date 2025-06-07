@@ -7,11 +7,3 @@ services:
     working_dir: /code
     ports:
       - "127.0.0.1:9001:9000"
-
-  cron:
-    build: docker/common/php
-    image: booking-backend-php:latest
-    working_dir: /code
-    command: [ "crond", "-f", "-d", "8" ]
-    volumes:
-      - ./:/code:rw
