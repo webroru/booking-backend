@@ -37,13 +37,6 @@ services:
       - ./:/code
       - ~/.ssh:/root/.ssh
 
-  cron:
-    build: docker/dev/php
-    working_dir: /code
-    command: [ "crond", "-f", "-d", "8" ]
-    volumes:
-      - ./:/code
-
   rabbitmq:
     image: bitnami/rabbitmq:latest
     ports:
