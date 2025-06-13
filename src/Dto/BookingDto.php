@@ -25,6 +25,7 @@ readonly class BookingDto
         public ?bool $checkIn,
         public bool $checkOut,
         public ?string $paymentStatus,
+        public ?array $photos,
         public ?int $groupId,
         public array $invoiceItems,
         public array $guests,

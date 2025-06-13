@@ -7,6 +7,7 @@ namespace App\Controller\Admin;
 use App\Entity\Admin;
 use App\Entity\Client;
 use App\Entity\Info;
+use App\Entity\Photo;
 use App\Entity\Beds24Token;
 use App\Repository\AdminRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
@@ -54,6 +55,7 @@ class DashboardController extends AbstractDashboardController
         yield MenuItem::linkToCrud('Clients', 'fas fa-person', Client::class);
         yield MenuItem::linkToCrud('Beds24 Tokens', 'fas fa-key', Beds24Token::class);
         yield MenuItem::linkToCrud('Info', 'fas fa-circle-info', Info::class);
+        yield MenuItem::linkToCrud('Photos', 'fas fa-camera', Photo::class);
     }
 
     #[Route('/admin/change/password', name: 'app_change_pass')]
