@@ -110,6 +110,35 @@ readonly class Booking implements BookingInterface
     /**
      * @throws \Exception
      */
+    public function addPhoto(int $bookingId, string $photoUrl): void
+    {
+        $booking = $this->getBookingEntityById($bookingId);
+        $infoItem = new InfoItem(code: 'photos', text: $this->getPhotoLink($photoUrl));
+        $booking->infoItems[] = $infoItem;
+        $postBookingsDto = new PostBookingsDto([$booking]);
+        $this->update($postBookingsDto);
+    }
+
+    /**
+     * @throws \Exception
+     */
+    public function removePhoto(int $id, string $photoUrl): void
+    {
+        $booking = $this->getBookingEntityById($id);
+        $infoItem = $this->findInfoItemByValue($booking->infoItems, $this->getPhotoLink($photoUrl));
+        if (!$infoItem) {
+            return;
+        }
+        $infoItem->text = null;
+        $infoItem->code = null;
+        $infoItem->bookingId = null;
+        $postBookingsDto = new PostBookingsDto([$booking]);
+        $this->update($postBookingsDto);
+    }
+
+    /**
+     * @throws \Exception
+     */
     public function addInvoice(int $id, string $type, float $amount, string $description = ''): void
     {
         $invoiceItems = [new InvoiceItem(amount: $amount, type: $type, description: $description)];
@@ -456,6 +485,11 @@ readonly class Booking implements BookingInterface
         }
 
         return $bookings;
+    }
+
+    private function getPhotoLink($photoUrl): string
+    {
+        return "<a href='$photoUrl'>Link for photos</a>";
     }
 
     private function getAges(GuestDto $guest): int
