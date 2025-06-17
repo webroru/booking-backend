@@ -22,7 +22,7 @@ class NotificationService
     {
         $body = "<p>Hello {$bookings[0]->firstName},</p>";
         foreach ($bookings as $booking) {
-            $body .= "<h2>Room: {$booking->room}</h2>" .
+            $body .= "<h2>Room: {$booking->room} {$booking->unit}</h2>" .
             "<p>Check-In Date: {$booking->checkInDate}</p>" .
             "<p>Check-Out Date: {$booking->checkOutDate}</p>" .
             "<p>First Name: {$booking->firstName}</p>" .
