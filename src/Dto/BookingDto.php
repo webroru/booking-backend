@@ -15,6 +15,7 @@ readonly class BookingDto
         public int $orderId,
         public string $propertyName,
         public string $room,
+        public string $unit,
         public string $originalReferer,
         public int $guestsAmount,
         public ?string $passCode,

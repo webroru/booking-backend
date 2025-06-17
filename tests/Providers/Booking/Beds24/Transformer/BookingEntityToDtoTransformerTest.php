@@ -95,7 +95,10 @@ class BookingEntityToDtoTransformerTest extends TestCase
         $roomType = [
             'id' => 1,
             'name' => 'Test',
-            'units' => [],
+            'units' => [
+                ['id' => 1, 'name' => 'Unit 1'],
+                ['id' => 2, 'name' => 'Unit 2']
+            ],
             'maxPeople' => 1,
             'priceRules' => [['extraPerson' => 10]]
         ];
