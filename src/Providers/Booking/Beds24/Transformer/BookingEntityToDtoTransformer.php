@@ -26,7 +26,6 @@ readonly class BookingEntityToDtoTransformer
     public function transform(Entity\Booking $booking, Property $property, array $groups): BookingDto
     {
         $roomType = $this->getRoomType($property->roomTypes, $booking->roomId);
-        $roomName = ($roomType['name'] ?? '') . ' Room Number: ' . $this->getUnitName($roomType, $booking->unitId);
 
         $isRuleAccepted = $this->infoItemService->getInfoItemValue('isRuleAccepted', $booking->infoItems);
         $checkIn = $this->infoItemService->getInfoItemValue('checkIn', $booking->infoItems);
@@ -40,7 +39,8 @@ readonly class BookingEntityToDtoTransformer
             phone: $booking->phone,
             orderId: $booking->id,
             propertyName: $property->name,
-            room: $roomName,
+            room: $roomType['name'] ?? '',
+            unit: $this->getUnitName($roomType, $booking->unitId) ?? '',
             originalReferer: "$booking->referer, booking: $booking->apiReference",
             guestsAmount: $booking->numAdult + $booking->numChild,
             passCode: $this->infoItemService->getInfoItemValue('CODELOCK', $booking->infoItems),
