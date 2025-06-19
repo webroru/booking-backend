@@ -12,6 +12,7 @@ use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
 use App\Providers\Booking\Beds24\Service\GuestService;
 use App\Providers\Booking\Beds24\Service\InfoItemService;
+use App\Providers\Booking\Beds24\Service\InvoiceItemService;
 use App\Repository\PhotoRepository;
 
 readonly class BookingEntityToDtoTransformer
@@ -20,6 +21,7 @@ readonly class BookingEntityToDtoTransformer
         private PhotoRepository $photoRepository,
         private GuestService $guestService,
         private InfoItemService $infoItemService,
+        private InvoiceItemService $invoiceItemService,
     ) {
     }
 
@@ -44,7 +46,7 @@ readonly class BookingEntityToDtoTransformer
             originalReferer: "$booking->referer, booking: $booking->apiReference",
             guestsAmount: $booking->numAdult + $booking->numChild,
             passCode: $this->infoItemService->getInfoItemValue('CODELOCK', $booking->infoItems),
-            debt: $this->getDebt($booking->invoiceItems),
+            debt: $this->invoiceItemService->getDebt($booking->invoiceItems),
             extraPerson: $this->getExtraPrice($property->roomTypes, $booking->roomId),
             capacity: $property->roomTypes ? $this->getMaxPeople($property->roomTypes, $booking->roomId) : 0,
             isRuleAccepted: $isRuleAccepted === 'true',
@@ -67,22 +69,6 @@ readonly class BookingEntityToDtoTransformer
         }
 
         return null;
-    }
-
-    /**
-     * @param InvoiceItem[] $invoiceItems
-     * @return float
-     */
-    private function getDebt(array $invoiceItems): float
-    {
-        $debt = array_reduce(
-            $invoiceItems,
-            fn (float $carry, InvoiceItem $item) => $carry + $item->lineTotal,
-            0.0,
-        );
-
-        $debt = round($debt, 2);
-        return $debt === -0.0 ? 0 : $debt;
     }
 
     private function getRoomType(array $roomTypes, int $roomId): ?array
