@@ -92,7 +92,7 @@ class BookingApiController extends AbstractApiController
         $bookingDto = $this->bookingDtoFromArray($request->toArray());
         $this->booking->updateBooking($bookingDto);
 
-        return $this->json([]);
+        return $this->json($this->booking->findById($bookingDto->orderId));
     }
 
     private function isImage(UploadedFile $file): bool
