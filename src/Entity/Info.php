@@ -60,6 +60,12 @@ class Info
     #[ORM\Column(type: Types::TEXT)]
     private ?string $paymentDisagree = null;
 
+    #[ORM\Column(type: Types::STRING, length: 5)]
+    private ?string $checkInTime = null;
+
+    #[ORM\Column(type: Types::STRING, length: 5)]
+    private ?string $checkOutTime = null;
+
     #[ORM\Column(length: 2)]
     #[Constraints\Length(max: 2)]
     #[Constraints\NotBlank()]
@@ -214,6 +220,28 @@ class Info
     public function setPaymentDisagree(?string $paymentDisagree): self
     {
         $this->paymentDisagree = $paymentDisagree;
+        return $this;
+    }
+
+    public function getCheckInTime(): ?string
+    {
+        return $this->checkInTime;
+    }
+
+    public function setCheckInTime(?string $checkInTime): self
+    {
+        $this->checkInTime = $checkInTime;
+        return $this;
+    }
+
+    public function getCheckOutTime(): ?string
+    {
+        return $this->checkOutTime;
+    }
+
+    public function setCheckOutTime(?string $checkOutTime): self
+    {
+        $this->checkOutTime = $checkOutTime;
         return $this;
     }
 

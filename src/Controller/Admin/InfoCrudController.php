@@ -35,6 +35,8 @@ class InfoCrudController extends AbstractCrudController
             TextEditorField::new('instruction'),
             TextEditorField::new('cashPaymentInstruction'),
             TextEditorField::new('paymentDisagree'),
+            TextEditorField::new('checkInTime'),
+            TextEditorField::new('checkOutTime'),
             TextField::new('locale'),
             AssociationField::new('client'),
         ];
