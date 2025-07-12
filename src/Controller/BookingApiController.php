@@ -60,7 +60,7 @@ class BookingApiController extends AbstractApiController
         $photo = $this->photoStorage->put($bookingDto, $file->getRealPath());
         $this->booking->addPhoto($id, $photo->getUrl());
 
-        return $this->json($photo->getId());
+        return $this->json(['id' => $photo->getId()]);
     }
 
     #[Route('/booking/{id<\d+>}/photo/{photoId<\d+>}', methods: ['DELETE'])]
