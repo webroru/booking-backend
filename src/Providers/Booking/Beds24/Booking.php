@@ -182,6 +182,7 @@ readonly class Booking implements BookingInterface
 
         $this->guestService->overwriteGuests($booking, $bookingDto);
 
+        $this->removeCityTaxFromSlaveBookings($bookingDto->groupId);
         $this->updateCityTax($booking, $bookingDto);
         $this->updateExtraGuestInvoice($booking, $bookingDto);
 
@@ -456,6 +457,21 @@ readonly class Booking implements BookingInterface
         return $beds24BookingsDto->bookings[0];
     }
 
+    /**
+     * @param int $masterId
+     * @return Entity\Booking[]
+     * @throws \Exception
+     */
+    private function getSlaveBookings(int $masterId): array
+    {
+        $dto = new GetBookingsDto(masterId: [$masterId], includeInvoiceItems: true, includeInfoItems: true);
+        $beds24BookingsDto = $this->client->getBookings($dto);
+        if (!isset($beds24BookingsDto->bookings[0])) {
+            throw new \Exception("Booking id $masterId is not found");
+        }
+        return array_filter($beds24BookingsDto->bookings, fn (Entity\Booking $booking) => $booking->id !== $masterId);
+    }
+
     private function getDefaultFilter(): array
     {
         $departureFrom = (new \DateTime('-3 days'))->format('Y-m-d');
@@ -558,5 +574,20 @@ readonly class Booking implements BookingInterface
             + $guestsQuantityByAges['children']
             + $guestsQuantityByAges['preschoolers']
             + $guestsQuantityByAges['toddlers'];
+    }
+
+    /**
+     * @param int $masterId
+     * @return void
+     * @throws \Exception
+     */
+    private function removeCityTaxFromSlaveBookings(int $masterId): void
+    {
+        $slaveBookings = $this->getSlaveBookings($masterId);
+        foreach ($slaveBookings as $booking) {
+            $this->removeCityTaxInvoices($booking);
+            $postBookingsDto = new PostBookingsDto([$booking]);
+            $this->update($postBookingsDto);
+        }
     }
 }
