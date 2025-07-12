@@ -43,7 +43,7 @@ class InfoController extends AbstractApiController
             throw new TokenNotFoundException("Information for {$client->getName()} not found");
         }
 
-        return $this->json(['data' => $this->normalizer->normalize($info)]);
+        return $this->json($this->normalizer->normalize($info));
     }
 
     #[Route('/send-to-email', methods: ['POST'])]
