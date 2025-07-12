@@ -182,7 +182,10 @@ readonly class Booking implements BookingInterface
 
         $this->guestService->overwriteGuests($booking, $bookingDto);
 
-        $this->removeCityTaxFromSlaveBookings($bookingDto->groupId);
+        if ($bookingDto->groupId) {
+            $this->removeCityTaxFromSlaveBookings($bookingDto->groupId);
+        }
+
         $this->updateCityTax($booking, $bookingDto);
         $this->updateExtraGuestInvoice($booking, $bookingDto);
 
