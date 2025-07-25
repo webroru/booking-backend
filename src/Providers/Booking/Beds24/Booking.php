@@ -163,10 +163,26 @@ readonly class Booking implements BookingInterface
      */
     public function updateBooking(BookingDto $bookingDto): void
     {
+
         $booking = $this->getBookingEntityById($bookingDto->orderId);
-        $overmax = $this->occupancy($bookingDto) > $bookingDto->capacity + 2 ? $this->occupancy($bookingDto) : 0;
-        $plusGuest =  $this->occupancy($bookingDto) > $booking->numAdult + $booking->numChild;
-        $lessDocs = $this->confirmedGuests($bookingDto) < $booking->numAdult + $booking->numChild;
+        $guestsAmount = $booking->numAdult + $booking->numChild;
+
+        if ($bookingDto->groupId) {
+            $slaveBookings = $this->getSlaveBookings($bookingDto->groupId);
+            $guestsAmount += array_reduce(
+                $slaveBookings,
+                fn ($acc, Entity\Booking $booking) => $acc + $booking->numAdult + $booking->numChild,
+                $guestsAmount,
+            );
+
+            $this->removeCityTaxFromSlaveBookings($slaveBookings);
+            $this->removeExtraGuestFromSlaveBookings($slaveBookings);
+        }
+
+        $occupancy = $this->occupancy($bookingDto);
+        $overmax = $occupancy > $bookingDto->capacity + 2 ? $occupancy : 0;
+        $plusGuest =  $occupancy > $guestsAmount;
+        $lessDocs = $this->confirmedGuests($bookingDto) < $guestsAmount;
 
         $infoItems = [];
         $infoItems[] = new InfoItem('checkIn', $bookingDto->checkIn ? 'true' : 'false');
@@ -181,13 +197,12 @@ readonly class Booking implements BookingInterface
         }
 
         $this->guestService->overwriteGuests($booking, $bookingDto);
-
-        if ($bookingDto->groupId) {
-            $this->removeCityTaxFromSlaveBookings($bookingDto->groupId);
-        }
-
         $this->updateCityTax($booking, $bookingDto);
-        $this->updateExtraGuestInvoice($booking, $bookingDto);
+        $this->removeExtraGuestInvoice($booking);
+
+        if ($plusGuest) {
+            $this->addExtraGuestInvoice($booking, $bookingDto);
+        }
 
         if ($bookingDto->paymentStatus === 'disagree') {
             $booking->status = 'cancelled';
@@ -367,7 +382,7 @@ readonly class Booking implements BookingInterface
     {
         /** @var InvoiceItem $item */
         foreach ($booking->invoiceItems as $item) {
-            if (stripos($item->description, 'extra guest') === false) {
+            if (stripos($item->description, 'Extra guest(s)') === false) {
                 continue;
             }
             $item->qty = 0;
@@ -417,14 +432,14 @@ readonly class Booking implements BookingInterface
         $departure = new \DateTime($booking->departure);
         $nights = $arrival->diff($departure)->d;
         $qty = $nights * ($confirmedGuests - $bookingDto->guestsAmount);
-        if (!$qty) {
+        if ($qty <= 0) {
             return;
         }
         $invoiceItem = new InvoiceItem(
             amount: $amount,
             type: InvoiceItem::CHARGE,
             description: 'Extra guest(s)',
-            qty: max($qty, 0),
+            qty: $qty,
         );
         $this->updateInvoiceItem($booking, $invoiceItem);
     }
@@ -436,15 +451,6 @@ readonly class Booking implements BookingInterface
     {
         $this->removeCityTaxInvoices($booking);
         $this->addCityTaxInvoices($booking, $bookingDto);
-    }
-
-    /**
-     * @throws \Exception
-     */
-    private function updateExtraGuestInvoice(Entity\Booking $booking, BookingDto $bookingDto): void
-    {
-        $this->removeExtraGuestInvoice($booking);
-        $this->addExtraGuestInvoice($booking, $bookingDto);
     }
 
     /**
@@ -584,11 +590,24 @@ readonly class Booking implements BookingInterface
      * @return void
      * @throws \Exception
      */
-    private function removeCityTaxFromSlaveBookings(int $masterId): void
+    private function removeCityTaxFromSlaveBookings(array $slaveBookings): void
     {
-        $slaveBookings = $this->getSlaveBookings($masterId);
         foreach ($slaveBookings as $booking) {
             $this->removeCityTaxInvoices($booking);
+            $postBookingsDto = new PostBookingsDto([$booking]);
+            $this->update($postBookingsDto);
+        }
+    }
+
+    /**
+     * @param int $masterId
+     * @return void
+     * @throws \Exception
+     */
+    private function removeExtraGuestFromSlaveBookings(array $slaveBookings): void
+    {
+        foreach ($slaveBookings as $booking) {
+            $this->removeExtraGuestInvoice($booking);
             $postBookingsDto = new PostBookingsDto([$booking]);
             $this->update($postBookingsDto);
         }
