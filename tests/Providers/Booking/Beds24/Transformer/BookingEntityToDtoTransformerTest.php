@@ -9,9 +9,10 @@ use App\Providers\Booking\Beds24\Entity\Booking;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
-use App\Providers\Booking\Beds24\Service\GuestService;
 use App\Providers\Booking\Beds24\Service\InfoItemService;
+use App\Providers\Booking\Beds24\Service\InvoiceItemService;
 use App\Providers\Booking\Beds24\Transformer\BookingEntityToDtoTransformer;
+use App\Repository\GuestRepository;
 use App\Repository\PhotoRepository;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -22,14 +23,16 @@ class BookingEntityToDtoTransformerTest extends TestCase
     private Property $property;
     private PhotoRepository|MockObject $photoRepositoryMock;
     private InfoItemService|MockObject $infoItemServiceMock;
-    private GuestService|MockObject $guestServiceMock;
+    private InvoiceItemService|MockObject $invoiceItemServiceMock;
+    private GuestRepository|MockObject $guestRepositoryMock;
 
     public function testConvert(): void
     {
         $converter = new BookingEntityToDtoTransformer(
             $this->photoRepositoryMock,
-            $this->guestServiceMock,
+            $this->guestRepositoryMock,
             $this->infoItemServiceMock,
+            $this->invoiceItemServiceMock,
         );
 
         $bookingDTO = $converter->transform($this->booking, $this->property, []);
@@ -42,7 +45,7 @@ class BookingEntityToDtoTransformerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
-        $this->guestServiceMock = $this->getMockBuilder(GuestService::class)
+        $this->guestRepositoryMock = $this->getMockBuilder(GuestRepository::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -50,17 +53,25 @@ class BookingEntityToDtoTransformerTest extends TestCase
             ->disableOriginalConstructor()
             ->getMock();
 
+        $this->invoiceItemServiceMock = $this->getMockBuilder(InvoiceItemService::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
         $this->photoRepositoryMock->expects($this->once())
             ->method('findBy')
             ->willReturn([]);
 
-        $this->guestServiceMock->expects($this->once())
-            ->method('getGuests')
+        $this->guestRepositoryMock->expects($this->once())
+            ->method('findBy')
             ->willReturn([]);
 
         $this->infoItemServiceMock->expects($this->any())
             ->method('getInfoItemValue')
             ->willReturn('Test InfoItem Value');
+
+        $this->invoiceItemServiceMock->expects($this->once())
+            ->method('getDebt')
+            ->willReturn(0.0);
 
         $invoiceItems = [new InvoiceItem(
             amount: 1.1,
