@@ -61,6 +61,10 @@ class Guest
     #[ORM\Column(type: 'boolean')]
     private bool $isReported = false;
 
+    #[ORM\ManyToOne(inversedBy: 'guests')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private Client $client;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -217,6 +221,17 @@ class Guest
     public function setIsReported(bool $isReported): self
     {
         $this->isReported = $isReported;
+        return $this;
+    }
+
+    public function getClient(): Client
+    {
+        return $this->client;
+    }
+
+    public function setClient(Client $client): self
+    {
+        $this->client = $client;
         return $this;
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Dto\GuestDto;
+use App\Entity\Client;
 use App\Entity\Guest;
 use App\Enum\DocumentType;
 use App\Enum\Gender;
@@ -12,8 +13,10 @@ use App\Repository\GuestRepository;
 
 readonly class GuestService
 {
-    public function __construct(private GuestRepository $guestRepository)
-    {
+    public function __construct(
+        private GuestRepository $guestRepository,
+        private ClientService $clientService,
+    ) {
     }
 
     /**
@@ -25,10 +28,11 @@ readonly class GuestService
      */
     public function updateGuests(array $guestsDto, int $bookingId, string $originalReferer, string $room): void
     {
-        $guests = $this->guestRepository->findBy(['bookingId' => $bookingId]);
+        $client = $this->clientService->getClient();
+        $guests = $this->guestRepository->findBy(['bookingId' => $bookingId, 'client' => $client]);
         $removedGuests = $this->getRemovedGuests($guestsDto, $guests);
         $this->removeGuests($removedGuests);
-        $this->addGuests($guestsDto, $bookingId, $originalReferer, $room);
+        $this->addGuests($guestsDto, $bookingId, $originalReferer, $room, $client);
     }
 
     /**
@@ -53,8 +57,13 @@ readonly class GuestService
      * @param GuestDto[] $guestsDto
      * @throws \DateMalformedStringException
      */
-    private function addGuests(array $guestsDto, int $bookingId, string $originalReferer, string $room): void
-    {
+    private function addGuests(
+        array $guestsDto,
+        int $bookingId,
+        string $originalReferer,
+        string $room,
+        Client $client,
+    ): void {
         foreach ($guestsDto as $guestDto) {
             if ($guestDto->id) {
                 continue;
@@ -73,6 +82,7 @@ readonly class GuestService
                 ->setCityTaxExemption($guestDto->cityTaxExemption)
                 ->setReferer($originalReferer)
                 ->setRoom($room)
+                ->setClient($client)
             ;
             $this->guestRepository->save($guest, true);
         }

@@ -30,9 +30,17 @@ class Client
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Info::class)]
     private Collection $info;
 
+    /** @var Collection<int, Guest> */
+    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Guest::class)]
+    private Collection $guests;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isAutoSend = false;
+
     public function __construct()
     {
         $this->info = new ArrayCollection();
+        $this->guests = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -78,8 +86,41 @@ class Client
         return $this;
     }
 
+    /**
+     * @return Collection<int, Guest>
+     */
+    public function getGuests(): Collection
+    {
+        return $this->guests;
+    }
+
+    public function addGuest(?Info $guest): self
+    {
+        if (!$this->guests->contains($guest)) {
+            $this->guests[] = $guest;
+            $guest->setClient($this);
+        }
+        return $this;
+    }
+
+    public function removeGuest(Guest $guest): void
+    {
+        $this->guests->removeElement($guest);
+    }
+
     public function __toString(): string
     {
         return $this->name;
+    }
+
+    public function isAutoSend(): bool
+    {
+        return $this->isAutoSend;
+    }
+
+    public function setIsAutoSend(bool $isAutoSend): self
+    {
+        $this->isAutoSend = $isAutoSend;
+        return $this;
     }
 }
