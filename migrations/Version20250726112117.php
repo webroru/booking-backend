@@ -19,13 +19,11 @@ final class Version20250726112117 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE client ADD is_auto_send TINYINT(1) NOT NULL');
+                $this->addSql('ALTER TABLE client ADD is_auto_send TINYINT(1) NOT NULL');
     }
 
     public function down(Schema $schema): void
     {
-        // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('ALTER TABLE client DROP is_auto_send');
     }
 }
