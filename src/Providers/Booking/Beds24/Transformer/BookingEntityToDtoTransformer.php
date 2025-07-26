@@ -5,21 +5,22 @@ declare(strict_types=1);
 namespace App\Providers\Booking\Beds24\Transformer;
 
 use App\Dto\BookingDto;
+use App\Dto\GuestDto;
 use App\Dto\InvoiceItemDto;
 use App\Entity\Photo;
 use App\Providers\Booking\Beds24\Entity;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
-use App\Providers\Booking\Beds24\Service\GuestService;
 use App\Providers\Booking\Beds24\Service\InfoItemService;
 use App\Providers\Booking\Beds24\Service\InvoiceItemService;
+use App\Repository\GuestRepository;
 use App\Repository\PhotoRepository;
 
 readonly class BookingEntityToDtoTransformer
 {
     public function __construct(
         private PhotoRepository $photoRepository,
-        private GuestService $guestService,
+        private GuestRepository $guestRepository,
         private InfoItemService $infoItemService,
         private InvoiceItemService $invoiceItemService,
     ) {
@@ -56,7 +57,7 @@ readonly class BookingEntityToDtoTransformer
             photos: $this->getPhotos($booking->id),
             groupId: in_array($booking->id, $groups) ? $booking->id : $booking->masterId,
             invoiceItems: $this->getInvoiceItems($booking->invoiceItems),
-            guests: $this->guestService->getGuests($booking),
+            guests: $this->getGuests($booking->id),
         );
     }
 
@@ -120,6 +121,30 @@ readonly class BookingEntityToDtoTransformer
             fn(Photo $photo) => ['id' => $photo->getId(), 'url' => $photo->getUrl()],
             $this->photoRepository->findBy(['bookingId' => $id])
         );
+    }
+
+    private function getGuests(int $bookingId): array
+    {
+        $guests = $this->guestRepository->findBy(['bookingId' => $bookingId]);
+        $guestsDto = [];
+
+        foreach ($guests as $guest) {
+            $guestsDto[] = new GuestDto(
+                id: $guest->getId(),
+                firstName: $guest->getFirstName(),
+                lastName: $guest->getLastName(),
+                documentNumber: $guest->getDocumentNumber(),
+                documentType: $guest->getDocumentType()->value,
+                dateOfBirth: $guest->getDateOfBirth()->format('Y-m-d'),
+                nationality: $guest->getNationality(),
+                gender: $guest->getGender()->value,
+                checkOutDate: $guest->getCheckOutDate()->format('Y-m-d'),
+                checkOutTime: $guest->getCheckOutTime()->format('H:i'),
+                cityTaxExemption: $guest->getCityTaxExemption(),
+            );
+        }
+
+        return $guestsDto;
     }
 
     /**
