@@ -1,0 +1,30 @@
+<button id="toggle-switch" class="btn btn-secondary" type="button">
+  <input
+    type="checkbox" id="toggle-checkbox"
+    {% if action.htmlAttributes['data-is-enabled'] == '1' %}checked{% endif %}
+  >
+  <label for="toggle-checkbox">Automatically send</label>
+</button>
+
+<script>
+    document.getElementById('toggle-checkbox').addEventListener('change', function() {
+        const enabled = this.checked;
+        fetch('{{ path('admin_guest_auto_send') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token('toggle_flag') }}',
+            },
+            body: JSON.stringify({ enabled }),
+            credentials: 'same-origin',
+        })
+            .then(response => {
+                if (!response.ok) throw new Error('Network error');
+                return response.json();
+            })
+            .then(data => {
+                alert(data.message);
+            })
+            .catch(err => alert('Ошибка: ' + err.message));
+    });
+</script>

@@ -20,6 +20,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Routing\Annotation\Route;
 
 class GuestCrudController extends AbstractCrudController
 {
@@ -69,11 +72,20 @@ class GuestCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $sendToGov = Action::new('sendToGov', 'Отправить', 'fa fa-paper-plane')
-            ->linkToCrudAction('sendToGov') // Метод ниже
+        $isEnabled = true; // или false
+
+        $autoSend = Action::new('autoSend')
+            ->createAsGlobalAction()
+            ->setTemplatePath('admin/actions/auto_send_switch.html.twig')
+            ->setHtmlAttributes(['data-is-enabled' => $isEnabled ? '1' : '0'])
+            ->linkToUrl('#');
+
+        $sendToGov = Action::new('sendToGov', 'Send', 'fa fa-paper-plane')
+            ->linkToCrudAction('sendToGov')
             ->addCssClass('btn btn-warning');
 
         return $actions
+            ->add(Crud::PAGE_INDEX, $autoSend)
             ->add(Crud::PAGE_INDEX, $sendToGov)
             ->add(Crud::PAGE_DETAIL, $sendToGov); // если хочешь и на странице деталей
     }
@@ -93,5 +105,28 @@ class GuestCrudController extends AbstractCrudController
             ->generateUrl();
 
         return $this->redirect($url);
+    }
+
+    #[Route('/admin/guest-auto-send', name: 'admin_guest_auto_send', methods: ['POST'])]
+    public function toggleFlag(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $enabled = $data['enabled'] ?? false;
+
+        $token = $request->headers->get('X-CSRF-TOKEN');
+        if (!$this->isCsrfTokenValid('toggle_flag', $token)) {
+            return new JsonResponse(['message' => 'Неверный CSRF токен'], 400);
+        }
+
+        // Логика обновления сущности
+        // $entity = ...;
+        // $entity->setFlag($enabled);
+        // $this->getDoctrine()->getManager()->flush();
+
+        return new JsonResponse([
+            'message' => $enabled ?
+                'Automatically send to the Government is enabled' :
+                'Automatically send to the Government is disabled'
+        ]);
     }
 }
