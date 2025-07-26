@@ -19,7 +19,6 @@ readonly class GuestService
     /**
      * @param GuestDto[] $guestsDto
      * @param int $bookingId
-     * @return void
      */
     public function updateGuests(array $guestsDto, int $bookingId): void
     {
@@ -49,7 +48,7 @@ readonly class GuestService
 
     /**
      * @param GuestDto[] $guestsDto
-     * @return void
+     * @throws \DateMalformedStringException
      */
     private function addGuests(array $guestsDto, int $bookingId): void
     {
