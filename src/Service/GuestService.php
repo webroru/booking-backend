@@ -19,13 +19,16 @@ readonly class GuestService
     /**
      * @param GuestDto[] $guestsDto
      * @param int $bookingId
+     * @param string $originalReferer
+     * @param string $room
+     * @throws \DateMalformedStringException
      */
-    public function updateGuests(array $guestsDto, int $bookingId): void
+    public function updateGuests(array $guestsDto, int $bookingId, string $originalReferer, string $room): void
     {
         $guests = $this->guestRepository->findBy(['bookingId' => $bookingId]);
         $removedGuests = $this->getRemovedGuests($guestsDto, $guests);
         $this->removeGuests($removedGuests);
-        $this->addGuests($guestsDto, $bookingId);
+        $this->addGuests($guestsDto, $bookingId, $originalReferer, $room);
     }
 
     /**
@@ -50,7 +53,7 @@ readonly class GuestService
      * @param GuestDto[] $guestsDto
      * @throws \DateMalformedStringException
      */
-    private function addGuests(array $guestsDto, int $bookingId): void
+    private function addGuests(array $guestsDto, int $bookingId, string $originalReferer, string $room): void
     {
         foreach ($guestsDto as $guestDto) {
             if ($guestDto->id) {
@@ -68,6 +71,8 @@ readonly class GuestService
                 ->setCheckOutDate(new \DateTimeImmutable($guestDto->checkOutDate))
                 ->setCheckOutTime(new \DateTimeImmutable($guestDto->checkOutTime))
                 ->setCityTaxExemption($guestDto->cityTaxExemption)
+                ->setReferer($originalReferer)
+                ->setRoom($room)
             ;
             $this->guestRepository->save($guest, true);
         }
