@@ -39,7 +39,6 @@ class DashboardController extends AbstractDashboardController
             ->setTitle('Code');
     }
 
-
     public function configureUserMenu(UserInterface $user): UserMenu
     {
         return parent::configureUserMenu($user)->addMenuItems(
