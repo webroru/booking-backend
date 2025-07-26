@@ -52,6 +52,15 @@ class Guest
     #[ORM\Column(length: 2)]
     private int $cityTaxExemption;
 
+    #[ORM\Column(length: 255)]
+    private string $referer;
+
+    #[ORM\Column(length: 255)]
+    private string $room;
+
+    #[ORM\Column(type: 'boolean')]
+    private bool $isReported = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -175,6 +184,39 @@ class Guest
     public function setCityTaxExemption(int $cityTaxExemption): self
     {
         $this->cityTaxExemption = $cityTaxExemption;
+        return $this;
+    }
+
+    public function getReferer(): string
+    {
+        return $this->referer;
+    }
+
+    public function setReferer(string $referer): self
+    {
+        $this->referer = $referer;
+        return $this;
+    }
+
+    public function getRoom(): string
+    {
+        return $this->room;
+    }
+
+    public function setRoom(string $room): self
+    {
+        $this->room = $room;
+        return $this;
+    }
+
+    public function isReported(): bool
+    {
+        return $this->isReported;
+    }
+
+    public function setIsReported(bool $isReported): self
+    {
+        $this->isReported = $isReported;
         return $this;
     }
 }

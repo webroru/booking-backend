@@ -8,9 +8,9 @@ use App\Entity\Guest;
 use App\Enum\DocumentType;
 use App\Enum\Gender;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TimeField;
@@ -25,7 +25,6 @@ class GuestCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            IdField::new('id')->hideOnForm(),
             IntegerField::new('bookingId'),
             TextField::new('firstName'),
             TextField::new('lastName'),
@@ -56,6 +55,9 @@ class GuestCrudController extends AbstractCrudController
                 ->setTimezone('Europe/Prague'),
 
             IntegerField::new('cityTaxExemption'),
+            TextField::new('referer')->setDisabled(),
+            TextField::new('room')->setDisabled(),
+            BooleanField::new('isReported'),
         ];
     }
 }
