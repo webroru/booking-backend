@@ -14,10 +14,10 @@ use App\Providers\Booking\Beds24\Dto\Response\GetAuthenticationSetupDto;
 use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
-use App\Providers\Booking\Beds24\Service\GuestService;
 use App\Providers\Booking\Beds24\Service\InfoItemService;
 use App\Providers\Booking\Beds24\Transformer\BookingEntityToDtoTransformer;
 use App\Providers\Booking\BookingInterface;
+use App\Service\GuestService;
 
 readonly class Booking implements BookingInterface
 {
@@ -196,7 +196,7 @@ readonly class Booking implements BookingInterface
             $this->infoItemService->updateInfoItem($booking, $infoItem);
         }
 
-        $this->guestService->overwriteGuests($booking, $bookingDto);
+        $this->guestService->updateGuests($bookingDto->guests, $bookingDto->orderId);
         $this->updateCityTax($booking, $bookingDto);
         $this->removeExtraGuestInvoice($booking);
 
