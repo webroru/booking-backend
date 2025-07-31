@@ -12,6 +12,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
@@ -34,7 +35,7 @@ class GuestCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            IntegerField::new('bookingId')->setDisabled(),
+            IntegerField::new('bookingId'),
             TextField::new('firstName'),
             TextField::new('lastName'),
             TextField::new('documentNumber'),
@@ -64,9 +65,10 @@ class GuestCrudController extends AbstractCrudController
                 ->setTimezone('Europe/Prague'),
 
             IntegerField::new('cityTaxExemption'),
-            TextField::new('referer')->setDisabled(),
-            TextField::new('room')->setDisabled(),
+            TextField::new('referer'),
+            TextField::new('room'),
             BooleanField::new('isReported'),
+            AssociationField::new('client'),
         ];
     }
 

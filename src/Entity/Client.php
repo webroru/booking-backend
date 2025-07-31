@@ -37,6 +37,9 @@ class Client
     #[ORM\Column(type: 'boolean')]
     private bool $isAutoSend = false;
 
+    #[ORM\ManyToOne(targetEntity: Admin::class, inversedBy: 'clients')]
+    private ?Admin $admin = null;
+
     public function __construct()
     {
         $this->info = new ArrayCollection();
@@ -121,6 +124,17 @@ class Client
     public function setIsAutoSend(bool $isAutoSend): self
     {
         $this->isAutoSend = $isAutoSend;
+        return $this;
+    }
+
+    public function getAdmin(): ?Admin
+    {
+        return $this->admin;
+    }
+
+    public function setAdmin(?Admin $admin): self
+    {
+        $this->admin = $admin;
         return $this;
     }
 }
