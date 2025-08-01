@@ -16,6 +16,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\DateTimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TimeField;
@@ -55,6 +56,14 @@ class GuestCrudController extends AbstractCrudController
                     array_map(fn(Gender $e) => $e->value, Gender::cases()),
                     Gender::cases()
                 )),
+
+            DateTimeField::new('registrationDate')
+                ->setFormat('yyyy-MM-dd')
+                ->setTimezone('Europe/Prague'),
+
+            DateField::new('checkInDate')
+                ->setFormat('yyyy-MM-dd')
+                ->setTimezone('Europe/Prague'),
 
             DateField::new('checkOutDate')
                 ->setFormat('yyyy-MM-dd')

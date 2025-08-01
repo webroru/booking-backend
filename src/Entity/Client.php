@@ -26,6 +26,9 @@ class Client
     #[ORM\Column(length: 255, unique: true)]
     private ?string $name = null;
 
+    #[ORM\Column(type: 'time')]
+    private \DateTimeInterface $checkInTime;
+
     /** @var Collection<int, Info> */
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Info::class)]
     private Collection $info;
@@ -72,6 +75,17 @@ class Client
     {
         $this->name = $name;
 
+        return $this;
+    }
+
+    public function getCheckInTime(): \DateTimeInterface
+    {
+        return $this->checkInTime;
+    }
+
+    public function setCheckInTime(\DateTimeInterface $checkInTime): self
+    {
+        $this->checkInTime = $checkInTime;
         return $this;
     }
 

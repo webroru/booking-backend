@@ -9,6 +9,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TimeField;
 
 class ClientCrudController extends AbstractCrudController
 {
@@ -23,6 +24,9 @@ class ClientCrudController extends AbstractCrudController
         return [
             TextField::new('domain'),
             TextField::new('name'),
+            TimeField::new('checkInTime')
+                ->setFormat('HH:mm')
+                ->setTimezone('Europe/Prague'),
             BooleanField::new('isAutoSend'),
             AssociationField::new('admin'),
         ];
