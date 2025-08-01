@@ -32,14 +32,15 @@ class AdminCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
+        $isAdmin = in_array('ROLE_ADMIN', $this->getUser()->getRoles(), true);
+
         return $actions
-            ->update(Crud::PAGE_INDEX, Action::EDIT, fn (Action $action) =>
-                $action->displayIf(
-                    fn ($entity) =>
-                        in_array('ROLE_ADMIN', $this->getUser()->getRoles(), true)
-                        || $this->getUser() === $entity
-                ))
-            ->disable(Action::NEW, Action::DELETE);
+            ->update(Crud::PAGE_INDEX, Action::EDIT, fn(Action $action) =>
+                $action->displayIf(fn($entity) => $isAdmin || $this->getUser() === $entity))
+            ->update(Crud::PAGE_INDEX, Action::NEW, fn(Action $action) =>
+                $action->displayIf(fn() => $isAdmin))
+            ->update(Crud::PAGE_INDEX, Action::DELETE, fn(Action $action) =>
+                $action->displayIf(fn($entity) => $isAdmin));
     }
 
     public function configureCrud(Crud $crud): Crud
@@ -109,7 +110,7 @@ class AdminCrudController extends AbstractCrudController
         }
 
         if (!empty($entityInstance->getNewPassword())) {
-            $hashedPassword = $this->passwordHasher->hashPassword($entityInstance, $entityInstance->getPassword());
+            $hashedPassword = $this->passwordHasher->hashPassword($entityInstance, $entityInstance->getNewPassword());
             $entityInstance->setPassword($hashedPassword);
         }
 
