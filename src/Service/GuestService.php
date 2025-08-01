@@ -27,6 +27,7 @@ readonly class GuestService
         array $guestsDto,
         int $bookingId,
         string $originalReferer,
+        string $propertyName,
         string $room,
         string $checkInDate,
     ): void {
@@ -34,7 +35,7 @@ readonly class GuestService
         $guests = $this->guestRepository->findBy(['bookingId' => $bookingId, 'client' => $client]);
         $removedGuests = $this->getRemovedGuests($guestsDto, $guests);
         $this->removeGuests($removedGuests);
-        $this->addGuests($guestsDto, $bookingId, $originalReferer, $room, $checkInDate, $client);
+        $this->addGuests($guestsDto, $bookingId, $originalReferer, $propertyName, $room, $checkInDate, $client);
     }
 
     /**
@@ -63,6 +64,7 @@ readonly class GuestService
         array $guestsDto,
         int $bookingId,
         string $originalReferer,
+        string $propertyName,
         string $room,
         string $checkInDate,
         Client $client,
@@ -86,6 +88,7 @@ readonly class GuestService
                 ->setCheckOutTime(new \DateTimeImmutable($guestDto->checkOutTime))
                 ->setCityTaxExemption($guestDto->cityTaxExemption)
                 ->setReferer($originalReferer)
+                ->setPropertyName($propertyName)
                 ->setRoom($room)
                 ->setClient($client)
             ;

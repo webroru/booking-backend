@@ -35,6 +35,26 @@ class GuestCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        if ($pageName === Crud::PAGE_INDEX) {
+            return [
+                IntegerField::new('bookingId'),
+                TextField::new('firstName'),
+                TextField::new('lastName'),
+                TextField::new('propertyName'),
+                TextField::new('room'),
+                DateField::new('checkInDate')
+                    ->setFormat('yyyy-MM-dd')
+                    ->setTimezone('Europe/Prague'),
+                DateField::new('checkOutDate')
+                    ->setFormat('yyyy-MM-dd')
+                    ->setTimezone('Europe/Prague'),
+                DateTimeField::new('registrationDate')
+                    ->setFormat('yyyy-MM-dd')
+                    ->setTimezone('Europe/Prague'),
+                TextField::new('referer'),
+            ];
+        }
+
         return [
             IntegerField::new('bookingId'),
             TextField::new('firstName'),
@@ -75,6 +95,7 @@ class GuestCrudController extends AbstractCrudController
 
             IntegerField::new('cityTaxExemption'),
             TextField::new('referer'),
+            TextField::new('propertyName'),
             TextField::new('room'),
             BooleanField::new('isReported'),
             AssociationField::new('client'),

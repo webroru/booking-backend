@@ -62,6 +62,9 @@ class Guest
     private string $referer;
 
     #[ORM\Column(length: 255)]
+    private string $propertyName;
+
+    #[ORM\Column(length: 255)]
     private string $room;
 
     #[ORM\Column(type: 'boolean')]
@@ -227,6 +230,17 @@ class Guest
     public function setReferer(string $referer): self
     {
         $this->referer = $referer;
+        return $this;
+    }
+
+    public function getPropertyName(): string
+    {
+        return $this->propertyName;
+    }
+
+    public function setPropertyName(string $propertyName): self
+    {
+        $this->propertyName = $propertyName;
         return $this;
     }
 

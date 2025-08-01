@@ -200,6 +200,7 @@ readonly class Booking implements BookingInterface
             $bookingDto->guests,
             $bookingDto->orderId,
             $bookingDto->originalReferer,
+            $bookingDto->propertyName,
             $bookingDto->room,
             $bookingDto->checkInDate,
         );
