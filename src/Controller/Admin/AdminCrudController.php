@@ -44,26 +44,6 @@ class AdminCrudController extends AbstractCrudController
                 $action->displayIf(fn() => $this->isAdmin));
     }
 
-    public function edit(AdminContext $context)
-    {
-        if (!$this->isAdmin) {
-            $client = $context->getEntity()->getInstance();
-            $this->denyAccessUnlessGranted('EDIT', $client);
-        }
-
-        return parent::edit($context);
-    }
-
-    public function detail(AdminContext $context)
-    {
-        if (!$this->isAdmin) {
-            $client = $context->getEntity()->getInstance();
-            $this->denyAccessUnlessGranted('VIEW', $client);
-        }
-
-        return parent::detail($context);
-    }
-
     public function configureFields(string $pageName): iterable
     {
         $user = $this->getUser();
@@ -92,6 +72,26 @@ class AdminCrudController extends AbstractCrudController
             ])
             ->renderExpanded()
             ->allowMultipleChoices();
+    }
+
+    public function edit(AdminContext $context)
+    {
+        if (!$this->isAdmin) {
+            $client = $context->getEntity()->getInstance();
+            $this->denyAccessUnlessGranted('EDIT', $client);
+        }
+
+        return parent::edit($context);
+    }
+
+    public function detail(AdminContext $context)
+    {
+        if (!$this->isAdmin) {
+            $client = $context->getEntity()->getInstance();
+            $this->denyAccessUnlessGranted('VIEW', $client);
+        }
+
+        return parent::detail($context);
     }
 
     public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
