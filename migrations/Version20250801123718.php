@@ -20,8 +20,8 @@ final class Version20250801123718 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE client ADD check_in_time TIME NOT NULL');
-        $this->addSql('ALTER TABLE guest ADD registration_date DATETIME NOT NULL, ADD check_in_date DATE NOT NULL');
+        $this->addSql('ALTER TABLE client ADD check_in_time TIME NOT NULL DEFAULT \'12:00:00\'');
+        $this->addSql('ALTER TABLE guest ADD registration_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, ADD check_in_date DATE NOT NULL');
     }
 
     public function down(Schema $schema): void
