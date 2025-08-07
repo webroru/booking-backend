@@ -43,6 +43,12 @@ class Guest
     #[ORM\Column(enumType: Gender::class)]
     private Gender $gender;
 
+    #[ORM\Column(type: 'datetime')]
+    private \DateTimeInterface $registrationDate;
+
+    #[ORM\Column(type: 'date')]
+    private \DateTimeInterface $checkInDate;
+
     #[ORM\Column(type: 'date')]
     private \DateTimeInterface $checkOutDate;
 
@@ -54,6 +60,9 @@ class Guest
 
     #[ORM\Column(length: 255)]
     private string $referer;
+
+    #[ORM\Column(length: 255)]
+    private string $propertyName;
 
     #[ORM\Column(length: 255)]
     private string $room;
@@ -158,6 +167,28 @@ class Guest
         return $this;
     }
 
+    public function getRegistrationDate(): \DateTimeInterface
+    {
+        return $this->registrationDate;
+    }
+
+    public function setRegistrationDate(\DateTimeInterface $registrationDate): self
+    {
+        $this->registrationDate = $registrationDate;
+        return $this;
+    }
+
+    public function getCheckInDate(): \DateTimeInterface
+    {
+        return $this->checkInDate;
+    }
+
+    public function setCheckInDate(\DateTimeInterface $checkInDate): self
+    {
+        $this->checkInDate = $checkInDate;
+        return $this;
+    }
+
     public function getCheckOutDate(): \DateTimeInterface
     {
         return $this->checkOutDate;
@@ -199,6 +230,17 @@ class Guest
     public function setReferer(string $referer): self
     {
         $this->referer = $referer;
+        return $this;
+    }
+
+    public function getPropertyName(): string
+    {
+        return $this->propertyName;
+    }
+
+    public function setPropertyName(string $propertyName): self
+    {
+        $this->propertyName = $propertyName;
         return $this;
     }
 

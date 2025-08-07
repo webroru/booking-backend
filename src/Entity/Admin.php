@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Entity;
 
 use App\Repository\AdminRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -27,8 +29,18 @@ class Admin implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+    private ?string $newPassword = null;
+
     #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $token = null;
+
+    #[ORM\OneToMany(mappedBy: 'admin', targetEntity: Client::class)]
+    private Collection $clients;
+
+    public function __construct()
+    {
+        $this->clients = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -91,6 +103,17 @@ class Admin implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function getNewPassword(): ?string
+    {
+        return $this->newPassword;
+    }
+
+    public function setNewPassword(?string $newPassword): self
+    {
+        $this->newPassword = $newPassword;
+        return $this;
+    }
+
     /**
      * @see UserInterface
      */
@@ -115,5 +138,13 @@ class Admin implements UserInterface, PasswordAuthenticatedUserInterface
     public function __toString(): string
     {
         return $this->username;
+    }
+
+    /**
+     * @return Collection<int, Guest>
+     */
+    public function getClients(): Collection
+    {
+        return $this->clients;
     }
 }

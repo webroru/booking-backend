@@ -26,6 +26,9 @@ class Client
     #[ORM\Column(length: 255, unique: true)]
     private ?string $name = null;
 
+    #[ORM\Column(type: 'time')]
+    private \DateTimeInterface $checkInTime;
+
     /** @var Collection<int, Info> */
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Info::class)]
     private Collection $info;
@@ -36,6 +39,9 @@ class Client
 
     #[ORM\Column(type: 'boolean')]
     private bool $isAutoSend = false;
+
+    #[ORM\ManyToOne(targetEntity: Admin::class, inversedBy: 'clients')]
+    private ?Admin $admin = null;
 
     public function __construct()
     {
@@ -69,6 +75,17 @@ class Client
     {
         $this->name = $name;
 
+        return $this;
+    }
+
+    public function getCheckInTime(): \DateTimeInterface
+    {
+        return $this->checkInTime;
+    }
+
+    public function setCheckInTime(\DateTimeInterface $checkInTime): self
+    {
+        $this->checkInTime = $checkInTime;
         return $this;
     }
 
@@ -121,6 +138,17 @@ class Client
     public function setIsAutoSend(bool $isAutoSend): self
     {
         $this->isAutoSend = $isAutoSend;
+        return $this;
+    }
+
+    public function getAdmin(): ?Admin
+    {
+        return $this->admin;
+    }
+
+    public function setAdmin(?Admin $admin): self
+    {
+        $this->admin = $admin;
         return $this;
     }
 }
