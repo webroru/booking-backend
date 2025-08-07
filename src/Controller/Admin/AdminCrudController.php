@@ -77,8 +77,8 @@ class AdminCrudController extends AbstractCrudController
     public function edit(AdminContext $context)
     {
         if (!$this->isAdmin) {
-            $client = $context->getEntity()->getInstance();
-            $this->denyAccessUnlessGranted('EDIT', $client);
+            $subject = $context->getEntity()->getInstance();
+            $this->denyAccessUnlessGranted('EDIT', $subject);
         }
 
         return parent::edit($context);
@@ -87,8 +87,8 @@ class AdminCrudController extends AbstractCrudController
     public function detail(AdminContext $context)
     {
         if (!$this->isAdmin) {
-            $client = $context->getEntity()->getInstance();
-            $this->denyAccessUnlessGranted('VIEW', $client);
+            $subject = $context->getEntity()->getInstance();
+            $this->denyAccessUnlessGranted('VIEW', $subject);
         }
 
         return parent::detail($context);
