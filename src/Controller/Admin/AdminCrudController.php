@@ -9,20 +9,23 @@ use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 class AdminCrudController extends AbstractCrudController
 {
+    private bool $isAdmin;
+
     public function __construct(
+        private readonly Security $security,
         private readonly UserPasswordHasherInterface $passwordHasher,
-        private readonly RequestStack $requestStack,
     ) {
+        $this->isAdmin = in_array('ROLE_ADMIN', $this->security->getUser()->getRoles(), true);
     }
 
     public static function getEntityFqcn(): string
@@ -43,22 +46,24 @@ class AdminCrudController extends AbstractCrudController
                 $action->displayIf(fn($entity) => $isAdmin));
     }
 
-    public function configureCrud(Crud $crud): Crud
+    public function edit(AdminContext $context)
     {
-        $user = $this->getUser();
-        $isClient = in_array('ROLE_CLIENT', $user->getRoles(), true);
-
-        if (
-            $this->requestStack->getCurrentRequest()?->attributes->get('_route') === 'admin'
-            && $this->requestStack->getCurrentRequest()?->query->get('crudAction') === 'edit'
-        ) {
-            $entityId = $this->requestStack->getCurrentRequest()->query->get('entityId');
-            if ($isClient && (string) $user->getId() !== (string) $entityId) {
-                throw new AccessDeniedException('You are not allowed to edit this admin.');
-            }
+        if (!$this->isAdmin) {
+            $client = $context->getEntity()->getInstance();
+            $this->denyAccessUnlessGranted('EDIT', $client);
         }
 
-        return $crud->setEntityPermission($isClient ? 'ROLE_CLIENT' : 'ROLE_ADMIN');
+        return parent::edit($context);
+    }
+
+    public function detail(AdminContext $context)
+    {
+        if (!$this->isAdmin) {
+            $client = $context->getEntity()->getInstance();
+            $this->denyAccessUnlessGranted('VIEW', $client);
+        }
+
+        return parent::detail($context);
     }
 
     public function configureFields(string $pageName): iterable

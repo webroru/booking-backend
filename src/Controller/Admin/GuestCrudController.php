@@ -7,11 +7,16 @@ namespace App\Controller\Admin;
 use App\Entity\Guest;
 use App\Enum\DocumentType;
 use App\Enum\Gender;
+use Doctrine\ORM\QueryBuilder;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
@@ -21,6 +26,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TimeField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,6 +34,14 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class GuestCrudController extends AbstractCrudController
 {
+    private bool $isAdmin;
+
+    public function __construct(
+        private readonly Security $security,
+    ) {
+        $this->isAdmin = in_array('ROLE_ADMIN', $this->security->getUser()->getRoles(), true);
+    }
+
     public static function getEntityFqcn(): string
     {
         return Guest::class;
@@ -104,7 +118,7 @@ class GuestCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $isEnabled = true; // или false
+        $isEnabled = true;
 
         $autoSend = Action::new('autoSend')
             ->createAsGlobalAction()
@@ -119,11 +133,50 @@ class GuestCrudController extends AbstractCrudController
         return $actions
             ->add(Crud::PAGE_INDEX, $autoSend)
             ->add(Crud::PAGE_INDEX, $sendToGov)
-            ->add(Crud::PAGE_DETAIL, $sendToGov); // если хочешь и на странице деталей
+            ->add(Crud::PAGE_DETAIL, $sendToGov);
+    }
+
+    public function createIndexQueryBuilder(
+        SearchDto $searchDto,
+        EntityDto $entityDto,
+        FieldCollection $fields,
+        FilterCollection $filters
+    ): QueryBuilder {
+        $admin = $this->security->getUser();
+
+        $qb = parent::createIndexQueryBuilder($searchDto, $entityDto, $fields, $filters);
+        if ($this->isAdmin) {
+            return $qb;
+        }
+
+        return $qb->join('entity.client', 'c')
+            ->andWhere('c.admin = :admin')
+            ->setParameter('admin', $admin);
+    }
+
+    public function edit(AdminContext $context)
+    {
+        if (!$this->isAdmin) {
+            $guest = $context->getEntity()->getInstance();
+            $this->denyAccessUnlessGranted('EDIT', $guest);
+        }
+
+        return parent::edit($context);
+    }
+
+    public function detail(AdminContext $context)
+    {
+        if (!$this->isAdmin) {
+            $guest = $context->getEntity()->getInstance();
+            $this->denyAccessUnlessGranted('VIEW', $guest);
+        }
+
+        return parent::detail($context);
     }
 
     public function sendToGov(AdminContext $context): RedirectResponse
     {
+        // Проверять права доступа
         $guest = $context->getEntity()->getInstance();
 
         // Здесь логика отправки, например:
@@ -142,6 +195,7 @@ class GuestCrudController extends AbstractCrudController
     #[Route('/admin/guest-auto-send', name: 'admin_guest_auto_send', methods: ['POST'])]
     public function toggleFlag(Request $request): JsonResponse
     {
+        // Проверять права доступа
         $data = json_decode($request->getContent(), true);
         $enabled = $data['enabled'] ?? false;
 
