@@ -21,18 +21,21 @@ readonly class GuestService
 
     /**
      * @param GuestDto[] $guestsDto
-     * @param int $bookingId
-     * @param string $originalReferer
-     * @param string $room
      * @throws \DateMalformedStringException
      */
-    public function updateGuests(array $guestsDto, int $bookingId, string $originalReferer, string $room): void
-    {
+    public function updateGuests(
+        array $guestsDto,
+        int $bookingId,
+        string $originalReferer,
+        string $propertyName,
+        string $room,
+        string $checkInDate,
+    ): void {
         $client = $this->clientService->getClient();
         $guests = $this->guestRepository->findBy(['bookingId' => $bookingId, 'client' => $client]);
         $removedGuests = $this->getRemovedGuests($guestsDto, $guests);
         $this->removeGuests($removedGuests);
-        $this->addGuests($guestsDto, $bookingId, $originalReferer, $room, $client);
+        $this->addGuests($guestsDto, $bookingId, $originalReferer, $propertyName, $room, $checkInDate, $client);
     }
 
     /**
@@ -61,7 +64,9 @@ readonly class GuestService
         array $guestsDto,
         int $bookingId,
         string $originalReferer,
+        string $propertyName,
         string $room,
+        string $checkInDate,
         Client $client,
     ): void {
         foreach ($guestsDto as $guestDto) {
@@ -77,10 +82,13 @@ readonly class GuestService
                 ->setDateOfBirth(new \DateTimeImmutable($guestDto->dateOfBirth))
                 ->setNationality($guestDto->nationality)
                 ->setGender(Gender::from($guestDto->gender))
+                ->setRegistrationDate(new \DateTimeImmutable())
+                ->setCheckInDate(new \DateTimeImmutable($checkInDate))
                 ->setCheckOutDate(new \DateTimeImmutable($guestDto->checkOutDate))
                 ->setCheckOutTime(new \DateTimeImmutable($guestDto->checkOutTime))
                 ->setCityTaxExemption($guestDto->cityTaxExemption)
                 ->setReferer($originalReferer)
+                ->setPropertyName($propertyName)
                 ->setRoom($room)
                 ->setClient($client)
             ;

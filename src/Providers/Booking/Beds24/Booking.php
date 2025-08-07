@@ -200,7 +200,9 @@ readonly class Booking implements BookingInterface
             $bookingDto->guests,
             $bookingDto->orderId,
             $bookingDto->originalReferer,
+            $bookingDto->propertyName,
             $bookingDto->room,
+            $bookingDto->checkInDate,
         );
         $this->updateCityTax($booking, $bookingDto);
         $this->removeExtraGuestInvoice($booking);
