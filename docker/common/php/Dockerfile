@@ -1,10 +1,11 @@
 FROM php:8.2-fpm-alpine3.18
 
-# Install dev dependencies
+# Install dev dependencies (for building extensions)
 RUN apk add --update --no-cache --virtual .build-deps \
     $PHPIZE_DEPS \
     icu-dev \
     linux-headers \
+    libxml2-dev \
     oniguruma-dev
 
 # Install production dependencies
@@ -12,7 +13,8 @@ RUN apk add --no-cache \
     bash \
     curl \
     git \
-    icu-dev \
+    icu \
+    libxml2 \
     mysql-client
 
 RUN docker-php-ext-install \
@@ -21,10 +23,12 @@ RUN docker-php-ext-install \
     mbstring \
     opcache \
     pdo \
-    pdo_mysql
+    pdo_mysql \
+    soap
 
+# Remove build dependencies to reduce image size
 RUN apk del .build-deps && \
-    rm -rf /var/cache/apk/*
+    rm -rf /var/cache/apk/* /tmp/*
 
 ADD custom.ini /usr/local/etc/php/conf.d/custom.ini
 
@@ -39,5 +43,5 @@ RUN mkdir -p /code/var/cache && \
     chown www-data. /code/public/uploads
 
 # Install composer
-ENV COMPOSER_ALLOW_SUPERUSER 1
+ENV COMPOSER_ALLOW_SUPERUSER=1
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer

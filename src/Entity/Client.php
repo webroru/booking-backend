@@ -43,6 +43,12 @@ class Client
     #[ORM\ManyToOne(targetEntity: Admin::class, inversedBy: 'clients')]
     private ?Admin $admin = null;
 
+    #[ORM\Column(length: 255)]
+    private string $ajPesUsername;
+
+    #[ORM\Column(length: 255)]
+    private string $ajPesPassword;
+
     public function __construct()
     {
         $this->info = new ArrayCollection();
@@ -149,6 +155,28 @@ class Client
     public function setAdmin(?Admin $admin): self
     {
         $this->admin = $admin;
+        return $this;
+    }
+
+    public function getAjPesUsername(): string
+    {
+        return $this->ajPesUsername;
+    }
+
+    public function setAjPesUsername(string $ajPesUsername): Client
+    {
+        $this->ajPesUsername = $ajPesUsername;
+        return $this;
+    }
+
+    public function getAjPesPassword(): string
+    {
+        return $this->ajPesPassword;
+    }
+
+    public function setAjPesPassword(string $ajPesPassword): self
+    {
+        $this->ajPesPassword = $ajPesPassword;
         return $this;
     }
 }

@@ -17,6 +17,7 @@ use App\Providers\Booking\Beds24\Entity\Property;
 use App\Providers\Booking\Beds24\Service\InfoItemService;
 use App\Providers\Booking\Beds24\Transformer\BookingEntityToDtoTransformer;
 use App\Providers\Booking\BookingInterface;
+use App\Service\CityTaxCalculatorService;
 use App\Service\GuestService;
 
 readonly class Booking implements BookingInterface
@@ -26,6 +27,7 @@ readonly class Booking implements BookingInterface
         private BookingEntityToDtoTransformer $transformer,
         private InfoItemService $infoItemService,
         private GuestService $guestService,
+        private CityTaxCalculatorService $cityTaxCalculatorService,
     ) {
     }
 
@@ -534,12 +536,12 @@ readonly class Booking implements BookingInterface
         return [
             [
                 'name' => 'Adults (18+)',
-                'price' => 3.13,
+                'price' => $this->cityTaxCalculatorService->calculateTax(18),
                 'quantity' => $this->getGuestsQuantityByAges($bookingDto)['adults'],
             ],
             [
                 'name' => 'Children (7—18)',
-                'price' => 1.57,
+                'price' => $this->cityTaxCalculatorService->calculateTax(7),
                 'quantity' => $this->getGuestsQuantityByAges($bookingDto)['children'],
             ],
         ];

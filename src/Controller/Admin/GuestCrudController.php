@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Entity\Admin;
 use App\Entity\Guest;
 use App\Enum\DocumentType;
 use App\Enum\Gender;
+use App\Service\GuestReportService;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
@@ -38,6 +41,8 @@ class GuestCrudController extends AbstractCrudController
 
     public function __construct(
         private readonly Security $security,
+        private readonly GuestReportService $guestReportService,
+        private readonly EntityManagerInterface $entityManager,
     ) {
         $this->isAdmin = in_array('ROLE_ADMIN', $this->security->getUser()->getRoles(), true);
     }
@@ -176,11 +181,10 @@ class GuestCrudController extends AbstractCrudController
 
     public function sendToGov(AdminContext $context): RedirectResponse
     {
-        // Проверять права доступа
+        /** @var Guest $guest */
         $guest = $context->getEntity()->getInstance();
-
-        // Здесь логика отправки, например:
-        //$this->someService->sendGuestToGov($guest);
+        $client = $guest->getClient();
+        $this->guestReportService->reportGuests([$guest], $client->getAjPesUsername(), $client->getAjPesPassword(), 42);
 
         $this->addFlash('success', 'The guest information has been sent to the government.');
 
@@ -195,7 +199,6 @@ class GuestCrudController extends AbstractCrudController
     #[Route('/admin/guest-auto-send', name: 'admin_guest_auto_send', methods: ['POST'])]
     public function toggleFlag(Request $request): JsonResponse
     {
-        // Проверять права доступа
         $data = json_decode($request->getContent(), true);
         $enabled = $data['enabled'] ?? false;
 
@@ -204,10 +207,14 @@ class GuestCrudController extends AbstractCrudController
             return new JsonResponse(['message' => 'Неверный CSRF токен'], 400);
         }
 
-        // Логика обновления сущности
-        // $entity = ...;
-        // $entity->setFlag($enabled);
-        // $this->getDoctrine()->getManager()->flush();
+        /** @var Admin $admon */
+        $admin = $this->security->getUser();
+
+        foreach ($admin->getClients() as $client) {
+            $client->setIsAutoSend($enabled);
+        }
+
+        $this->entityManager->flush();
 
         return new JsonResponse([
             'message' => $enabled ?

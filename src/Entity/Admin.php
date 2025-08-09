@@ -141,7 +141,7 @@ class Admin implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, Guest>
+     * @return Collection<int, Client>
      */
     public function getClients(): Collection
     {

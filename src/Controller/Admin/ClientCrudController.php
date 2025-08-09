@@ -38,6 +38,8 @@ class ClientCrudController extends AbstractCrudController
         return [
             TextField::new('domain'),
             TextField::new('name'),
+            TextField::new('ajPesUsername'),
+            TextField::new('ajPesPassword'),
             TimeField::new('checkInTime')
                 ->setFormat('HH:mm')
                 ->setTimezone('Europe/Prague'),

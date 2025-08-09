@@ -6,8 +6,10 @@
     "require": {
         "php": ">=8.2",
         "ext-ctype": "*",
+        "ext-dom": "*",
         "ext-iconv": "*",
         "ext-intl": "*",
+        "ext-simplexml": "*",
         "ext-soap": "*",
         "doctrine/annotations": "^1.0",
         "doctrine/doctrine-bundle": "^2.7",
