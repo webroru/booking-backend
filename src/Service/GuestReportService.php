@@ -5,40 +5,47 @@ declare(strict_types=1);
 namespace App\Service;
 
 use App\Entity\Guest;
+use App\Exception\GuestReportException;
 use Psr\Log\LoggerInterface;
 
 class GuestReportService
 {
     private const JSON_FORMAT = 2; // 1 = XML, 2 = JSON
     private const METHOD = 'oddajPorocilo';
-    private const WSDL = 'https://wwwt.ajpes.si/rno/rnoApi/eTurizem/wsETurizemPorocanje.asmx?WSDL';
     private \SoapClient $client;
 
     public function __construct(
         private readonly CityTaxCalculatorService $cityTaxCalculatorService,
         private readonly LoggerInterface $logger,
     ) {
-        $this->client = new \SoapClient(self::WSDL, [
-            'trace' => true,
-            'exceptions' => true,
-            'cache_wsdl' => WSDL_CACHE_NONE,
+        try {
+            $wsdlPath = dirname(__DIR__, 2) . '/config/wsdl/wsETurizemPorocanje.wsdl';
+            $this->client = new \SoapClient($wsdlPath, [
+                'trace' => true,
+                'exceptions' => true,
+                'cache_wsdl' => WSDL_CACHE_NONE,
 //            'local_cert' => dirname(__FILE__) . '/client-cert.pem',
 //            'local_pk' => dirname(__FILE__) . '/client-key.pem',
 //            'passphrase' => '123456',
-        ]);
+            ]);
+        } catch (\SoapFault $e) {
+            $this->logger->error(sprintf('SOAP Client Error: %s', $e->getMessage()));
+        }
     }
 
     /**
      * @param Guest[] $guests
+     * @throws GuestReportException
      */
     public function reportGuests(array $guests, string $username, string $password, int $idNO): void
     {
-        $namespace = 'http://www.ajpes.si/eturizem/';
+        $data = new \stdClass();
+        $data->any = $this->buildDataXml($guests, $idNO);
 
         $options = [
             'uName' => $username,
             'pwd' => $password,
-            'data' => new \SoapVar($this->buildDataXml($namespace, $guests, $idNO), XSD_ANYXML),
+            'data' => $data,
             'format' => self::JSON_FORMAT
         ];
 
@@ -46,45 +53,55 @@ class GuestReportService
             $response = $this->client->__soapCall(self::METHOD, [$options]);
             $responseData = json_decode($response->oddajPorociloResult, true);
             if (isset($responseData['data']['@success']) && $responseData['data']['@success'] === '0') {
+                $errors = [];
                 foreach ($responseData['data']['row'] as $row) {
+                    $error = $this->errorMapper((int) $row['@msg']);
                     $this->logger->error(
-                        sprintf('Error: %s - %s (ID: %s)', $row['@msg'], $row['@msgTxt'], $row['@id'])
+                        sprintf(
+                            'Error: %s - %s (ID: %s), original error: %s',
+                            $row['@msg'],
+                            $error,
+                            $row['@id'],
+                            $row['@msgTxt'],
+                        )
                     );
+                    $errors[] = $error;
+                }
+                if (!empty($errors)) {
+                    throw new GuestReportException(implode(', ', $errors));
                 }
             }
         } catch (\SoapFault $e) {
-            $this->logger->error(sprintf('SOAP Fault: %s', $e->getMessage()));
-            return;
+            $error = sprintf('SOAP Fault: %s', $e->getMessage());
+            $this->logger->error($error);
+            throw new GuestReportException($error);
         }
     }
 
-    private function buildDataXml(string $namespace, array $guests, int $propertyId): string
+    private function buildDataXml(array $guests, int $propertyId): string
     {
         $doc = new \DOMDocument('1.0', 'UTF-8');
-        $doc->formatOutput = true;
-
-        $data = $doc->createElementNS($namespace, 'data');
-        $doc->appendChild($data);
 
         $guestBook = $doc->createElement('knjigaGostov');
-        $data->appendChild($guestBook);
+        $doc->appendChild($guestBook);
 
         foreach ($guests as $guest) {
-            $this->buildRow($doc, $guestBook, $guest, $propertyId);
+            $guestBook->appendChild($doc->importNode($this->buildRow($guest, $propertyId), true));
         }
 
-        return $doc->saveXML($data);
+        return $doc->saveXML($guestBook);
     }
 
-    private function buildRow(\DOMDocument $doc, \DOMElement $guestBook, Guest $guest, int $propertyId): void
+    private function buildRow(Guest $guest, int $propertyId): \DOMElement
     {
+        $doc = new \DOMDocument('1.0', 'UTF-8');
+        $row = $doc->createElement('row');
+
         $checkIdDate = $guest->getCheckInDate()->format('Y-m-d') . 'T' .
             $guest->getClient()->getCheckInTime()->format('H:i:s');
 
         $checkOutDate = $guest->getCheckOutDate()->format('Y-m-d') . 'T' .
             $guest->getCheckOutTime()->format('H:i:s');
-
-        $row = $doc->createElement('row');
 
         $row->setAttribute('idNO', (string) $propertyId);
         $row->setAttribute('zst', (string) $guest->getId());
@@ -101,11 +118,63 @@ class GuestReportService
         $row->setAttribute('ttObracun', (string) $guest->getCityTaxExemption());
         $row->setAttribute('ttVisina', (string) $this->cityTaxCalculatorService->calculateTax($this->getAges($guest)));
 
-        $guestBook->appendChild($row);
+        return $row;
     }
 
     private function getAges(Guest $guest): int
     {
         return (new \DateTime())->diff($guest->getDateOfBirth())->y;
+    }
+
+    private function errorMapper(int $code): string
+    {
+        $errorMessages = [
+            413 => 'Invalid user name or password.',
+            500 => 'Process fails',
+            4130 => 'XML document failed XSD validation schema',
+            4131 => 'Accommodation facility does not exist',
+            4132 => 'Accommodation facility inactive.',
+            4133 => 'Guest serial no. lower than 0.',
+            4134 => 'Guest name: at least 1 character.',
+            4135 => 'Guest surname: at least 1 character.',
+            4136 => 'Not born yet?',
+            4137 => 'Older than 120 years?',
+            4138 => 'Invalid country code.',
+            4139 => 'Invalid document type.',
+            4140 => 'Accommodation unit deleted from registry',
+            4141 => 'Sold units exceeds available units.',
+            4142 => 'A record on this accommodation unit with the same serial number and in the same year has been inserted by another user',
+            4143 => 'The selected item is invalid with regard to the guest registration date',
+            4144 => 'A record with the same data has already been transmitted.',
+            4145 => 'Restriction of the date of arrival.',
+            4146 => 'Restriction of the departure date.',
+            4147 => 'Invalid tax amount.',
+            20001 => 'Process report',
+            41300 => 'Certificate expired',
+            41301 => 'Invalid XML',
+            41302 => 'The monthly report is not forwarded during the required period.',
+            41311 => 'To many rows',
+            41321 => 'Invalid status',
+            41322 => 'The monthly report missing',
+            41323 => 'Invalid year',
+            41324 => 'Invalid month',
+            41325 => 'The number of facitlity beds is lower than the number of extra beds',
+            41326 => 'The number of days when facility was opened must be more than 0.',
+            41327 => 'The number of days when facility was opened is greater than the number of days in month.',
+            41328 => 'Arrival on future date.',
+            41329 => 'The number of units sold exceeds the number of accommodation units in the register.',
+            41330 => 'Incorrect gender of the guest.',
+            41391 => 'The length of document number must be more then 1 character.',
+            41392 => 'Arrival before departure?',
+            41393 => 'Invalid tourist tax type code',
+            41394 => 'The full amount of tourist tax must be more than 0.',
+            41395 => 'XML already processed on',
+            41396 => 'No records',
+            41397 => 'User does not have authority for this facility.',
+            41398 => 'Certificate not registered with Ajpes',
+            41399 => 'Certificate is not valid yet',
+        ];
+
+        return $errorMessages[$code] ?? 'Unknown error';
     }
 }

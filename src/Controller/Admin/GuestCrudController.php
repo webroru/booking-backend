@@ -8,6 +8,7 @@ use App\Entity\Admin;
 use App\Entity\Guest;
 use App\Enum\DocumentType;
 use App\Enum\Gender;
+use App\Exception\GuestReportException;
 use App\Service\GuestReportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -184,9 +185,19 @@ class GuestCrudController extends AbstractCrudController
         /** @var Guest $guest */
         $guest = $context->getEntity()->getInstance();
         $client = $guest->getClient();
-        $this->guestReportService->reportGuests([$guest], $client->getAjPesUsername(), $client->getAjPesPassword(), 42);
-
-        $this->addFlash('success', 'The guest information has been sent to the government.');
+        try {
+            $this->guestReportService->reportGuests(
+                [$guest],
+                $client->getAjPesUsername(),
+                $client->getAjPesPassword(),
+                20036,
+            );
+            $guest->setIsReported(true);
+            $this->entityManager->flush();
+            $this->addFlash('success', 'The guest information has been sent to the government.');
+        } catch (GuestReportException $e) {
+            $this->addFlash('danger', 'Error sending guest information: ' . $e->getMessage());
+        }
 
         $url = $this->container->get(AdminUrlGenerator::class)
             ->setController(GuestCrudController::class)
