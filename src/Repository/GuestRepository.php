@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Repository;
 
+use App\Entity\Client;
 use App\Entity\Guest;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -37,5 +38,19 @@ class GuestRepository extends ServiceEntityRepository
         if ($flush) {
             $this->getEntityManager()->flush();
         }
+    }
+
+    /**
+     * @return Guest[]
+     */
+    public function findReadyForReportByClient(Client $client): array
+    {
+        return $this->createQueryBuilder('g')
+            ->join('g.room', 'r')
+            ->andWhere('g.client = :client')
+            ->andWhere('r.governmentPortalId is not null')
+            ->setParameter('client', $client)
+            ->getQuery()
+            ->getResult();
     }
 }

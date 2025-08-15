@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\Admin;
+use App\Entity\Client;
 use App\Entity\Guest;
 use App\Enum\DocumentType;
 use App\Enum\Gender;
 use App\Exception\GuestReportException;
+use App\Repository\ClientRepository;
 use App\Service\GuestReportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -45,6 +47,7 @@ class GuestCrudController extends AbstractCrudController
     public function __construct(
         private readonly Security $security,
         private readonly GuestReportService $guestReportService,
+        private readonly ClientRepository $clientRepository,
         private readonly EntityManagerInterface $entityManager,
     ) {
         $this->isAdmin = in_array('ROLE_ADMIN', $this->security->getUser()->getRoles(), true);
@@ -128,7 +131,15 @@ class GuestCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $isEnabled = true;
+        $clients = $this->isAdmin ?
+            $this->clientRepository->findAll()
+            : $this->security->getUser()->getClients()->toArray();
+
+        $isEnabled = array_reduce(
+            $clients,
+            fn(bool $carry, Client $client) => $carry && $client->isAutoSend(),
+            true,
+        );
 
         $autoSend = Action::new('autoSend')
             ->createAsGlobalAction()
@@ -220,6 +231,10 @@ class GuestCrudController extends AbstractCrudController
     #[Route('/admin/guest-auto-send', name: 'admin_guest_auto_send', methods: ['POST'])]
     public function toggleFlag(Request $request): JsonResponse
     {
+        $clients = $this->isAdmin ?
+            $this->clientRepository->findAll()
+            : $this->security->getUser()->getClients()->toArray();
+
         $data = json_decode($request->getContent(), true);
         $enabled = $data['enabled'] ?? false;
 
@@ -228,10 +243,7 @@ class GuestCrudController extends AbstractCrudController
             return new JsonResponse(['message' => 'Неверный CSRF токен'], 400);
         }
 
-        /** @var Admin $admon */
-        $admin = $this->security->getUser();
-
-        foreach ($admin->getClients() as $client) {
+        foreach ($clients as $client) {
             $client->setIsAutoSend($enabled);
         }
 

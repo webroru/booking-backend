@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Service;
 
+use App\Entity\Client;
 use App\Entity\Guest;
 use App\Exception\GuestReportException;
+use App\Repository\GuestRepository;
 use Psr\Log\LoggerInterface;
 
 class GuestReportService
@@ -16,6 +18,7 @@ class GuestReportService
 
     public function __construct(
         private readonly CityTaxCalculatorService $cityTaxCalculatorService,
+        private readonly GuestRepository $guestRepository,
         private readonly LoggerInterface $logger,
     ) {
         try {
@@ -76,6 +79,15 @@ class GuestReportService
             $this->logger->error($error);
             throw new GuestReportException($error);
         }
+    }
+
+    /**
+     * @throws GuestReportException
+     */
+    public function reportByClient(Client $client): void
+    {
+        $guests = $this->guestRepository->findReadyForReportByClient($client);
+        $this->reportGuests($guests, $client->getAjPesUsername(), $client->getAjPesPassword());
     }
 
     private function buildDataXml(array $guests): string
