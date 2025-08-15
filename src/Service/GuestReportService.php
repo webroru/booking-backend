@@ -37,10 +37,10 @@ class GuestReportService
      * @param Guest[] $guests
      * @throws GuestReportException
      */
-    public function reportGuests(array $guests, string $username, string $password, int $idNO): void
+    public function reportGuests(array $guests, string $username, string $password): void
     {
         $data = new \stdClass();
-        $data->any = $this->buildDataXml($guests, $idNO);
+        $data->any = $this->buildDataXml($guests);
 
         $options = [
             'uName' => $username,
@@ -78,7 +78,7 @@ class GuestReportService
         }
     }
 
-    private function buildDataXml(array $guests, int $propertyId): string
+    private function buildDataXml(array $guests): string
     {
         $doc = new \DOMDocument('1.0', 'UTF-8');
 
@@ -86,13 +86,13 @@ class GuestReportService
         $doc->appendChild($guestBook);
 
         foreach ($guests as $guest) {
-            $guestBook->appendChild($doc->importNode($this->buildRow($guest, $propertyId), true));
+            $guestBook->appendChild($doc->importNode($this->buildRow($guest), true));
         }
 
         return $doc->saveXML($guestBook);
     }
 
-    private function buildRow(Guest $guest, int $propertyId): \DOMElement
+    private function buildRow(Guest $guest): \DOMElement
     {
         $doc = new \DOMDocument('1.0', 'UTF-8');
         $row = $doc->createElement('row');
@@ -103,7 +103,7 @@ class GuestReportService
         $checkOutDate = $guest->getCheckOutDate()->format('Y-m-d') . 'T' .
             $guest->getCheckOutTime()->format('H:i:s');
 
-        $row->setAttribute('idNO', (string) $propertyId);
+        $row->setAttribute('idNO', (string) $guest->getRoom()->getGovernmentPortalId());
         $row->setAttribute('zst', (string) $guest->getId());
         $row->setAttribute('ime', $guest->getFirstName());
         $row->setAttribute('pri', $guest->getLastName());

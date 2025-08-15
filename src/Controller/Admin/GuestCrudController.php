@@ -17,6 +17,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
@@ -34,6 +35,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class GuestCrudController extends AbstractCrudController
@@ -61,7 +63,8 @@ class GuestCrudController extends AbstractCrudController
                 TextField::new('firstName'),
                 TextField::new('lastName'),
                 TextField::new('propertyName'),
-                TextField::new('room'),
+                AssociationField::new('room'),
+                AssociationField::new('client'),
                 DateField::new('checkInDate')
                     ->setFormat('yyyy-MM-dd')
                     ->setTimezone('Europe/Prague'),
@@ -69,7 +72,7 @@ class GuestCrudController extends AbstractCrudController
                     ->setFormat('yyyy-MM-dd')
                     ->setTimezone('Europe/Prague'),
                 DateTimeField::new('registrationDate')
-                    ->setFormat('yyyy-MM-dd')
+                    ->setFormat('yyyy-MM-dd HH:mm')
                     ->setTimezone('Europe/Prague'),
                 TextField::new('referer'),
             ];
@@ -82,7 +85,7 @@ class GuestCrudController extends AbstractCrudController
             TextField::new('documentNumber'),
             ChoiceField::new('documentType')
                 ->setChoices(array_combine(
-                    array_map(fn(DocumentType $e) => $e->value, DocumentType::cases()),
+                    array_map(fn(DocumentType $e) => $e->name, DocumentType::cases()),
                     DocumentType::cases()
                 )),
 
@@ -93,7 +96,7 @@ class GuestCrudController extends AbstractCrudController
             TextField::new('nationality'),
             ChoiceField::new('gender')
                 ->setChoices(array_combine(
-                    array_map(fn(Gender $e) => $e->value, Gender::cases()),
+                    array_map(fn(Gender $e) => $e->name, Gender::cases()),
                     Gender::cases()
                 )),
 
@@ -116,7 +119,7 @@ class GuestCrudController extends AbstractCrudController
             IntegerField::new('cityTaxExemption'),
             TextField::new('referer'),
             TextField::new('propertyName'),
-            TextField::new('room'),
+            AssociationField::new('room'),
             BooleanField::new('isReported'),
             AssociationField::new('client'),
         ];
@@ -160,7 +163,7 @@ class GuestCrudController extends AbstractCrudController
             ->setParameter('admin', $admin);
     }
 
-    public function edit(AdminContext $context)
+    public function edit(AdminContext $context): KeyValueStore|Response
     {
         if (!$this->isAdmin) {
             $subject = $context->getEntity()->getInstance();
@@ -170,7 +173,7 @@ class GuestCrudController extends AbstractCrudController
         return parent::edit($context);
     }
 
-    public function detail(AdminContext $context)
+    public function detail(AdminContext $context): KeyValueStore|Response
     {
         if (!$this->isAdmin) {
             $subject = $context->getEntity()->getInstance();
@@ -185,12 +188,23 @@ class GuestCrudController extends AbstractCrudController
         /** @var Guest $guest */
         $guest = $context->getEntity()->getInstance();
         $client = $guest->getClient();
+        $url = $this->container->get(AdminUrlGenerator::class)
+            ->setController(GuestCrudController::class)
+            ->setAction('index')
+            ->generateUrl();
+
+        if (!$guest->getRoom()->getGovernmentPortalId()) {
+            $this->addFlash('danger', 'The room is not linked to the Government Portal. '
+                . 'Please set the Government Portal ID for the room.');
+
+            return $this->redirect($url);
+        }
+
         try {
             $this->guestReportService->reportGuests(
                 [$guest],
                 $client->getAjPesUsername(),
                 $client->getAjPesPassword(),
-                20036,
             );
             $guest->setIsReported(true);
             $this->entityManager->flush();
@@ -198,11 +212,6 @@ class GuestCrudController extends AbstractCrudController
         } catch (GuestReportException $e) {
             $this->addFlash('danger', 'Error sending guest information: ' . $e->getMessage());
         }
-
-        $url = $this->container->get(AdminUrlGenerator::class)
-            ->setController(GuestCrudController::class)
-            ->setAction('index')
-            ->generateUrl();
 
         return $this->redirect($url);
     }

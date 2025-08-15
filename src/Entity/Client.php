@@ -55,6 +55,11 @@ class Client
         $this->guests = new ArrayCollection();
     }
 
+    public function __toString(): string
+    {
+        return $this->name;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -129,11 +134,6 @@ class Client
     public function removeGuest(Guest $guest): void
     {
         $this->guests->removeElement($guest);
-    }
-
-    public function __toString(): string
-    {
-        return $this->name;
     }
 
     public function isAutoSend(): bool
