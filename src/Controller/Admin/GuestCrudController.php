@@ -75,6 +75,7 @@ class GuestCrudController extends AbstractCrudController
                     ->setFormat('yyyy-MM-dd HH:mm')
                     ->setTimezone('Europe/Prague'),
                 TextField::new('referer'),
+                BooleanField::new('isReported'),
             ];
         }
 
