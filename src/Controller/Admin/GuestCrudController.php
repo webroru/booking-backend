@@ -205,7 +205,7 @@ class GuestCrudController extends AbstractCrudController
             ->setAction('index')
             ->generateUrl();
 
-        if (!$guest->getRoom()->getGovernmentPortalId()) {
+        if ($guest->getRoom()->getGovernmentPortalId() === null) {
             $this->addFlash('danger', 'The room is not linked to the Government Portal. '
                 . 'Please set the Government Portal ID for the room.');
 
