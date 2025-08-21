@@ -43,11 +43,11 @@ class Client
     #[ORM\ManyToOne(targetEntity: Admin::class, inversedBy: 'clients')]
     private ?Admin $admin = null;
 
-    #[ORM\Column(length: 255)]
-    private string $ajPesUsername;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $ajPesUsername;
 
-    #[ORM\Column(length: 255)]
-    private string $ajPesPassword;
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $ajPesPassword;
 
     public function __construct()
     {
@@ -158,7 +158,7 @@ class Client
         return $this;
     }
 
-    public function getAjPesUsername(): string
+    public function getAjPesUsername(): ?string
     {
         return $this->ajPesUsername;
     }
@@ -169,7 +169,7 @@ class Client
         return $this;
     }
 
-    public function getAjPesPassword(): string
+    public function getAjPesPassword(): ?string
     {
         return $this->ajPesPassword;
     }
