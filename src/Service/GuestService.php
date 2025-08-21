@@ -7,14 +7,17 @@ namespace App\Service;
 use App\Dto\GuestDto;
 use App\Entity\Client;
 use App\Entity\Guest;
+use App\Entity\Room;
 use App\Enum\DocumentType;
 use App\Enum\Gender;
 use App\Repository\GuestRepository;
+use App\Repository\RoomRepository;
 
 readonly class GuestService
 {
     public function __construct(
         private GuestRepository $guestRepository,
+        private RoomRepository $roomRepository,
         private ClientService $clientService,
     ) {
     }
@@ -28,14 +31,24 @@ readonly class GuestService
         int $bookingId,
         string $originalReferer,
         string $propertyName,
-        string $room,
+        string $roomNumber,
+        int $roomExternalId,
         string $checkInDate,
     ): void {
         $client = $this->clientService->getClient();
         $guests = $this->guestRepository->findBy(['bookingId' => $bookingId, 'client' => $client]);
         $removedGuests = $this->getRemovedGuests($guestsDto, $guests);
         $this->removeGuests($removedGuests);
-        $this->addGuests($guestsDto, $bookingId, $originalReferer, $propertyName, $room, $checkInDate, $client);
+        $room = $this->roomRepository->getByExternalIdAndClient($roomExternalId, $roomNumber, $client);
+        $this->addGuests(
+            $guestsDto,
+            $bookingId,
+            $originalReferer,
+            $propertyName,
+            $checkInDate,
+            $room,
+            $client,
+        );
     }
 
     /**
@@ -65,8 +78,8 @@ readonly class GuestService
         int $bookingId,
         string $originalReferer,
         string $propertyName,
-        string $room,
         string $checkInDate,
+        Room $room,
         Client $client,
     ): void {
         foreach ($guestsDto as $guestDto) {

@@ -4,21 +4,27 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
-use App\Entity\Client;
+use App\Entity\Room;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\SearchDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\TimeField;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Symfony\Component\HttpFoundation\Response;
 
-class ClientCrudController extends AbstractCrudController
+class RoomCrudController extends AbstractCrudController
 {
     private bool $isAdmin;
 
@@ -30,22 +36,28 @@ class ClientCrudController extends AbstractCrudController
 
     public static function getEntityFqcn(): string
     {
-        return Client::class;
+        return Room::class;
     }
 
     public function configureFields(string $pageName): iterable
     {
         return [
-            TextField::new('domain'),
-            TextField::new('name'),
-            TextField::new('ajPesUsername'),
-            TextField::new('ajPesPassword'),
-            TimeField::new('checkInTime')
-                ->setFormat('HH:mm')
-                ->setTimezone('Europe/Prague'),
-            BooleanField::new('isAutoSend'),
-            AssociationField::new('admin'),
+            TextField::new('number'),
+            IntegerField::new('externalId'),
+            IntegerField::new('governmentPortalId'),
+            AssociationField::new('client'),
         ];
+    }
+
+    public function configureActions(Actions $actions): Actions
+    {
+        $synchronize = Action::new('synchronize')
+            ->createAsGlobalAction()
+            ->linkToCrudAction('synchronize')
+            ->addCssClass('btn');
+
+        return $actions
+            ->add(Crud::PAGE_INDEX, $synchronize);
     }
 
     public function createIndexQueryBuilder(
@@ -61,11 +73,12 @@ class ClientCrudController extends AbstractCrudController
             return $qb;
         }
 
-        return $qb->andWhere('entity.admin = :admin')
+        return $qb->join('entity.client', 'c')
+            ->andWhere('c.admin = :admin')
             ->setParameter('admin', $admin);
     }
 
-    public function edit(AdminContext $context)
+    public function edit(AdminContext $context): KeyValueStore|Response
     {
         if (!$this->isAdmin) {
             $subject = $context->getEntity()->getInstance();
@@ -75,7 +88,7 @@ class ClientCrudController extends AbstractCrudController
         return parent::edit($context);
     }
 
-    public function detail(AdminContext $context)
+    public function detail(AdminContext $context): KeyValueStore|Response
     {
         if (!$this->isAdmin) {
             $subject = $context->getEntity()->getInstance();
@@ -83,5 +96,21 @@ class ClientCrudController extends AbstractCrudController
         }
 
         return parent::detail($context);
+    }
+
+    public function synchronize(AdminContext $context): RedirectResponse
+    {
+        try {
+            $this->addFlash('success', 'Rooms are synchronized successfully');
+        } catch (\Exception $e) {
+            $this->addFlash('danger', 'Error rooms synchronization: ' . $e->getMessage());
+        }
+
+        $url = $this->container->get(AdminUrlGenerator::class)
+            ->setController(RoomCrudController::class)
+            ->setAction('index')
+            ->generateUrl();
+
+        return $this->redirect($url);
     }
 }

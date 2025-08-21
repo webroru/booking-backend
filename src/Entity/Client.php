@@ -43,10 +43,21 @@ class Client
     #[ORM\ManyToOne(targetEntity: Admin::class, inversedBy: 'clients')]
     private ?Admin $admin = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $ajPesUsername;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $ajPesPassword;
+
     public function __construct()
     {
         $this->info = new ArrayCollection();
         $this->guests = new ArrayCollection();
+    }
+
+    public function __toString(): string
+    {
+        return $this->name;
     }
 
     public function getId(): ?int
@@ -125,11 +136,6 @@ class Client
         $this->guests->removeElement($guest);
     }
 
-    public function __toString(): string
-    {
-        return $this->name;
-    }
-
     public function isAutoSend(): bool
     {
         return $this->isAutoSend;
@@ -149,6 +155,28 @@ class Client
     public function setAdmin(?Admin $admin): self
     {
         $this->admin = $admin;
+        return $this;
+    }
+
+    public function getAjPesUsername(): ?string
+    {
+        return $this->ajPesUsername;
+    }
+
+    public function setAjPesUsername(string $ajPesUsername): Client
+    {
+        $this->ajPesUsername = $ajPesUsername;
+        return $this;
+    }
+
+    public function getAjPesPassword(): ?string
+    {
+        return $this->ajPesPassword;
+    }
+
+    public function setAjPesPassword(string $ajPesPassword): self
+    {
+        $this->ajPesPassword = $ajPesPassword;
         return $this;
     }
 }

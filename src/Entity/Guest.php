@@ -64,15 +64,16 @@ class Guest
     #[ORM\Column(length: 255)]
     private string $propertyName;
 
-    #[ORM\Column(length: 255)]
-    private string $room;
-
     #[ORM\Column(type: 'boolean')]
     private bool $isReported = false;
 
     #[ORM\ManyToOne(inversedBy: 'guests')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private Client $client;
+
+    #[ORM\ManyToOne()]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private Room $room;
 
     public function getId(): ?int
     {
@@ -244,12 +245,12 @@ class Guest
         return $this;
     }
 
-    public function getRoom(): string
+    public function getRoom(): Room
     {
         return $this->room;
     }
 
-    public function setRoom(string $room): self
+    public function setRoom(Room $room): self
     {
         $this->room = $room;
         return $this;

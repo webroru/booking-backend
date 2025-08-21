@@ -6,7 +6,6 @@ namespace App\Security\Voter;
 
 use App\Entity\Guest;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class GuestVoter extends Voter

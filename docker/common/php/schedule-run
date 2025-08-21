@@ -1,1 +1,2 @@
 0 2 * * * php /code/bin/console app:delete-old-photos
+* * * * * php /code/bin/console app:guest-report
