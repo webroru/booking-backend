@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace App\Security\Voter;
 
-use App\Entity\Client;
+use App\Entity\Room;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
-class ClientVoter extends Voter
+class RoomVoter extends Voter
 {
     protected function supports(string $attribute, $subject): bool
     {
         return in_array($attribute, ['VIEW', 'EDIT'])
-            && $subject instanceof Client;
+            && $subject instanceof Room;
     }
 
     protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
     {
         $admin = $token->getUser();
 
-        if (!$admin || !$subject instanceof Client) {
+        if (!$admin || !$subject instanceof Room) {
             return false;
         }
 
-        return $subject->getAdmin()?->getId() === $admin->getId();
+        return $subject->getClient()?->getAdmin()?->getId() === $admin->getId();
     }
 }

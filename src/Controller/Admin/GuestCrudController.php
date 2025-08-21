@@ -4,15 +4,22 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
+use App\Entity\Admin;
+use App\Entity\Client;
 use App\Entity\Guest;
 use App\Enum\DocumentType;
 use App\Enum\Gender;
+use App\Exception\GuestReportException;
+use App\Repository\ClientRepository;
+use App\Service\GuestReportService;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
@@ -30,6 +37,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
 class GuestCrudController extends AbstractCrudController
@@ -38,6 +46,9 @@ class GuestCrudController extends AbstractCrudController
 
     public function __construct(
         private readonly Security $security,
+        private readonly GuestReportService $guestReportService,
+        private readonly ClientRepository $clientRepository,
+        private readonly EntityManagerInterface $entityManager,
     ) {
         $this->isAdmin = in_array('ROLE_ADMIN', $this->security->getUser()->getRoles(), true);
     }
@@ -55,7 +66,8 @@ class GuestCrudController extends AbstractCrudController
                 TextField::new('firstName'),
                 TextField::new('lastName'),
                 TextField::new('propertyName'),
-                TextField::new('room'),
+                AssociationField::new('room'),
+                AssociationField::new('client'),
                 DateField::new('checkInDate')
                     ->setFormat('yyyy-MM-dd')
                     ->setTimezone('Europe/Prague'),
@@ -63,9 +75,10 @@ class GuestCrudController extends AbstractCrudController
                     ->setFormat('yyyy-MM-dd')
                     ->setTimezone('Europe/Prague'),
                 DateTimeField::new('registrationDate')
-                    ->setFormat('yyyy-MM-dd')
+                    ->setFormat('yyyy-MM-dd HH:mm')
                     ->setTimezone('Europe/Prague'),
                 TextField::new('referer'),
+                BooleanField::new('isReported'),
             ];
         }
 
@@ -76,7 +89,7 @@ class GuestCrudController extends AbstractCrudController
             TextField::new('documentNumber'),
             ChoiceField::new('documentType')
                 ->setChoices(array_combine(
-                    array_map(fn(DocumentType $e) => $e->value, DocumentType::cases()),
+                    array_map(fn(DocumentType $e) => $e->name, DocumentType::cases()),
                     DocumentType::cases()
                 )),
 
@@ -87,7 +100,7 @@ class GuestCrudController extends AbstractCrudController
             TextField::new('nationality'),
             ChoiceField::new('gender')
                 ->setChoices(array_combine(
-                    array_map(fn(Gender $e) => $e->value, Gender::cases()),
+                    array_map(fn(Gender $e) => $e->name, Gender::cases()),
                     Gender::cases()
                 )),
 
@@ -110,7 +123,7 @@ class GuestCrudController extends AbstractCrudController
             IntegerField::new('cityTaxExemption'),
             TextField::new('referer'),
             TextField::new('propertyName'),
-            TextField::new('room'),
+            AssociationField::new('room'),
             BooleanField::new('isReported'),
             AssociationField::new('client'),
         ];
@@ -118,7 +131,15 @@ class GuestCrudController extends AbstractCrudController
 
     public function configureActions(Actions $actions): Actions
     {
-        $isEnabled = true;
+        $clients = $this->isAdmin ?
+            $this->clientRepository->findAll()
+            : $this->security->getUser()->getClients()->toArray();
+
+        $isEnabled = array_reduce(
+            $clients,
+            fn(bool $carry, Client $client) => $carry && $client->isAutoSend(),
+            true,
+        );
 
         $autoSend = Action::new('autoSend')
             ->createAsGlobalAction()
@@ -154,7 +175,7 @@ class GuestCrudController extends AbstractCrudController
             ->setParameter('admin', $admin);
     }
 
-    public function edit(AdminContext $context)
+    public function edit(AdminContext $context): KeyValueStore|Response
     {
         if (!$this->isAdmin) {
             $subject = $context->getEntity()->getInstance();
@@ -164,7 +185,7 @@ class GuestCrudController extends AbstractCrudController
         return parent::edit($context);
     }
 
-    public function detail(AdminContext $context)
+    public function detail(AdminContext $context): KeyValueStore|Response
     {
         if (!$this->isAdmin) {
             $subject = $context->getEntity()->getInstance();
@@ -176,18 +197,33 @@ class GuestCrudController extends AbstractCrudController
 
     public function sendToGov(AdminContext $context): RedirectResponse
     {
-        // Проверять права доступа
+        /** @var Guest $guest */
         $guest = $context->getEntity()->getInstance();
-
-        // Здесь логика отправки, например:
-        //$this->someService->sendGuestToGov($guest);
-
-        $this->addFlash('success', 'The guest information has been sent to the government.');
-
+        $client = $guest->getClient();
         $url = $this->container->get(AdminUrlGenerator::class)
             ->setController(GuestCrudController::class)
             ->setAction('index')
             ->generateUrl();
+
+        if ($guest->getRoom()->getGovernmentPortalId() === null) {
+            $this->addFlash('danger', 'The room is not linked to the Government Portal. '
+                . 'Please set the Government Portal ID for the room.');
+
+            return $this->redirect($url);
+        }
+
+        try {
+            $this->guestReportService->reportGuests(
+                [$guest],
+                $client->getAjPesUsername(),
+                $client->getAjPesPassword(),
+            );
+            $guest->setIsReported(true);
+            $this->entityManager->flush();
+            $this->addFlash('success', 'The guest information has been sent to the government.');
+        } catch (GuestReportException $e) {
+            $this->addFlash('danger', 'Error sending guest information: ' . $e->getMessage());
+        }
 
         return $this->redirect($url);
     }
@@ -195,7 +231,10 @@ class GuestCrudController extends AbstractCrudController
     #[Route('/admin/guest-auto-send', name: 'admin_guest_auto_send', methods: ['POST'])]
     public function toggleFlag(Request $request): JsonResponse
     {
-        // Проверять права доступа
+        $clients = $this->isAdmin ?
+            $this->clientRepository->findAll()
+            : $this->security->getUser()->getClients()->toArray();
+
         $data = json_decode($request->getContent(), true);
         $enabled = $data['enabled'] ?? false;
 
@@ -204,10 +243,11 @@ class GuestCrudController extends AbstractCrudController
             return new JsonResponse(['message' => 'Неверный CSRF токен'], 400);
         }
 
-        // Логика обновления сущности
-        // $entity = ...;
-        // $entity->setFlag($enabled);
-        // $this->getDoctrine()->getManager()->flush();
+        foreach ($clients as $client) {
+            $client->setIsAutoSend($enabled);
+        }
+
+        $this->entityManager->flush();
 
         return new JsonResponse([
             'message' => $enabled ?

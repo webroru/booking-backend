@@ -6,6 +6,6 @@ namespace App\Enum;
 
 enum DocumentType: string
 {
-    case PASSPORT = 'passport';
-    case ID = 'ID';
+    case PASSPORT = 'H';
+    case ID = 'I';
 }
