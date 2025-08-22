@@ -9,31 +9,19 @@ use App\Entity\Guest;
 use App\Exception\GuestReportException;
 use App\Repository\GuestRepository;
 use Psr\Log\LoggerInterface;
+use SoapClient;
 
 class GuestReportService
 {
     private const JSON_FORMAT = 2; // 1 = XML, 2 = JSON
     private const METHOD = 'oddajPorocilo';
-    private \SoapClient $client;
 
     public function __construct(
         private readonly CityTaxCalculatorService $cityTaxCalculatorService,
         private readonly GuestRepository $guestRepository,
+        private readonly SoapClient $client,
         private readonly LoggerInterface $logger,
     ) {
-        try {
-            $wsdlPath = dirname(__DIR__, 2) . '/config/wsdl/wsETurizemPorocanje.wsdl';
-            $this->client = new \SoapClient($wsdlPath, [
-                'trace' => true,
-                'exceptions' => true,
-                'cache_wsdl' => WSDL_CACHE_NONE,
-//            'local_cert' => dirname(__FILE__) . '/client-cert.pem',
-//            'local_pk' => dirname(__FILE__) . '/client-key.pem',
-//            'passphrase' => '123456',
-            ]);
-        } catch (\SoapFault $e) {
-            $this->logger->error(sprintf('SOAP Client Error: %s', $e->getMessage()));
-        }
     }
 
     /**

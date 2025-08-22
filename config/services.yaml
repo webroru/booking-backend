@@ -23,6 +23,7 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+    App\Factory\SoapClientFactory: ~
     App\Providers\Booking\BookingInterface: '@App\Providers\Booking\Beds24\Booking'
     App\Providers\Payment\PaymentInterface: '@App\Providers\Payment\Stripe\Payment' 
     App\Providers\PhotoStorage\PhotoStorageInterface: '@App\Providers\PhotoStorage\Local\Local'
@@ -30,8 +31,19 @@ services:
         arguments:
             $targetDirectory: '%photos_directory%'
             $photosUrl: '%photos_url%'
+    App\Service\GuestReportService:
+        arguments:
+            $client: '@SoapClient'
     GuzzleHttp\ClientInterface: '@GuzzleHttp\Client'
     GuzzleHttp\Client: ~
+    SoapClient:
+        class: SoapClient
+        factory: [ '@App\Factory\SoapClientFactory', 'create' ]
+        arguments:
+            - '%kernel.project_dir%/config/wsdl/wsETurizemPorocanje.wsdl'
+    #            - '%kernel.project_dir%/config/certs/client-cert.pem'
+    #            - '%kernel.project_dir%/config/certs/client-key.pem'
+    #            - '%env(resolve:SOAP_CERT_PASSPHRASE)%'
     Stripe\StripeClient:
         arguments:
             $config: '%stripe_key%'
