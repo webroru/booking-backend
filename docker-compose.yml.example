@@ -44,25 +44,5 @@ services:
     volumes:
       - ./:/code
 
-  rabbitmq:
-    image: bitnami/rabbitmq:latest
-    ports:
-      - 127.0.0.1:15677:15672
-    environment:
-      - RABBITMQ_USERNAME=rabbitmq_user
-      - RABBITMQ_PASSWORD=rabbitmq_user
-      - RABBITMQ_VHOST=esb
-
-  worker:
-    working_dir: /code
-    build: docker/dev/php
-    command: [ "php", "bin/console", "messenger:consume", "async", "-vv" ]
-    restart: unless-stopped
-    volumes:
-      - ./:/code
-    depends_on:
-      - php
-      - rabbitmq
-
 volumes:
   db-data:
