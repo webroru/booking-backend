@@ -91,7 +91,7 @@ readonly class GuestService
                 ->setFirstName($guestDto->firstName)
                 ->setLastName($guestDto->lastName)
                 ->setDocumentNumber($guestDto->documentNumber)
-                ->setDocumentType(DocumentType::from($guestDto->documentType))
+                ->setDocumentType(DocumentType::fromName($guestDto->documentType))
                 ->setDateOfBirth(new \DateTimeImmutable($guestDto->dateOfBirth))
                 ->setNationality($guestDto->nationality)
                 ->setGender(Gender::from($guestDto->gender))
