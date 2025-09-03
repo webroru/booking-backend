@@ -40,7 +40,7 @@ services:
         class: SoapClient
         factory: [ '@App\Factory\SoapClientFactory', 'create' ]
         arguments:
-            - '%kernel.project_dir%/config/wsdl/wsETurizemPorocanje.wsdl'
+            - '%kernel.project_dir%/config/wsdl/wsETurizemPorocanje.prod.wsdl'
     #            - '%kernel.project_dir%/config/certs/client-cert.pem'
     #            - '%kernel.project_dir%/config/certs/client-key.pem'
     #            - '%env(resolve:SOAP_CERT_PASSPHRASE)%'
