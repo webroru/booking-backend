@@ -41,9 +41,8 @@ services:
         factory: [ '@App\Factory\SoapClientFactory', 'create' ]
         arguments:
             - '%kernel.project_dir%/config/wsdl/wsETurizemPorocanje.prod.wsdl'
-    #            - '%kernel.project_dir%/config/certs/client-cert.pem'
-    #            - '%kernel.project_dir%/config/certs/client-key.pem'
-    #            - '%env(resolve:SOAP_CERT_PASSPHRASE)%'
+            - '%kernel.project_dir%/config/certs/ajpes-greenslo.p12'
+            - '%env(resolve:SOAP_CERT_PASSPHRASE)%'
     Stripe\StripeClient:
         arguments:
             $config: '%stripe_key%'

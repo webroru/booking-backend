@@ -43,25 +43,7 @@ class GuestReportService
         try {
             $response = $this->client->__soapCall(self::METHOD, [$options]);
             $responseData = json_decode($response->oddajPorociloResult, true);
-            if (isset($responseData['data']['@success']) && $responseData['data']['@success'] === '0') {
-                $errors = [];
-                foreach ($responseData['data']['row'] as $row) {
-                    $error = $this->errorMapper((int) $row['@msg']);
-                    $this->logger->error(
-                        sprintf(
-                            'Error: %s - %s (ID: %s), original error: %s',
-                            $row['@msg'],
-                            $error,
-                            $row['@id'],
-                            $row['@msgTxt'],
-                        )
-                    );
-                    $errors[] = $error;
-                }
-                if (!empty($errors)) {
-                    throw new GuestReportException(implode(', ', $errors));
-                }
-            }
+            $this->handleRequest($responseData);
         } catch (\SoapFault $e) {
             $error = sprintf('SOAP Fault: %s', $e->getMessage());
             $this->logger->error($error);
@@ -176,5 +158,38 @@ class GuestReportService
         ];
 
         return $errorMessages[$code] ?? 'Unknown error';
+    }
+
+    private function handleRequest(array $responseData): void
+    {
+        if (isset($responseData['data']['@failure']) && (int) $responseData['data']['@success'] > 0) {
+            $this->handleErrors($responseData['data']['row']);
+        }
+        if (isset($responseData['data']['@success']) && (int) $responseData['data']['@success'] > 0) {
+            $this->logger->info(
+                sprintf('Guests data successfully sent. Package Guid: %s', $responseData['data']['@packageGuid'])
+            );
+        }
+    }
+
+    private function handleErrors(array $errors): void
+    {
+        $errors = [];
+        foreach ($errors as $error) {
+            $error = $this->errorMapper((int) $error['@msg']);
+            $this->logger->error(
+                sprintf(
+                    'Error: %s - %s (ID: %s), original error: %s',
+                    $error['@msg'],
+                    $error,
+                    $error['@id'],
+                    $error['@msgTxt'],
+                )
+            );
+            $errors[] = $error;
+        }
+        if (!empty($errors)) {
+            throw new GuestReportException(implode(', ', $errors));
+        }
     }
 }
