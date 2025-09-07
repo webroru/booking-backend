@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://www.ajpes.si/eturizem/" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://www.ajpes.si/eturizem/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://www.ajpes.si/eturizem/">
+      <s:element name="oddajPorocilo">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="uName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="pwd" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="data">
+              <s:complexType mixed="true">
+                <s:sequence>
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+            <s:element minOccurs="1" maxOccurs="1" name="format" type="s:int" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="oddajPorociloResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="oddajPorociloResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="oddajPorociloSoapIn">
+    <wsdl:part name="parameters" element="tns:oddajPorocilo" />
+  </wsdl:message>
+  <wsdl:message name="oddajPorociloSoapOut">
+    <wsdl:part name="parameters" element="tns:oddajPorociloResponse" />
+  </wsdl:message>
+  <wsdl:portType name="rnoSoap">
+    <wsdl:operation name="oddajPorocilo">
+      <wsdl:input message="tns:oddajPorociloSoapIn" />
+      <wsdl:output message="tns:oddajPorociloSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="rnoSoap" type="tns:rnoSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="oddajPorocilo">
+      <soap:operation soapAction="http://www.ajpes.si/eturizem/oddajPorocilo" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="rnoSoap12" type="tns:rnoSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="oddajPorocilo">
+      <soap12:operation soapAction="http://www.ajpes.si/eturizem/oddajPorocilo" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="rno">
+    <wsdl:port name="rnoSoap" binding="tns:rnoSoap">
+      <soap:address location="https://www.ajpes.si/wsrno/eTurizem/wsETurizemPorocanje.asmx" />
+    </wsdl:port>
+    <wsdl:port name="rnoSoap12" binding="tns:rnoSoap12">
+      <soap12:address location="https://www.ajpes.si/wsrno/eTurizem/wsETurizemPorocanje.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
