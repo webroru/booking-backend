@@ -8,15 +8,13 @@ use SoapClient;
 
 class SoapClientFactory
 {
-    public function create(string $wsdlPath): SoapClient
+    public function create(string $wsdlPath, string $certPath): SoapClient
     {
         return new SoapClient($wsdlPath, [
             'trace' => true,
             'exceptions' => true,
             'cache_wsdl' => WSDL_CACHE_NONE,
-//            'local_cert' => $certPath,
-//            'local_pk' => $keyPath,
-//            'passphrase' => $passphrase,
+            'local_cert' => $certPath,
         ]);
     }
 }

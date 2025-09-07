@@ -10,6 +10,7 @@
 ###< symfony/framework-bundle ###
 
 .idea
+/config/certs
 /docker/*/*/logs
 /docker/*/*/data
 docker-compose.yml
