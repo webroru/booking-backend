@@ -162,7 +162,7 @@ class GuestReportService
 
     private function handleRequest(array $responseData): void
     {
-        if (isset($responseData['data']['@failure']) && (int) $responseData['data']['@success'] > 0) {
+        if (isset($responseData['data']['@failure']) && (int) $responseData['data']['@failure'] > 0) {
             $this->handleErrors($responseData['data']['row']);
         }
         if (isset($responseData['data']['@success']) && (int) $responseData['data']['@success'] > 0) {
@@ -174,22 +174,22 @@ class GuestReportService
 
     private function handleErrors(array $errors): void
     {
-        $errors = [];
+        $result = [];
         foreach ($errors as $error) {
-            $error = $this->errorMapper((int) $error['@msg']);
+            $message = $this->errorMapper((int) $error['@msg']);
             $this->logger->error(
                 sprintf(
                     'Error: %s - %s (ID: %s), original error: %s',
                     $error['@msg'],
-                    $error,
+                    $message,
                     $error['@id'],
                     $error['@msgTxt'],
                 )
             );
-            $errors[] = $error;
+            $result[] = $message;
         }
-        if (!empty($errors)) {
-            throw new GuestReportException(implode(', ', $errors));
+        if (!empty($result)) {
+            throw new GuestReportException(implode(', ', $result));
         }
     }
 }
