@@ -42,7 +42,7 @@ class RoomCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            TextField::new('number'),
+            TextField::new('unit'),
             IntegerField::new('externalId'),
             IntegerField::new('governmentPortalId'),
             AssociationField::new('client'),
