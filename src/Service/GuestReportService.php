@@ -86,7 +86,7 @@ class GuestReportService
             $guest->getCheckOutTime()->format('H:i:s');
 
         $row->setAttribute('idNO', (string) $guest->getRoom()->getGovernmentPortalId());
-        $row->setAttribute('zst', (string) $guest->getId());
+        $row->setAttribute('zst', (string) (1000 + $guest->getId()));
         $row->setAttribute('ime', $guest->getFirstName());
         $row->setAttribute('pri', $guest->getLastName());
         $row->setAttribute('sp', $guest->getGender()->value);
