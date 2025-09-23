@@ -40,13 +40,13 @@ class RoomRepository extends ServiceEntityRepository
         }
     }
 
-    public function getByExternalIdAndClient(int $externalId, string $number, Client $client): Room
+    public function getByExternalIdAndClient(int $externalId, string $unit, Client $client): Room
     {
-        $room = $this->findOneBy(['externalId' => $externalId, 'client' => $client]);
+        $room = $this->findOneBy(['client' => $client, 'externalId' => $externalId, 'unit' => $unit]);
         if ($room === null) {
             $room = (new Room())
                 ->setExternalId($externalId)
-                ->setNumber($number)
+                ->setUnit($unit)
                 ->setClient($client);
             $this->save($room, true);
         }
