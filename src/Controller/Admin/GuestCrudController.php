@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Controller\Admin;
 
-use App\Entity\Admin;
 use App\Entity\Client;
 use App\Entity\Guest;
 use App\Enum\DocumentType;

@@ -31,7 +31,7 @@ readonly class GuestService
         int $bookingId,
         string $originalReferer,
         string $propertyName,
-        string $roomNumber,
+        string $unit,
         int $roomExternalId,
         string $checkInDate,
     ): void {
@@ -39,7 +39,7 @@ readonly class GuestService
         $guests = $this->guestRepository->findBy(['bookingId' => $bookingId, 'client' => $client]);
         $removedGuests = $this->getRemovedGuests($guestsDto, $guests);
         $this->removeGuests($removedGuests);
-        $room = $this->roomRepository->getByExternalIdAndClient($roomExternalId, $roomNumber, $client);
+        $room = $this->roomRepository->getByExternalIdAndClient($roomExternalId, $unit, $client);
         $this->addGuests(
             $guestsDto,
             $bookingId,

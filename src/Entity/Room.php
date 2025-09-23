@@ -11,8 +11,8 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(
     uniqueConstraints: [
         new ORM\UniqueConstraint(
-            name: 'unique_client_external_id',
-            columns: ['client_id', 'external_id']
+            name: 'unique_client_external_id_unit',
+            columns: ['client_id', 'external_id_unit']
         )
     ]
 )]
@@ -28,7 +28,7 @@ class Room
     private Client $client;
 
     #[ORM\Column(type: 'string', length: 255)]
-    private string $number;
+    private string $unit;
 
     #[ORM\Column(length: 255)]
     private int $externalId;
@@ -38,7 +38,7 @@ class Room
 
     public function __toString(): string
     {
-        return $this->number;
+        return $this->unit;
     }
 
     public function getId(): ?int
@@ -57,14 +57,14 @@ class Room
         return $this;
     }
 
-    public function getNumber(): string
+    public function getUnit(): string
     {
-        return $this->number;
+        return $this->unit;
     }
 
-    public function setNumber(string $number): self
+    public function setUnit(string $unit): self
     {
-        $this->number = $number;
+        $this->unit = $unit;
         return $this;
     }
 
