@@ -6,7 +6,7 @@ namespace App\Enum;
 
 enum DocumentType: string
 {
-    case PASSPORT = 'H';
+    case P = 'H';
     case ID = 'I';
 
     public static function fromName(string $name): ?self
