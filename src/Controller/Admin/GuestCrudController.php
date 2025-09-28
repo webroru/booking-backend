@@ -128,6 +128,14 @@ class GuestCrudController extends AbstractCrudController
         ];
     }
 
+    public function configureCrud(Crud $crud): Crud
+    {
+        return $crud
+            ->setDefaultSort([
+                'registrationDate' => 'DESC',
+            ]);
+    }
+
     public function configureActions(Actions $actions): Actions
     {
         $clients = $this->isAdmin ?
