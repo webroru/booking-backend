@@ -12,17 +12,19 @@ class InfoItemService
     public function updateInfoItem(Booking $booking, InfoItem $infoItem): void
     {
         $existedInfoItem = $this->findInfoItemByCode($booking->infoItems, $infoItem->code);
-        if ($existedInfoItem && $infoItem->text === null) {
-            unset($existedInfoItem->text);
-            unset($existedInfoItem->code);
-            unset($existedInfoItem->bookingId);
+        if ($infoItem->text === null) {
+            if ($existedInfoItem) {
+                unset($existedInfoItem->text);
+                unset($existedInfoItem->code);
+                unset($existedInfoItem->bookingId);
+            }
             return;
         }
 
-        if (!$existedInfoItem) {
-            $booking->infoItems[] = $infoItem;
-        } else {
+        if ($existedInfoItem) {
             $existedInfoItem->text = $infoItem->text;
+        } else {
+            $booking->infoItems[] = $infoItem;
         }
     }
 
