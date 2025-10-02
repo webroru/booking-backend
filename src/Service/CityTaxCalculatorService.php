@@ -13,7 +13,7 @@ class CityTaxCalculatorService
         } elseif ($age < 18) {
             return 1.57;
         } else {
-            return 3.12;
+            return 3.13;
         }
     }
 }
