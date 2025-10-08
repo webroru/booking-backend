@@ -15,6 +15,7 @@ use App\Providers\Booking\Beds24\Entity\InfoItem;
 use App\Providers\Booking\Beds24\Entity\InvoiceItem;
 use App\Providers\Booking\Beds24\Entity\Property;
 use App\Providers\Booking\Beds24\Service\InfoItemService;
+use App\Providers\Booking\Beds24\Service\InvoiceItemService;
 use App\Providers\Booking\Beds24\Transformer\BookingEntityToDtoTransformer;
 use App\Providers\Booking\BookingInterface;
 use App\Service\CityTaxCalculatorService;
@@ -26,6 +27,7 @@ readonly class Booking implements BookingInterface
         private Client $client,
         private BookingEntityToDtoTransformer $transformer,
         private InfoItemService $infoItemService,
+        private InvoiceItemService $invoiceItemService,
         private GuestService $guestService,
         private CityTaxCalculatorService $cityTaxCalculatorService,
     ) {
@@ -177,8 +179,12 @@ readonly class Booking implements BookingInterface
                 $guestsAmount,
             );
 
+            $this->moveCityTaxPaymentToMasterBooking($booking, $slaveBookings);
             $this->removeCityTaxFromSlaveBookings($slaveBookings);
             $this->removeExtraGuestFromSlaveBookings($slaveBookings);
+
+            $postBookingsDto = new PostBookingsDto($slaveBookings);
+            $this->update($postBookingsDto);
         }
 
         $occupancy = $this->occupancy($bookingDto);
@@ -320,7 +326,7 @@ readonly class Booking implements BookingInterface
     private function findInvoiceItemByDescription(array $invoiceItems, string $description): ?InvoiceItem
     {
         foreach ($invoiceItems as $invoiceItem) {
-            if ($invoiceItem->description === $description) {
+            if (isset($invoiceItem->description) && $invoiceItem->description === $description) {
                 return $invoiceItem;
             }
         }
@@ -334,7 +340,10 @@ readonly class Booking implements BookingInterface
     private function findEmptyInvoiceItem(array $invoiceItems): ?InvoiceItem
     {
         foreach ($invoiceItems as $invoiceItem) {
-            if ($invoiceItem->qty === 0 && $invoiceItem->description === '') {
+            if (
+                isset($invoiceItem->qty, $invoiceItem->description) &&
+                $invoiceItem->qty === 0 && $invoiceItem->description === ''
+            ) {
                 return $invoiceItem;
             }
         }
@@ -376,15 +385,22 @@ readonly class Booking implements BookingInterface
     {
         /** @var InvoiceItem $item */
         foreach ($booking->invoiceItems as $item) {
+            if (!isset($item->description)) {
+                continue;
+            }
             if (
-                stripos($item->description, 'city tax') === false
-                && stripos($item->description, 'Городской налог') === false
+                $item->description === 'Payment (excl. city tax)' ||
+                stripos($item->description, 'City tax payment for booking') !== false ||
+                stripos($item->description, 'city tax') === false &&
+                stripos($item->description, 'Городской налог') === false
             ) {
                 continue;
             }
-            $item->qty = 0;
-            $item->description = '';
-            $item->amount = 0;
+            foreach ($item as $prop => $value) {
+                if ($prop !== 'id') {
+                    unset($item->$prop);
+                }
+            }
         }
     }
 
@@ -392,12 +408,13 @@ readonly class Booking implements BookingInterface
     {
         /** @var InvoiceItem $item */
         foreach ($booking->invoiceItems as $item) {
-            if (stripos($item->description, 'Extra guest(s)') === false) {
-                continue;
+            if (isset($item->description) && stripos($item->description, 'Extra guest(s)')) {
+                foreach ($item as $prop => $value) {
+                    if ($prop !== 'id') {
+                        unset($item->$prop);
+                    }
+                }
             }
-            $item->qty = 0;
-            $item->description = '';
-            $item->amount = 0;
         }
     }
 
@@ -596,7 +613,7 @@ readonly class Booking implements BookingInterface
     }
 
     /**
-     * @param int $masterId
+     * @param Entity\Booking[] $slaveBookings
      * @return void
      * @throws \Exception
      */
@@ -604,13 +621,11 @@ readonly class Booking implements BookingInterface
     {
         foreach ($slaveBookings as $booking) {
             $this->removeCityTaxInvoices($booking);
-            $postBookingsDto = new PostBookingsDto([$booking]);
-            $this->update($postBookingsDto);
         }
     }
 
     /**
-     * @param int $masterId
+     * @param Entity\Booking[] $slaveBookings
      * @return void
      * @throws \Exception
      */
@@ -618,8 +633,23 @@ readonly class Booking implements BookingInterface
     {
         foreach ($slaveBookings as $booking) {
             $this->removeExtraGuestInvoice($booking);
-            $postBookingsDto = new PostBookingsDto([$booking]);
-            $this->update($postBookingsDto);
+        }
+    }
+
+    /**
+     * @param Entity\Booking $masterBooking
+     * @param Entity\Booking[] $slaveBookings
+     * @return void
+     */
+    private function moveCityTaxPaymentToMasterBooking(Entity\Booking $masterBooking, array $slaveBookings): void
+    {
+        foreach ($slaveBookings as $booking) {
+            $cityTaxPayment = $this->invoiceItemService->extractCityTaxPayment($booking);
+            $masterBooking->invoiceItems[] = new InvoiceItem(
+                amount: $cityTaxPayment,
+                type: InvoiceItem::PAYMENT,
+                description: 'City tax payment for booking ' . $booking->id,
+            );
         }
     }
 }
