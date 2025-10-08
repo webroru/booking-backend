@@ -47,7 +47,7 @@ readonly class BookingEntityToDtoTransformer
             originalReferer: "$booking->referer, booking: $booking->apiReference",
             guestsAmount: $booking->numAdult + $booking->numChild,
             passCode: $this->infoItemService->getInfoItemValue('CODELOCK', $booking->infoItems),
-            debt: $this->invoiceItemService->getDebt($booking->invoiceItems),
+            debt: $this->invoiceItemService->getDebt($booking),
             extraPerson: $this->getExtraPrice($property->roomTypes, $booking->roomId),
             capacity: $property->roomTypes ? $this->getMaxPeople($property->roomTypes, $booking->roomId) : 0,
             isRuleAccepted: $isRuleAccepted === 'true',

@@ -7,6 +7,7 @@ namespace App\Providers\Booking\Beds24\Entity;
 class InvoiceItem extends AbstractEntity
 {
     public const CHARGE = 'charge';
+    public const PAYMENT = 'payment';
 
     public function __construct(
         public ?float $amount,
