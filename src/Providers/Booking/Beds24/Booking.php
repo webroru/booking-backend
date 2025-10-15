@@ -645,6 +645,9 @@ readonly class Booking implements BookingInterface
     {
         foreach ($slaveBookings as $booking) {
             $cityTaxPayment = $this->invoiceItemService->extractCityTaxPayment($booking);
+            if ($cityTaxPayment === 0.0) {
+                continue;
+            }
             $masterBooking->invoiceItems[] = new InvoiceItem(
                 amount: $cityTaxPayment,
                 type: InvoiceItem::PAYMENT,
