@@ -408,7 +408,7 @@ readonly class Booking implements BookingInterface
     {
         /** @var InvoiceItem $item */
         foreach ($booking->invoiceItems as $item) {
-            if (isset($item->description) && stripos($item->description, 'Extra guest(s)')) {
+            if (isset($item->description) && stripos($item->description, 'Extra guest(s)') !== false) {
                 foreach ($item as $prop => $value) {
                     if ($prop !== 'id') {
                         unset($item->$prop);
