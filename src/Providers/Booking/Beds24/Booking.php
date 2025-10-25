@@ -173,7 +173,7 @@ readonly class Booking implements BookingInterface
 
         if ($bookingDto->groupId) {
             $slaveBookings = $this->getSlaveBookings($bookingDto->groupId);
-            $guestsAmount += array_reduce(
+            $guestsAmount = array_reduce(
                 $slaveBookings,
                 fn ($acc, Entity\Booking $booking) => $acc + $booking->numAdult + $booking->numChild,
                 $guestsAmount,
