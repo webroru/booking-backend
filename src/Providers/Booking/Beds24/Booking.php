@@ -167,7 +167,6 @@ readonly class Booking implements BookingInterface
      */
     public function updateBooking(BookingDto $bookingDto): void
     {
-
         $booking = $this->getBookingEntityById($bookingDto->orderId);
         $guestsAmount = $booking->numAdult + $booking->numChild;
 
