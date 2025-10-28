@@ -239,7 +239,8 @@ readonly class Booking implements BookingInterface
                 continue;
             }
 
-            $message = "Can not update Booking";
+            $bookings = implode(', ', array_map(fn(Entity\Booking $booking) => (string) $booking->id, $postBookingsDto->bookings));
+            $message = "Can not update Booking(s): $bookings";
             if ($item['errors']) {
                 foreach ($item['errors'] as $error) {
                     $message .= " Field {$error['field']}: {$error['message']}";
