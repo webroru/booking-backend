@@ -13,7 +13,7 @@ class InvoiceItemService
     {
         $debt = array_reduce(
             $booking->invoiceItems,
-            fn (float $carry, InvoiceItem $item) => $carry + $item->lineTotal,
+            fn (float $carry, InvoiceItem $item) => $carry + ($item->lineTotal ?? 0),
             0.0,
         );
 
@@ -21,34 +21,26 @@ class InvoiceItemService
         return $debt === -0.0 ? 0 : $debt;
     }
 
-    public function extractCityTaxPayment(Booking $booking): float
+    public function extractPayment(Booking $booking): float
     {
         $totalPayment = 0.0;
         foreach ($booking->invoiceItems as $item) {
-            if ($item->type === InvoiceItem::PAYMENT) {
+            if (isset($item->type) && $item->type === InvoiceItem::PAYMENT) {
                 $totalPayment += $item->amount;
             }
         }
+        $this->removePayments($booking->invoiceItems);
 
-        $roomCharge = 0.0;
-        foreach ($booking->invoiceItems as $item) {
-            if ($item->type === InvoiceItem::CHARGE && !str_contains(mb_strtolower($item->description), 'city tax')) {
-                $roomCharge += $item->amount * $item->qty;
-            }
-        }
+        return $totalPayment;
+    }
 
-        $cityTaxPayment = $totalPayment - $roomCharge;
-
-        if ($cityTaxPayment > 0) {
-            $this->removePayments($booking->invoiceItems);
-            $booking->invoiceItems[] = new InvoiceItem(
-                amount: $totalPayment - $cityTaxPayment,
-                type: InvoiceItem::PAYMENT,
-                description: 'Payment (excl. city tax)',
-            );
-        }
-
-        return $cityTaxPayment > 0 ? $cityTaxPayment : 0.0;
+    public function addPayment(Booking $booking, float $amount, string $description): void
+    {
+        $booking->invoiceItems[] = new InvoiceItem(
+            amount: $amount,
+            type: InvoiceItem::PAYMENT,
+            description: $description,
+        );
     }
 
     /**
@@ -58,7 +50,7 @@ class InvoiceItemService
     private function removePayments(array $invoiceItems): void
     {
         foreach ($invoiceItems as $item) {
-            if ($item->type === 'payment') {
+            if (isset($item->type) && $item->type === 'payment') {
                 foreach ($item as $prop => $value) {
                     if ($prop !== 'id') {
                         unset($item->$prop);

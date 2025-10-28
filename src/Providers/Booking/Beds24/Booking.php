@@ -178,9 +178,9 @@ readonly class Booking implements BookingInterface
                 $guestsAmount,
             );
 
-            $this->moveCityTaxPaymentToMasterBooking($booking, $slaveBookings);
             $this->removeCityTaxFromSlaveBookings($slaveBookings);
             $this->removeExtraGuestFromSlaveBookings($slaveBookings);
+            $this->distributePayments([...$slaveBookings, $booking]);
 
             $postBookingsDto = new PostBookingsDto($slaveBookings);
             $this->update($postBookingsDto);
@@ -637,22 +637,27 @@ readonly class Booking implements BookingInterface
     }
 
     /**
-     * @param Entity\Booking $masterBooking
-     * @param Entity\Booking[] $slaveBookings
-     * @return void
+     * @param Entity\Booking[] $bookings
      */
-    private function moveCityTaxPaymentToMasterBooking(Entity\Booking $masterBooking, array $slaveBookings): void
+    private function distributePayments(array $bookings): void
     {
-        foreach ($slaveBookings as $booking) {
-            $cityTaxPayment = $this->invoiceItemService->extractCityTaxPayment($booking);
-            if ($cityTaxPayment === 0.0) {
+        $total = 0.0;
+        foreach ($bookings as $booking) {
+            $total += $this->invoiceItemService->extractPayment($booking);
+        }
+
+        foreach ($bookings as $index => $booking) {
+            $debt = $this->invoiceItemService->getDebt($booking);
+            if ($debt <= 0) {
                 continue;
             }
-            $masterBooking->invoiceItems[] = new InvoiceItem(
-                amount: $cityTaxPayment,
-                type: InvoiceItem::PAYMENT,
-                description: 'City tax payment for booking ' . $booking->id,
-            );
+
+            $payment = $index === count($bookings) - 1 ? $total : min($debt, $total);
+            $this->invoiceItemService->addPayment($booking, $payment, 'Distributed Payment');
+            $total -= $payment;
+            if ($total <= 0) {
+                break;
+            }
         }
     }
 }
