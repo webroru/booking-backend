@@ -7,7 +7,6 @@ namespace App\Controller;
 use App\Entity\Info;
 use App\Exception\TokenNotFoundException;
 use App\Providers\Booking\BookingInterface;
-use App\Serializer\Normalizer;
 use App\Service\ClientService;
 use App\Service\NotificationService;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -19,7 +18,6 @@ use Symfony\Component\Routing\Annotation\Route;
 class InfoController extends AbstractApiController
 {
     public function __construct(
-        private readonly Normalizer $normalizer, // We need it?
         private readonly ClientService $clientService,
         private readonly NotificationService $notificationService,
         private readonly BookingInterface $booking,
@@ -43,7 +41,7 @@ class InfoController extends AbstractApiController
             throw new TokenNotFoundException("Information for {$client->getName()} not found");
         }
 
-        return $this->json($this->normalizer->normalize($info));
+        return $this->json($info);
     }
 
     #[Route('/send-to-email', methods: ['POST'])]
