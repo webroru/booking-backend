@@ -24,6 +24,8 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
     App\Factory\SoapClientFactory: ~
+    App\Monolog\RequestProcessor:
+        tags: ['monolog.processor']
     App\Providers\Booking\BookingInterface: '@App\Providers\Booking\Beds24\Booking'
     App\Providers\Payment\PaymentInterface: '@App\Providers\Payment\Stripe\Payment' 
     App\Providers\PhotoStorage\PhotoStorageInterface: '@App\Providers\PhotoStorage\Local\Local'
