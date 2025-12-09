@@ -302,7 +302,7 @@ readonly class Booking implements BookingInterface
             $searchItems = explode(' ', $search);
             $nameItems = explode(' ', $name);
             $lastNameMatch = count(array_intersect($searchItems, $nameItems)) > 0;
-            $apiReferenceContain = str_contains($booking->apiReference, $search);
+            $apiReferenceContain = str_contains(strtolower($booking->apiReference), $search);
             $bookingIdContains = $booking->id === (int) $search;
             $masterId = $booking->masterId === (int) $search;
             if ($lastNameMatch || $apiReferenceContain || $bookingIdContains || $masterId) {
