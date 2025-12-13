@@ -111,6 +111,10 @@ class GuestCrudController extends AbstractCrudController
                 ->setFormat('yyyy-MM-dd')
                 ->setTimezone('Europe/Prague'),
 
+            TimeField::new('checkInTime')
+                ->setFormat('HH:mm')
+                ->setTimezone('Europe/Prague'),
+
             DateField::new('checkOutDate')
                 ->setFormat('yyyy-MM-dd')
                 ->setTimezone('Europe/Prague'),

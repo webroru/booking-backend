@@ -49,6 +49,9 @@ class Guest
     #[ORM\Column(type: 'date')]
     private \DateTimeInterface $checkInDate;
 
+    #[ORM\Column(type: 'time')]
+    private \DateTimeInterface $checkInTime;
+
     #[ORM\Column(type: 'date')]
     private \DateTimeInterface $checkOutDate;
 
@@ -187,6 +190,17 @@ class Guest
     public function setCheckInDate(\DateTimeInterface $checkInDate): self
     {
         $this->checkInDate = $checkInDate;
+        return $this;
+    }
+
+    public function getCheckInTime(): \DateTimeInterface
+    {
+        return $this->checkInTime;
+    }
+
+    public function setCheckInTime(\DateTimeInterface $checkInTime): self
+    {
+        $this->checkInTime = $checkInTime;
         return $this;
     }
 

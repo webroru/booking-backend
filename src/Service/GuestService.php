@@ -86,6 +86,16 @@ readonly class GuestService
             if ($guestDto->id) {
                 continue;
             }
+            $registrationDate = new \DateTimeImmutable();
+            $checkInTime = max(
+                $registrationDate,
+                $client->getCheckInTime()->setDate(
+                    (int)(new \DateTimeImmutable($checkInDate))->format('Y'),
+                    (int)(new \DateTimeImmutable($checkInDate))->format('m'),
+                    (int)(new \DateTimeImmutable($checkInDate))->format('d'),
+                ),
+            );
+
             $guest = (new Guest())
                 ->setBookingId($bookingId)
                 ->setFirstName($guestDto->firstName)
@@ -95,8 +105,9 @@ readonly class GuestService
                 ->setDateOfBirth(new \DateTimeImmutable($guestDto->dateOfBirth))
                 ->setNationality($guestDto->nationality)
                 ->setGender(Gender::from($guestDto->gender))
-                ->setRegistrationDate(new \DateTimeImmutable())
+                ->setRegistrationDate($registrationDate)
                 ->setCheckInDate(new \DateTimeImmutable($checkInDate))
+                ->setCheckInTime($checkInTime)
                 ->setCheckOutDate(new \DateTimeImmutable($guestDto->checkOutDate))
                 ->setCheckOutTime(new \DateTimeImmutable($guestDto->checkOutTime))
                 ->setCityTaxExemption($guestDto->cityTaxExemption)

@@ -79,8 +79,8 @@ class GuestReportService
         $doc = new \DOMDocument('1.0', 'UTF-8');
         $row = $doc->createElement('row');
 
-        $checkIdDate = $guest->getCheckInDate()->format('Y-m-d') . 'T' .
-            $guest->getClient()->getCheckInTime()->format('H:i:s');
+        $checkInDate = $guest->getCheckInDate()->format('Y-m-d') . 'T' .
+            $guest->getCheckInTime()->format('H:i:s');
 
         $checkOutDate = $guest->getCheckOutDate()->format('Y-m-d') . 'T' .
             $guest->getCheckOutTime()->format('H:i:s');
@@ -94,7 +94,7 @@ class GuestReportService
         $row->setAttribute('drzava', $guest->getNationality());
         $row->setAttribute('vrstaDok', $guest->getDocumentType()->value);
         $row->setAttribute('idStDok', $guest->getDocumentNumber());
-        $row->setAttribute('casPrihoda', $checkIdDate);
+        $row->setAttribute('casPrihoda', $checkInDate);
         $row->setAttribute('casOdhoda', $checkOutDate);
         $row->setAttribute('status', '1');
         $row->setAttribute('ttObracun', (string) $guest->getCityTaxExemption());

@@ -62,6 +62,7 @@ class GuestReportServiceTest extends TestCase
             ->setGender(Gender::from('M'))
             ->setRegistrationDate(new \DateTimeImmutable())
             ->setCheckInDate(new \DateTimeImmutable('2024-01-01'))
+            ->setCheckInTime(new \DateTimeImmutable('12:00:00'))
             ->setCheckOutDate(new \DateTimeImmutable('2024-01-05'))
             ->setCheckOutTime(new \DateTimeImmutable('12:00:00'))
             ->setCityTaxExemption(0)
