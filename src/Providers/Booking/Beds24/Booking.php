@@ -192,13 +192,13 @@ readonly class Booking implements BookingInterface
         $lessDocs = $this->confirmedGuests($bookingDto) < $guestsAmount;
 
         $infoItems = [];
-        $infoItems[] = new InfoItem('CHECK_IN', $bookingDto->checkIn ? '' : null);
-        $infoItems[] = new InfoItem('PAYMENT_STATUS', $bookingDto->paymentStatus);
-        $infoItems[] = new InfoItem('IS_RULE_ACCEPTED', $bookingDto->isRuleAccepted ? '' : null);
-        $infoItems[] = new InfoItem('CHECKOUT', $bookingDto->checkOut ? '' : null);
-        $infoItems[] = new InfoItem('OVERMAX', (string) $overmax);
-        $infoItems[] = new InfoItem('PLUS_GUEST', $plusGuest ? '' : null);
-        $infoItems[] = new InfoItem('LESS_DOCS', $lessDocs ? '' : null);
+        $infoItems[] = new InfoItem(InfoItemService::CHECK_IN, $bookingDto->checkIn ? '' : null);
+        $infoItems[] = new InfoItem(InfoItemService::PAYMENT_STATUS, $bookingDto->paymentStatus);
+        $infoItems[] = new InfoItem(InfoItemService::IS_RULE_ACCEPTED, $bookingDto->isRuleAccepted ? '' : null);
+        $infoItems[] = new InfoItem(InfoItemService::CHECK_OUT, $bookingDto->checkOut ? '' : null);
+        $infoItems[] = new InfoItem(InfoItemService::OVERMAX, (string) $overmax);
+        $infoItems[] = new InfoItem(InfoItemService::PLUS_GUEST, $plusGuest ? '' : null);
+        $infoItems[] = new InfoItem(InfoItemService::LESS_DOCS, $lessDocs ? '' : null);
         foreach ($infoItems as $infoItem) {
             $this->infoItemService->updateInfoItem($booking, $infoItem);
         }

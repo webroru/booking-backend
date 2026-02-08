@@ -30,9 +30,9 @@ readonly class BookingEntityToDtoTransformer
     {
         $roomType = $this->getRoomType($property->roomTypes, $booking->roomId);
 
-        $isRuleAccepted = $this->infoItemService->getInfoItemValue('isRuleAccepted', $booking->infoItems);
-        $checkIn = $this->infoItemService->getInfoItemValue('checkIn', $booking->infoItems);
-        $checkOut = $this->infoItemService->getInfoItemValue('checkOut', $booking->infoItems);
+        $isRuleAccepted = $this->infoItemService->getInfoItemValue(InfoItemService::IS_RULE_ACCEPTED, $booking->infoItems);
+        $checkIn = $this->infoItemService->getInfoItemValue(InfoItemService::CHECK_IN, $booking->infoItems);
+        $checkOut = $this->infoItemService->getInfoItemValue(InfoItemService::CHECK_OUT, $booking->infoItems);
 
         return new BookingDto(
             firstName: $booking->firstName,
@@ -46,14 +46,14 @@ readonly class BookingEntityToDtoTransformer
             unit: $this->getUnitName($roomType, $booking->unitId) ?? '',
             originalReferer: "$booking->referer, booking: $booking->apiReference",
             guestsAmount: $booking->numAdult + $booking->numChild,
-            passCode: $this->infoItemService->getInfoItemValue('CODELOCK', $booking->infoItems),
+            passCode: $this->infoItemService->getInfoItemValue(InfoItemService::CODELOCK, $booking->infoItems),
             debt: $this->invoiceItemService->getDebt($booking),
             extraPerson: $this->getExtraPrice($property->roomTypes, $booking->roomId),
             capacity: $property->roomTypes ? $this->getMaxPeople($property->roomTypes, $booking->roomId) : 0,
             isRuleAccepted: $isRuleAccepted === 'true',
             checkIn: $checkIn === 'true',
             checkOut: $checkOut === 'true',
-            paymentStatus: $this->infoItemService->getInfoItemValue('paymentStatus', $booking->infoItems),
+            paymentStatus: $this->infoItemService->getInfoItemValue(InfoItemService::PAYMENT_STATUS, $booking->infoItems),
             photos: $this->getPhotos($booking->id),
             groupId: in_array($booking->id, $groups) ? $booking->id : $booking->masterId,
             invoiceItems: $this->getInvoiceItems($booking->invoiceItems),

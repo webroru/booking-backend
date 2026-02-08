@@ -9,6 +9,15 @@ use App\Providers\Booking\Beds24\Entity\InfoItem;
 
 class InfoItemService
 {
+    public const CHECK_IN = 'CHECK_IN';
+    public const PAYMENT_STATUS = 'PAYMENT_STATUS';
+    public const IS_RULE_ACCEPTED = 'IS_RULE_ACCEPTED';
+    public const CHECK_OUT = 'CHECK_OUT';
+    public const OVERMAX = 'OVERMAX';
+    public const PLUS_GUEST = 'PLUS_GUEST';
+    public const LESS_DOCS = 'LESS_DOCS';
+    public const CODELOCK = 'CODELOCK';
+
     public function updateInfoItem(Booking $booking, InfoItem $infoItem): void
     {
         $existedInfoItem = $this->findInfoItemByCode($booking->infoItems, $infoItem->code);
