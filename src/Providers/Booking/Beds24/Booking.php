@@ -546,7 +546,7 @@ readonly class Booking implements BookingInterface
 
     private function getAges(GuestDto $guest): int
     {
-        return (int) date('Y') - (int) date('Y', strtotime($guest->dateOfBirth));
+        return (new \DateTime())->diff(new \DateTime($guest->dateOfBirth))->y;
     }
 
     private function getGuestsAgeCategories(BookingDto $bookingDto): array
