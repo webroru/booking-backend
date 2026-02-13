@@ -8,6 +8,7 @@ enum DocumentType: string
 {
     case PASSPORT = 'H';
     case ID = 'I';
+    case DRIVER = 'V';
 
     public static function fromName(string $name): ?self
     {
