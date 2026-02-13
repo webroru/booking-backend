@@ -196,7 +196,7 @@ readonly class Booking implements BookingInterface
         $infoItems[] = new InfoItem(InfoItemService::PAYMENT_STATUS, $bookingDto->paymentStatus);
         $infoItems[] = new InfoItem(InfoItemService::IS_RULE_ACCEPTED, $bookingDto->isRuleAccepted ? '' : null);
         $infoItems[] = new InfoItem(InfoItemService::CHECK_OUT, $bookingDto->checkOut ? '' : null);
-        $infoItems[] = new InfoItem(InfoItemService::OVERMAX, (string) $overmax);
+        $infoItems[] = new InfoItem(InfoItemService::OVERMAX, (string) $overmax ?: null);
         $infoItems[] = new InfoItem(InfoItemService::PLUS_GUEST, $plusGuest ? '' : null);
         $infoItems[] = new InfoItem(InfoItemService::LESS_DOCS, $lessDocs ? '' : null);
         foreach ($infoItems as $infoItem) {
