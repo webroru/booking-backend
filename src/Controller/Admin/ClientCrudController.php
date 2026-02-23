@@ -8,6 +8,7 @@ use App\Entity\Client;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FieldCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Collection\FilterCollection;
+use EasyCorp\Bundle\EasyAdminBundle\Config\KeyValueStore;
 use EasyCorp\Bundle\EasyAdminBundle\Context\AdminContext;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
@@ -17,6 +18,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TimeField;
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\HttpFoundation\Response;
 
 class ClientCrudController extends AbstractCrudController
 {
@@ -65,7 +67,7 @@ class ClientCrudController extends AbstractCrudController
             ->setParameter('admin', $admin);
     }
 
-    public function edit(AdminContext $context)
+    public function edit(AdminContext $context): KeyValueStore|Response
     {
         if (!$this->isAdmin) {
             $subject = $context->getEntity()->getInstance();
@@ -75,7 +77,7 @@ class ClientCrudController extends AbstractCrudController
         return parent::edit($context);
     }
 
-    public function detail(AdminContext $context)
+    public function detail(AdminContext $context): KeyValueStore|Response
     {
         if (!$this->isAdmin) {
             $subject = $context->getEntity()->getInstance();
