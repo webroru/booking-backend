@@ -6,6 +6,7 @@ namespace App\Security\Voter;
 
 use App\Entity\Guest;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
+use Symfony\Component\Security\Core\Authorization\Voter\Vote;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 
 class GuestVoter extends Voter
@@ -16,7 +17,7 @@ class GuestVoter extends Voter
             && $subject instanceof Guest;
     }
 
-    protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token): bool
+    protected function voteOnAttribute(string $attribute, $subject, TokenInterface $token, ?Vote $vote = null): bool
     {
         $admin = $token->getUser();
 

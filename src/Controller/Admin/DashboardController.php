@@ -68,14 +68,15 @@ class DashboardController extends AbstractDashboardController
         CsrfTokenManagerInterface $csrfTokenManager,
         AdminRepository $adminRepository
     ): Response {
-        $oldPwd = (string) $request->request->get('old_password');
-        $newPwd = (string) $request->request->get('new_password');
+        $data = $request->toArray();
+        $oldPwd = (string) $data['old_password'] ?? null;
+        $newPwd = (string) $data['new_password'] ?? null;
 
         if (empty($oldPwd) || empty($newPwd)) {
             return $this->render('security/change_password.html.twig', ['error' => null]);
         }
 
-        $token = new CsrfToken('authenticate', (string) $request->request->get('_csrf_token'));
+        $token = new CsrfToken('authenticate', (string) $data['_csrf_token'] ?? null);
 
         if (!$csrfTokenManager->isTokenValid($token)) {
             return $this->render(
@@ -86,7 +87,7 @@ class DashboardController extends AbstractDashboardController
             );
         }
 
-        $newPwdConfirm = (string)$request->request->get('new_password_confirm');
+        $newPwdConfirm = (string) $data['new_password_confirm'] ?? null;
 
         /** @var Admin $admin */
         $admin = $this->getUser();
