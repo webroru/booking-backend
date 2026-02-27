@@ -3,13 +3,61 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="{{ asset('assets/coreui/css/coreui.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/coreui/css/coreui.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/coreui-icons/css/free.min.css') }}" rel="stylesheet">
     <title>{% block title %}Admin{% endblock %}</title>
-</head>
-<body class="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
-    {% block body %}{% endblock %}
+    <style>
+        .wrapper {
+            width: 100%;
+            padding-inline: var(--cui-sidebar-occupy-start, 0) var(--cui-sidebar-occupy-end, 0);
+            will-change: auto;
+            transition: padding 0.15s;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .wrapper {
+                transition: none;
+            }
+        }
 
-    <script src="{{ asset('assets/coreui/js/coreui.bundle.min.js') }}"></script>
+        .header > .container-fluid,
+        .sidebar-header {
+            min-height: calc(4rem + 1px); // stylelint-disable-line function-disallowed-list
+        }
+
+        .sidebar-brand-full {
+            margin-left: 3px;
+        }
+
+        .sidebar-header .nav-underline-border {
+            --cui-nav-underline-border-link-padding-x: 1rem;
+            --cui-nav-underline-border-gap: 0;
+        }
+
+        .sidebar-header .nav-link {
+            display: flex;
+            align-items: center;
+            min-height: calc(4rem + 1px); // stylelint-disable-line function-disallowed-list
+        }
+
+        .sidebar-toggler {
+            margin-inline-start: auto;
+        }
+
+        .sidebar-narrow .sidebar-toggler, .sidebar-narrow-unfoldable:not(:hover) .sidebar-toggler {
+            margin-inline-end: auto;
+        }
+
+        .header > .container-fluid + .container-fluid {
+            min-height: 3rem;
+        }
+
+        .footer {
+            min-height: calc(3rem + 1px); // stylelint-disable-line function-disallowed-list
+        }
+    </style>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    {% block body %}{% endblock %}
+    <script src="{{ asset('assets/coreui/js/coreui.bundle.js') }}"></script>
 </body>
 </html>

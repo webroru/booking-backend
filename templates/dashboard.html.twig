@@ -1,0 +1,16 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login{% endblock %}
+
+{% block body %}
+    {% include 'sidebar.html.twig' %}
+    <div class="wrapper d-flex flex-column min-vh-100">
+        {% include 'header.html.twig' %}
+        <div class="body flex-grow-1">
+            <div class="container-lg px-4">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+        {% include 'footer.html.twig' %}
+    </div>
+{% endblock %}
