@@ -3,8 +3,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="{{ asset('assets/coreui/css/coreui.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/coreui/css/coreui.min.css') }}" rel="stylesheet">
     <link href="{{ asset('assets/coreui-icons/css/free.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/coreui-chartjs/css/coreui-chartjs.min.css') }}" rel="stylesheet">
     <title>{% block title %}Admin{% endblock %}</title>
     <style>
         .wrapper {
@@ -58,6 +59,9 @@
 </head>
 <body class="{% block body_class %}{% endblock %}">
     {% block body %}{% endblock %}
-    <script src="{{ asset('assets/coreui/js/coreui.bundle.js') }}"></script>
+    <script src="{{ asset('assets/chartjs/chart.umd.min.js') }}"></script>
+    <script src="{{ asset('assets/coreui/js/coreui.bundle.min.js') }}"></script>
+    <script src="{{ asset('assets/coreui-chartjs/js/coreui-chartjs.min.js') }}"></script>
+    <script src="{{ asset('assets/coreui/js/main.js') }}"></script>
 </body>
 </html>
