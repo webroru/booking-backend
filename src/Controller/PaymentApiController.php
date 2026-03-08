@@ -28,7 +28,8 @@ class PaymentApiController extends AbstractApiController
     #[Route('/payment', methods: ['POST'])]
     public function create(Request $request): JsonResponse
     {
-        $bookings = $request->get('bookings');
+        $data = $request->toArray();
+        $bookings = $data['bookings'] ?? null;
         if (!$bookings) {
             throw new BadRequestException();
         }
