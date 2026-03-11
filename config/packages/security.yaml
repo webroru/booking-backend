@@ -14,12 +14,17 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         admin:
-            pattern: ^/(admin|login|logout)
+            pattern: ^/
+            host: "%env(ADMIN_HOST)%"
             provider: app_user_provider
             custom_authenticator: App\Security\AppAuthenticator
             logout:
                 path: app_logout
             access_denied_url: app_access_denied
+        api:
+            pattern: ^/
+            host: "%env(API_HOST)%"
+            security: false
         webhook:
             pattern: ^/webhook
             access_token:
@@ -34,7 +39,10 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/admin, roles: [ROLE_ADMIN, ROLE_CLIENT] }
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/logout, roles: PUBLIC_ACCESS }
+        - { path: ^/, host: "%env(ADMIN_HOST)%", roles: [ROLE_ADMIN, ROLE_CLIENT] }
+        - { path: ^/, host: "%env(API_HOST)%", roles: PUBLIC_ACCESS }
         - { path: ^/webhook/stripe, roles: PUBLIC_ACCESS }
         - { path: ^/webhook, roles: ROLE_ADMIN }
 

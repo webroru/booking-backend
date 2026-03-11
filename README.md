@@ -14,6 +14,10 @@
 1. `cp .env .env.local`
 2. Overwrite options in the .env.local
 3. Create `public/uploads` directory, set owner to www-data
+4. Add development hostnames to /etc/hosts:
+   ```bash
+   echo -e "127.0.0.1 admin.receptiongo\n127.0.0.1 api.receptiongo" | sudo tee -a /etc/hosts
+   ```
 
 ## Tests ##
 Run all tests `docker-compose run composer.phar test`
