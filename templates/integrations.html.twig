@@ -1,0 +1,77 @@
+{% extends 'dashboard.html.twig' %}
+
+{% block title %}Integrations with External Services{% endblock %}
+
+{% block content %}
+    <div class="container mt-4 mb-4">
+        <h1>Integrations with External Services</h1>
+        <form method="post" id="integrations-form">
+            <div class="card mb-3">
+                <div class="card-header"><strong>Booking providers</strong></div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <label for="booking_provider_select" class="form-label">Select provider</label>
+                        <select class="form-select" id="booking_provider_select" name="booking_provider_select">
+                            <option value="none">None</option>
+                            <option value="beds24">Beds24</option>
+                            <option value="gcal">Google Calendar</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="booking_provider_api_key" class="form-label">API Key</label>
+                        <input type="text" class="form-control" id="booking_provider_api_key" name="booking_provider_api_key" disabled>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-header"><strong>Smart Lock</strong></div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <label for="ttlock_select" class="form-label">Select integration</label>
+                        <select class="form-select" id="ttlock_select" name="ttlock_select">
+                            <option value="none">None</option>
+                            <option value="ttlock">TTLock</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="ttlock_api_key" class="form-label">API Key</label>
+                        <input type="text" class="form-control" id="ttlock_api_key" name="ttlock_api_key" disabled>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-header"><strong>Payments</strong></div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <label for="stripe_select" class="form-label">Select integration</label>
+                        <select class="form-select" id="stripe_select" name="stripe_select">
+                            <option value="none">None</option>
+                            <option value="stripe">Stripe</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="stripe_api_key" class="form-label">API Key</label>
+                        <input type="text" class="form-control" id="stripe_api_key" name="stripe_api_key" disabled>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+        </form>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const selects = [
+                {select: 'booking_provider_select', input: 'booking_provider_api_key'},
+                {select: 'ttlock_select', input: 'ttlock_api_key'},
+                {select: 'stripe_select', input: 'stripe_api_key'}
+            ];
+            selects.forEach(function(service) {
+                const sel = document.getElementById(service.select);
+                const input = document.getElementById(service.input);
+                sel.addEventListener('change', function() {
+                    input.disabled = sel.value === 'none';
+                });
+            });
+        });
+    </script>
+{% endblock %}
